@@ -53,7 +53,7 @@ const proposal = [
   },
   {
     title: "Patacones rellenos",
-    note: "3 opciones · $18.000",
+    note: "3 opciones · $17.500",
     description:
       "Plátano verde dorado y crocante, relleno generoso, queso y hogao casero.",
     image: "/img/patacon-carne.jpg",
@@ -107,9 +107,9 @@ const menuGroups: { category: string; items: MenuItem[] }[] = [
   {
     category: "Patacones rellenos",
     items: [
-      { name: "Carne desmechada", price: "$18.000" },
-      { name: "Pollo desmechado", price: "$18.000" },
-      { name: "Chicharrón", price: "$18.000" },
+      { name: "Carne desmechada", price: "$17.500" },
+      { name: "Pollo desmechado", price: "$17.500" },
+      { name: "Chicharrón", price: "$17.500" },
     ],
   },
   {
@@ -161,18 +161,18 @@ const testimonials = [
 ]
 
 const navLinks = [
+  { href: "#propuesta", label: "Propuesta" },
   { href: "#build", label: "Arma tu pedido" },
   { href: "#menu", label: "Menú" },
-  { href: "#propuesta", label: "Propuesta" },
   { href: "#cobertura", label: "Cobertura" },
   { href: "#contacto", label: "Contacto" },
 ]
 
 const sectionsList = [
   { id: "top", label: "Inicio" },
+  { id: "propuesta", label: "Propuesta" },
   { id: "build", label: "Arma tu pedido" },
   { id: "menu", label: "Menú" },
-  { id: "propuesta", label: "Propuesta" },
   { id: "cobertura", label: "Cobertura" },
   { id: "clientes", label: "Clientes" },
   { id: "acompanamos", label: "Acompañamiento" },
@@ -203,9 +203,9 @@ const fillingsByBase: Record<"arepa" | "patacon", Filling[]> = {
     { id: "huevos-tocineta", label: "Huevos con tocineta", price: 9000, image: "/img/Huevo.png" },
   ],
   patacon: [
-    { id: "carne", label: "Carne desmechada", price: 18000, image: "/img/patacon-carne.jpg" },
-    { id: "pollo", label: "Pollo desmechado", price: 18000, image: "/img/patacon-pollo.jpg" },
-    { id: "chicharron", label: "Chicharrón", price: 18000, image: "/img/patacon-chicharron.jpg" },
+    { id: "carne", label: "Carne desmechada", price: 17500, image: "/img/patacon-carne.jpg" },
+    { id: "pollo", label: "Pollo desmechado", price: 17500, image: "/img/patacon-pollo.jpg" },
+    { id: "chicharron", label: "Chicharrón", price: 17500, image: "/img/patacon-chicharron.jpg" },
   ],
 }
 
@@ -666,6 +666,72 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ================= NUESTRA PROPUESTA ================= */}
+      <section id="propuesta" className="border-t border-paper/10 px-6 py-16 md:px-14">
+        <Reveal className="mx-auto mb-14 max-w-2xl text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-achiote">01 — Nuestra propuesta</p>
+          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Lo que sale del fogón</h2>
+        </Reveal>
+
+        {/* cinta horizontal continua — las tarjetas se desplazan solas hacia la izquierda */}
+        <Reveal>
+          <div className="relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-carbon to-transparent md:w-32" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-carbon to-transparent md:w-32" />
+            <motion.div
+              className="flex w-max gap-8"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
+            >
+              {[...proposal, ...proposal].map((item, i) => (
+                <a key={`${item.title}-${i}`} href="#menu" className="group block w-64 shrink-0 sm:w-72">
+                  <div className="relative aspect-[3/4] overflow-hidden transition-transform duration-500 ease-out group-hover:scale-[1.02]">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      sizes="(min-width: 640px) 18rem, 16rem"
+                      style={{
+                        objectPosition: item.position,
+                        ["--base-transform" as string]: item.baseTransform,
+                        ["--hover-transform" as string]: item.hoverTransform,
+                        transform: "var(--base-transform)",
+                      }}
+                      className="object-cover transition duration-700 group-hover:[transform:var(--hover-transform)]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-carbon/80 via-carbon/10 to-transparent" />
+                    {/* iluminación de borde: en desktop se ve al pasar el mouse, y
+                        además pulsa sola de forma periódica para que en celular
+                        (donde no hay hover) también se note la animación. */}
+                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_45px_10px_rgba(217,79,30,0.65)] transition duration-500 group-hover:opacity-100" />
+                    <motion.div
+                      className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[0_0_45px_10px_rgba(217,79,30,0.65)]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{
+                        duration: 2.4,
+                        repeat: Infinity,
+                        repeatDelay: 3.6,
+                        delay: (i % proposal.length) * 0.7,
+                        ease: "easeInOut",
+                      }}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 p-6 text-paper">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-tostado">{item.note}</p>
+                      <h3 className="mt-2 font-display text-2xl font-semibold uppercase tracking-tight">{item.title}</h3>
+                    </div>
+                  </div>
+                  <p className="mt-5 text-sm leading-relaxed text-paper/80">{item.description}</p>
+                  <span className="mt-3 inline-block font-mono text-[11px] uppercase tracking-[0.15em] text-achiote group-hover:underline">
+                    Ver en el menú →
+                  </span>
+                </a>
+              ))}
+            </motion.div>
+          </div>
+        </Reveal>
+      </section>
+
       {/* ================= ARMA TU PEDIDO (build configurator) ================= */}
       {/* Inspirado en el configurador "Build Your Brace" — pasos con anillo de
           selección animado (layoutId compartido que se desliza entre opciones),
@@ -674,7 +740,7 @@ export default function Home() {
         <Reveal className="mx-auto mb-16 max-w-3xl">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-achiote">Interactivo // Personalizado</p>
           <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">
-            <span className="text-tostado">// 01.</span> Pide en 3 pasos
+            <span className="text-tostado">// 02.</span> Pide en 3 pasos
           </h2>
         </Reveal>
 
@@ -748,7 +814,7 @@ export default function Home() {
                       <Image src={b.image} alt={b.label} fill sizes="80px" className="object-cover opacity-80" />
                     </div>
                     <span className="relative font-mono text-xs uppercase tracking-[0.1em] text-paper">{b.label}</span>
-                    <span className="relative font-mono text-[10px] uppercase tracking-[0.1em] text-paper/40">{b.note}</span>
+                    <span className="relative font-mono text-[10px] uppercase tracking-[0.1em] text-paper/60">{b.note}</span>
                   </button>
                 ))}
               </div>
@@ -820,7 +886,7 @@ export default function Home() {
                   Domicilio Chía · $5.000
                 </span>
                 <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
-                  Domicilio Cajicá · $12.000
+                  Domicilio Cajicá · $10.000
                 </span>
               </div>
             </Reveal>
@@ -853,12 +919,12 @@ export default function Home() {
               </div>
               {activeCartItem && (
                 <div className="space-y-2 border-t border-paper/15 p-5 font-mono text-xs uppercase tracking-[0.05em]">
-                  <p className="mb-1 text-[10px] tracking-[0.2em] text-paper/40">
+                  <p className="mb-1 text-[10px] tracking-[0.2em] text-paper/65">
                     Adiciones de <span className="text-tostado">{activeCartItem.fillingLabel}</span>
                   </p>
                   {itemExtras(activeCartItem).length ? (
                     itemExtras(activeCartItem).map((e) => (
-                      <div key={e.id} className="flex items-center justify-between gap-2 text-paper/50">
+                      <div key={e.id} className="flex items-center justify-between gap-2 text-paper/80">
                         <span>+ {e.label}</span>
                         <span className="flex shrink-0 items-center gap-2">
                           {formatCOP(e.price)}
@@ -866,7 +932,7 @@ export default function Home() {
                             type="button"
                             onClick={() => removeExtraFromActiveItem(e.id)}
                             aria-label={`Quitar ${e.label}`}
-                            className="text-paper/40 transition hover:text-achiote"
+                            className="text-paper/50 transition hover:text-achiote"
                           >
                             ×
                           </button>
@@ -874,14 +940,14 @@ export default function Home() {
                       </div>
                     ))
                   ) : (
-                    <p className="normal-case tracking-normal text-paper/35">Ninguna — toca una adición arriba para sumarla a este producto</p>
+                    <p className="normal-case tracking-normal text-paper/55">Ninguna — toca una adición arriba para sumarla a este producto</p>
                   )}
                 </div>
               )}
 
               {cart.length > 0 && (
                 <div className="max-h-[22vh] space-y-2 overflow-y-auto border-t border-paper/15 p-5 font-mono text-xs uppercase tracking-[0.05em]">
-                  <p className="mb-1 text-[10px] tracking-[0.2em] text-paper/40">Tu pedido — toca uno para editar sus adiciones</p>
+                  <p className="mb-1 text-[10px] tracking-[0.2em] text-paper/65">Tu pedido — toca uno para editar sus adiciones</p>
                   {cart.map((item) => (
                     <div
                       key={item.id}
@@ -896,7 +962,7 @@ export default function Home() {
                       >
                         <span className="block truncate">{item.baseLabel} · {item.fillingLabel}</span>
                         {itemExtras(item).length > 0 && (
-                          <span className="block truncate text-paper/45">+ {itemExtras(item).map((e) => e.label).join(", ")}</span>
+                          <span className="block truncate text-paper/65">+ {itemExtras(item).map((e) => e.label).join(", ")}</span>
                         )}
                       </button>
                       <span className="flex shrink-0 items-center gap-2">
@@ -917,7 +983,7 @@ export default function Home() {
 
               <div className="flex items-center justify-between border-t border-paper/15 p-5">
                 <div ref={totalRef}>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-paper/40">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-paper/65">
                     {cart.length ? "Total del pedido" : "Total"}
                   </p>
                   <p className="font-display text-3xl text-achiote">{formatCOP(grandTotal)}</p>
@@ -969,7 +1035,7 @@ export default function Home() {
       {/* ================= MENU ================= */}
       <section id="menu" className="border-t border-paper/10 bg-carbon px-6 py-16 text-paper md:px-14">
         <Reveal className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-tostado">02 — El menú</p>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-tostado">03 — El menú</p>
           <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Origen</h2>
         </Reveal>
 
@@ -991,7 +1057,7 @@ export default function Home() {
         </div>
 
         <Reveal className="mx-auto mt-16 max-w-2xl text-center">
-          <p className="font-mono text-xs text-paper/50">Pedido mínimo: 2 productos · Entrega en 25–40 min</p>
+          <p className="font-mono text-xs text-paper/70">Pedido mínimo: 2 productos · Entrega en 25–40 min</p>
           <div className="mt-8 flex flex-wrap justify-center gap-5">
             <BorderBeamButton
               asChild
@@ -1012,72 +1078,6 @@ export default function Home() {
         </Reveal>
       </section>
 
-      {/* ================= NUESTRA PROPUESTA ================= */}
-      <section id="propuesta" className="border-t border-paper/10 px-6 py-16 md:px-14">
-        <Reveal className="mx-auto mb-14 max-w-2xl text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-achiote">03 — Nuestra propuesta</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Lo que sale del fogón</h2>
-        </Reveal>
-
-        {/* cinta horizontal continua — las tarjetas se desplazan solas hacia la izquierda */}
-        <Reveal>
-          <div className="relative overflow-hidden">
-            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-carbon to-transparent md:w-32" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-carbon to-transparent md:w-32" />
-            <motion.div
-              className="flex w-max gap-8"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
-            >
-              {[...proposal, ...proposal].map((item, i) => (
-                <a key={`${item.title}-${i}`} href="#menu" className="group block w-64 shrink-0 sm:w-72">
-                  <div className="relative aspect-[3/4] overflow-hidden transition-transform duration-500 ease-out group-hover:scale-[1.02]">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      sizes="(min-width: 640px) 18rem, 16rem"
-                      style={{
-                        objectPosition: item.position,
-                        ["--base-transform" as string]: item.baseTransform,
-                        ["--hover-transform" as string]: item.hoverTransform,
-                        transform: "var(--base-transform)",
-                      }}
-                      className="object-cover transition duration-700 group-hover:[transform:var(--hover-transform)]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-carbon/80 via-carbon/10 to-transparent" />
-                    {/* iluminación de borde: en desktop se ve al pasar el mouse, y
-                        además pulsa sola de forma periódica para que en celular
-                        (donde no hay hover) también se note la animación. */}
-                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_45px_10px_rgba(217,79,30,0.65)] transition duration-500 group-hover:opacity-100" />
-                    <motion.div
-                      className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[0_0_45px_10px_rgba(217,79,30,0.65)]"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 1, 0] }}
-                      transition={{
-                        duration: 2.4,
-                        repeat: Infinity,
-                        repeatDelay: 3.6,
-                        delay: (i % proposal.length) * 0.7,
-                        ease: "easeInOut",
-                      }}
-                    />
-                    <div className="absolute inset-x-0 bottom-0 p-6 text-paper">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-tostado">{item.note}</p>
-                      <h3 className="mt-2 font-display text-2xl font-semibold uppercase tracking-tight">{item.title}</h3>
-                    </div>
-                  </div>
-                  <p className="mt-5 text-sm leading-relaxed text-paper/65">{item.description}</p>
-                  <span className="mt-3 inline-block font-mono text-[11px] uppercase tracking-[0.15em] text-achiote group-hover:underline">
-                    Ver en el menú →
-                  </span>
-                </a>
-              ))}
-            </motion.div>
-          </div>
-        </Reveal>
-      </section>
-
       {/* ================= COBERTURA ================= */}
       <section id="cobertura" className="relative flex min-h-[70vh] items-center overflow-hidden bg-carbon text-paper">
         <Image
@@ -1092,7 +1092,7 @@ export default function Home() {
         <Reveal className="relative mx-auto max-w-2xl px-6 py-14 text-center">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-tostado">04 — Cobertura</p>
           <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Chía y Cajicá</h2>
-          <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-paper/80">
+          <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-paper">
             Sin sede física — todo el esfuerzo va en el maíz y en que tu
             pedido llegue caliente. Entrega en 25 a 40 minutos, todos los días
             de 8:00 a.m. a 10:00 p.m.
@@ -1102,7 +1102,7 @@ export default function Home() {
               Domicilio Chía · $5.000
             </span>
             <span className="border border-tostado/50 px-4 py-2 text-tostado">
-              Domicilio Cajicá · $12.000
+              Domicilio Cajicá · $10.000
             </span>
           </div>
           <div className="mt-8 flex flex-col items-center gap-3">
@@ -1114,7 +1114,7 @@ export default function Home() {
             >
               Pedir por WhatsApp
             </a>
-            <a href="tel:+573143195593" className="font-mono text-xs uppercase tracking-[0.1em] text-paper/60 transition hover:text-tostado">
+            <a href="tel:+573143195593" className="font-mono text-xs uppercase tracking-[0.1em] text-paper/80 transition hover:text-tostado">
               📞 Llámanos: 314 319 5593
             </a>
           </div>
@@ -1134,7 +1134,7 @@ export default function Home() {
               <p className="font-display text-xl italic leading-snug text-paper/90">
                 “{t.quote}”
               </p>
-              <p className="mt-4 font-mono text-xs uppercase tracking-[0.15em] text-paper/45">{t.name}</p>
+              <p className="mt-4 font-mono text-xs uppercase tracking-[0.15em] text-paper/75">{t.name}</p>
               <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-achiote">{t.city}</p>
             </Reveal>
           ))}
@@ -1166,12 +1166,12 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="font-display text-2xl font-semibold uppercase tracking-tight text-paper">Origen</p>
-            <p className="mt-1 text-sm text-paper/50">Sabor con Origen</p>
+            <p className="mt-1 text-sm text-paper/70">Sabor con Origen</p>
           </div>
           <div className="grid grid-cols-2 gap-10 font-mono text-xs">
             <div>
               <p className="mb-3 uppercase tracking-[0.15em] text-achiote">Contacto</p>
-              <ul className="space-y-2 text-paper/70">
+              <ul className="space-y-2 text-paper/85">
                 <li><a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="hover:text-achiote">WhatsApp: +57 314 319 5593</a></li>
                 <li><a href="tel:+573143195593" className="hover:text-achiote">📞 Llámanos: 314 319 5593</a></li>
                 <li><a href={RAPPI} target="_blank" rel="noopener noreferrer" className="hover:text-achiote">Rappi</a></li>
@@ -1181,7 +1181,7 @@ export default function Home() {
             </div>
             <div>
               <p className="mb-3 uppercase tracking-[0.15em] text-achiote">Horario</p>
-              <ul className="space-y-2 text-paper/70">
+              <ul className="space-y-2 text-paper/85">
                 <li>Lunes a domingo</li>
                 <li>8:00 a.m. – 10:00 p.m.</li>
                 <li>Chía y Cajicá</li>
