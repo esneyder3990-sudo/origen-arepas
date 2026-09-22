@@ -53,7 +53,7 @@ const proposal = [
   },
   {
     title: "Patacones rellenos",
-    note: "3 opciones · $17.500",
+    note: "3 opciones · $18.000",
     description:
       "Plátano verde dorado y crocante, relleno generoso, queso y hogao casero.",
     image: "/img/patacon-carne.jpg",
@@ -107,9 +107,9 @@ const menuGroups: { category: string; items: MenuItem[] }[] = [
   {
     category: "Patacones rellenos",
     items: [
-      { name: "Carne desmechada", price: "$17.500" },
-      { name: "Pollo desmechado", price: "$17.500" },
-      { name: "Chicharrón", price: "$17.500" },
+      { name: "Carne desmechada", price: "$18.000" },
+      { name: "Pollo desmechado", price: "$18.000" },
+      { name: "Chicharrón", price: "$18.000" },
     ],
   },
   {
@@ -203,9 +203,9 @@ const fillingsByBase: Record<"arepa" | "patacon", Filling[]> = {
     { id: "huevos-tocineta", label: "Huevos con tocineta", price: 9000, image: "/img/Huevo.png" },
   ],
   patacon: [
-    { id: "carne", label: "Carne desmechada", price: 17500, image: "/img/patacon-carne.jpg" },
-    { id: "pollo", label: "Pollo desmechado", price: 17500, image: "/img/patacon-pollo.jpg" },
-    { id: "chicharron", label: "Chicharrón", price: 17500, image: "/img/patacon-chicharron.jpg" },
+    { id: "carne", label: "Carne desmechada", price: 18000, image: "/img/patacon-carne.jpg" },
+    { id: "pollo", label: "Pollo desmechado", price: 18000, image: "/img/patacon-pollo.jpg" },
+    { id: "chicharron", label: "Chicharrón", price: 18000, image: "/img/patacon-chicharron.jpg" },
   ],
 }
 
@@ -790,106 +790,147 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1fr]">
           {/* -------- pasos -------- */}
           <div>
-            <Reveal>
-              <p className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">Paso 1 — Elige tu base</p>
-              <div className="relative grid grid-cols-2 gap-5">
-                {builderBases.map((b) => (
-                  <button
-                    key={b.id}
-                    type="button"
-                    onClick={() => {
-                      setBase(b.id)
-                      setFillingId(fillingsByBase[b.id][0].id)
-                    }}
-                    className="group relative flex flex-col items-center gap-3 border border-paper/15 px-4 py-6 text-center transition hover:border-paper/40"
-                  >
-                    {base === b.id && (
-                      <motion.div
-                        layoutId="base-glow"
-                        className="absolute inset-0 border border-achiote shadow-[0_0_24px_rgba(217,79,30,0.35)]"
-                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                      />
-                    )}
-                    <div className="relative h-20 w-20 overflow-hidden rounded-full border border-paper/20">
-                      <Image src={b.image} alt={b.label} fill sizes="80px" className="object-cover opacity-80" />
-                    </div>
-                    <span className="relative font-mono text-xs uppercase tracking-[0.1em] text-paper">{b.label}</span>
-                    <span className="relative font-mono text-[10px] uppercase tracking-[0.1em] text-paper/60">{b.note}</span>
-                  </button>
-                ))}
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <p className="mt-10 mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">Paso 2 — Elige el relleno (toca para añadir)</p>
-              <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {fillings.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={(e) => addFilling(f, e)}
-                    className="group relative flex items-center gap-3 border border-paper/15 p-3 text-left transition hover:border-paper/40"
-                  >
-                    {fillingId === f.id && (
-                      <motion.div
-                        layoutId="filling-glow"
-                        className="absolute inset-0 border border-achiote shadow-[0_0_16px_rgba(217,79,30,0.3)]"
-                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                      />
-                    )}
-                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
-                      <Image src={f.image} alt={f.label} fill sizes="40px" className="object-cover" />
-                    </div>
-                    <div className="relative min-w-0">
-                      <p className="truncate font-mono text-[11px] uppercase tracking-[0.05em] text-paper">{f.label}</p>
-                      <p className="font-mono text-[10px] text-tostado">{formatCOP(f.price)}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <p className="mt-10 mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">
-                Paso 3 — Adiciones{" "}
-                {activeCartItem ? (
-                  <>
-                    para <span className="text-tostado">{activeCartItem.fillingLabel}</span>
-                  </>
-                ) : (
-                  "(agrega un producto primero)"
-                )}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {extrasList.map((e) => {
-                  const active = activeCartItem?.extraIds.includes(e.id) ?? false
-                  return (
-                    <motion.button
-                      key={e.id}
+            <p className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">Elige tu arepa o patacón</p>
+            {builderBases.map((b, bi) => {
+              const isOpen = base === b.id
+              const catFillings = fillingsByBase[b.id]
+              return (
+                <Reveal key={b.id} delay={bi * 0.1}>
+                  <div className="mb-4 border border-paper/15">
+                    <button
                       type="button"
-                      disabled={!activeCartItem}
-                      whileTap={{ scale: 0.94 }}
-                      onClick={(ev) => handleExtraClick(e, ev)}
-                      className={`border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.05em] transition disabled:cursor-not-allowed disabled:opacity-30 ${
-                        active
-                          ? "border-achiote bg-achiote/15 text-paper"
-                          : "border-paper/15 text-paper/60 hover:border-paper/40"
-                      }`}
+                      onClick={() => {
+                        if (!isOpen) {
+                          // Si ya hay un producto de esta categoría en el pedido,
+                          // lo reactivamos para seguir editando sus adiciones en
+                          // vez de mostrar "agrega un producto primero" de nuevo.
+                          const existing = [...cart].reverse().find((item) => item.baseLabel === b.label)
+                          if (existing) {
+                            selectCartItem(existing)
+                          } else {
+                            setBase(b.id)
+                            setFillingId(fillingsByBase[b.id][0].id)
+                          }
+                        }
+                      }}
+                      className="group relative flex w-full items-center gap-4 p-4 text-left transition hover:border-paper/40"
                     >
-                      {e.label} <span className="text-tostado">+{formatCOP(e.price)}</span>
-                    </motion.button>
-                  )
-                })}
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2 font-mono text-[11px] uppercase tracking-[0.15em]">
-                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
-                  Domicilio Chía · $5.000
-                </span>
-                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
-                  Domicilio Cajicá · $10.000
-                </span>
-              </div>
-            </Reveal>
+                      {isOpen && (
+                        <motion.div
+                          layoutId="base-glow"
+                          className="absolute inset-0 border border-achiote shadow-[0_0_24px_rgba(217,79,30,0.35)]"
+                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                        />
+                      )}
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-paper/20">
+                        <Image src={b.image} alt={b.label} fill sizes="64px" className="object-cover" />
+                      </div>
+                      <div className="relative min-w-0 flex-1">
+                        <p className="font-mono text-sm uppercase tracking-[0.1em] text-paper">{b.label}</p>
+                        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-paper/60">{b.note}</p>
+                      </div>
+                      <svg
+                        className={`relative h-5 w-5 shrink-0 text-tostado transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+                    {/* Mostrar/ocultar directo, sin animar la entrada/salida del panel:
+                        con dos acordeones independientes (arepa/patacón) compartiendo el
+                        layoutId del resplandor del encabezado, animar cada panel por
+                        separado terminaba desincronizándose — uno se quedaba abierto y
+                        el otro cerrado aunque el estado real ya había cambiado. */}
+                    {isOpen && (
+                        <div className="border-t border-paper/15">
+                          <div className="p-4">
+                            <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60">
+                              Elige el relleno (toca para añadir)
+                            </p>
+                            <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3">
+                              {catFillings.map((f) => (
+                                <button
+                                  key={f.id}
+                                  type="button"
+                                  onClick={(e) => addFilling(f, e)}
+                                  className="group relative flex items-center gap-3 border border-paper/15 p-3 text-left transition hover:border-paper/40"
+                                >
+                                  {fillingId === f.id && (
+                                    <motion.div
+                                      layoutId="filling-glow"
+                                      className="absolute inset-0 border border-achiote shadow-[0_0_16px_rgba(217,79,30,0.3)]"
+                                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                                    />
+                                  )}
+                                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                                    <Image src={f.image} alt={f.label} fill sizes="40px" className="object-cover" />
+                                  </div>
+                                  <div className="relative min-w-0">
+                                    <p className="truncate font-mono text-[11px] uppercase tracking-[0.05em] text-paper">{f.label}</p>
+                                    <p className="font-mono text-[10px] text-tostado">{formatCOP(f.price)}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+
+                            {/* Adiciones + bebidas de esta categoría — aparecen apenas
+                                agregas un relleno de arepa o de patacón, sin salir del
+                                acordeón que tienes abierto. Solo cuentan si el producto
+                                activo es en verdad de esta categoría (arepa vs. patacón) —
+                                si no, se verían las adiciones de otro producto sin serlo. */}
+                            {(() => {
+                              const itemHere = activeCartItem && activeCartItem.baseLabel === b.label ? activeCartItem : null
+                              return (
+                            <div className="mt-6 border-t border-paper/15 pt-4">
+                              <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-tostado">
+                                Adiciones y bebidas{" "}
+                                {itemHere ? (
+                                  <>
+                                    para <span className="text-tostado">{itemHere.fillingLabel}</span>
+                                  </>
+                                ) : (
+                                  "(agrega un producto primero)"
+                                )}
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {extrasList.map((e) => {
+                                  const active = itemHere?.extraIds.includes(e.id) ?? false
+                                  return (
+                                    <motion.button
+                                      key={e.id}
+                                      type="button"
+                                      disabled={!itemHere}
+                                      whileTap={{ scale: 0.94 }}
+                                      onClick={(ev) => handleExtraClick(e, ev)}
+                                      className={`border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.05em] transition disabled:cursor-not-allowed disabled:opacity-30 ${
+                                        active
+                                          ? "border-achiote bg-achiote/15 text-paper"
+                                          : "border-paper/15 text-paper/60 hover:border-paper/40"
+                                      }`}
+                                    >
+                                      {e.label} <span className="text-tostado">+{formatCOP(e.price)}</span>
+                                    </motion.button>
+                                  )
+                                })}
+                              </div>
+                              <div className="mt-4 flex flex-wrap gap-2 font-mono text-[11px] uppercase tracking-[0.15em]">
+                                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
+                                  Domicilio Chía · $5.000
+                                </span>
+                                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
+                                  Domicilio Cajicá · $10.000
+                                </span>
+                              </div>
+                            </div>
+                              )
+                            })()}
+                          </div>
+                        </div>
+                    )}
+                  </div>
+                </Reveal>
+              )
+            })}
           </div>
 
           {/* -------- vista previa en vivo -------- */}
