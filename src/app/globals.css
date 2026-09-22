@@ -58,48 +58,50 @@
 }
 
 :root {
-  /* ORIGEN — paleta estilo BRACE: negro cálido, crema, acento óxido/naranja */
+  /* ORIGEN — paleta dorado maíz: negro cálido, crema, acento mostaza/dorado
+     que evoca el maíz peto de la marca (en vez del verde/naranja genéricos
+     que usa la competencia de delivery). */
   --background: #0C0907;
   --foreground: #F2EAD8;
   --card: #17120E;
   --card-foreground: #F2EAD8;
   --popover: #17120E;
   --popover-foreground: #F2EAD8;
-  --primary: #4E7A3A;
-  --primary-foreground: #F2EAD8;
-  --secondary: #8FB35A;
+  --primary: #C99A3E;
+  --primary-foreground: #0C0907;
+  --secondary: #E0C17A;
   --secondary-foreground: #0C0907;
   --muted: #221B15;
   --muted-foreground: #B8ACA0;
-  --accent: #3E5233;
+  --accent: #8A6A2C;
   --accent-foreground: #F2EAD8;
   --destructive: oklch(0.577 0.245 27.325);
   --border: rgba(242, 234, 216, 0.12);
   --input: rgba(242, 234, 216, 0.12);
-  --ring: #4E7A3A;
-  --chart-1: #4E7A3A;
-  --chart-2: #8FB35A;
-  --chart-3: #3E5233;
+  --ring: #C99A3E;
+  --chart-1: #C99A3E;
+  --chart-2: #E0C17A;
+  --chart-3: #8A6A2C;
   --chart-4: #B8ACA0;
   --chart-5: #17120E;
   --radius: 0.4rem;
   --sidebar: #F2EAD8;
   --sidebar-foreground: #0C0907;
-  --sidebar-primary: #4E7A3A;
-  --sidebar-primary-foreground: #F2EAD8;
-  --sidebar-accent: #8FB35A;
+  --sidebar-primary: #C99A3E;
+  --sidebar-primary-foreground: #0C0907;
+  --sidebar-accent: #E0C17A;
   --sidebar-accent-foreground: #0C0907;
   --sidebar-border: rgba(12, 9, 7, 0.14);
-  --sidebar-ring: #4E7A3A;
+  --sidebar-ring: #C99A3E;
 
   /* tokens propios de marca, disponibles como utilidades vía @theme */
   --color-carbon: #0C0907;
   --color-masa: #F2E4C8;
   --color-paper: #F2EAD8;
-  --color-achiote: #4E7A3A;
-  --color-achiote-dark: #3B5E2C;
-  --color-tostado: #8FB35A;
-  --color-hoja: #3E5233;
+  --color-achiote: #C99A3E;
+  --color-achiote-dark: #A67B2E;
+  --color-tostado: #E0C17A;
+  --color-hoja: #8A6A2C;
   --color-humo: #B8ACA0;
 }
 

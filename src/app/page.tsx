@@ -548,7 +548,7 @@ export default function Home() {
             aria-label={soundOn ? "Silenciar" : "Activar sonido"}
             className={`absolute right-6 top-24 z-20 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition md:right-14 md:top-28 ${
               soundOn
-                ? "border border-achiote bg-achiote/20 text-tostado shadow-[0_0_16px_rgba(217,79,30,0.5)] hover:bg-achiote/30"
+                ? "border border-achiote bg-achiote/20 text-tostado shadow-[0_0_16px_rgba(201,154,62,0.5)] hover:bg-achiote/30"
                 : "border border-paper/30 bg-carbon/40 text-paper/80 hover:border-paper/60 hover:text-paper"
             }`}
           >
@@ -703,9 +703,9 @@ export default function Home() {
                     {/* iluminación de borde: en desktop se ve al pasar el mouse, y
                         además pulsa sola de forma periódica para que en celular
                         (donde no hay hover) también se note la animación. */}
-                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_45px_10px_rgba(217,79,30,0.65)] transition duration-500 group-hover:opacity-100" />
+                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_45px_10px_rgba(201,154,62,0.65)] transition duration-500 group-hover:opacity-100" />
                     <motion.div
-                      className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[0_0_45px_10px_rgba(217,79,30,0.65)]"
+                      className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[0_0_45px_10px_rgba(201,154,62,0.65)]"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0, 1, 0] }}
                       transition={{
@@ -818,7 +818,7 @@ export default function Home() {
                       {isOpen && (
                         <motion.div
                           layoutId="base-glow"
-                          className="absolute inset-0 border border-achiote shadow-[0_0_24px_rgba(217,79,30,0.35)]"
+                          className="absolute inset-0 border border-achiote shadow-[0_0_24px_rgba(201,154,62,0.35)]"
                           transition={{ type: "spring", stiffness: 350, damping: 30 }}
                         />
                       )}
@@ -858,7 +858,7 @@ export default function Home() {
                                   {fillingId === f.id && (
                                     <motion.div
                                       layoutId="filling-glow"
-                                      className="absolute inset-0 border border-achiote shadow-[0_0_16px_rgba(217,79,30,0.3)]"
+                                      className="absolute inset-0 border border-achiote shadow-[0_0_16px_rgba(201,154,62,0.3)]"
                                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                     />
                                   )}
@@ -1066,7 +1066,7 @@ export default function Home() {
               scale: { duration: 1.5, times: [0, 0.75, 1], ease: [0.4, 0, 0.3, 1] },
             }}
             style={{ position: "fixed", left: flyPrice.startX, top: flyPrice.startY }}
-            className="pointer-events-none z-[60] -ml-9 -mt-9 h-[72px] w-[72px] overflow-hidden rounded-full border-2 border-achiote shadow-[0_0_28px_rgba(217,79,30,0.7)]"
+            className="pointer-events-none z-[60] -ml-9 -mt-9 h-[72px] w-[72px] overflow-hidden rounded-full border-2 border-achiote shadow-[0_0_28px_rgba(201,154,62,0.7)]"
           >
             <Image src={flyPrice.image} alt="" fill sizes="72px" className="object-cover" />
           </motion.div>
@@ -1281,7 +1281,7 @@ export default function Home() {
             className="absolute inset-y-0 flex w-4 -translate-x-1/2 items-center justify-center"
             style={{ left: scrubLeft }}
           >
-            <span className="h-3 w-3 rotate-45 bg-achiote shadow-[0_0_10px_rgba(217,79,30,0.8)]" />
+            <span className="h-3 w-3 rotate-45 bg-achiote shadow-[0_0_10px_rgba(201,154,62,0.8)]" />
           </motion.div>
         </div>
         {/* lecturas tipo visor */}
