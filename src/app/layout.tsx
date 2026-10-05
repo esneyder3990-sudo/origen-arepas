@@ -16,9 +16,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 const SITE_URL = "https://arepasypataconesorigen.vercel.app";
-const TITLE = "Origen — Arepas y patacones artesanales | Chía y Cajicá";
+const TITLE = "Origen — Arepas y patacones artesanales | Chía, Cajicá y Cota";
 const DESCRIPTION =
-  "Arepas rellenas y patacones 100% artesanales, maíz peto cocido y molido a mano. Domicilio en Chía y Cajicá. Pide por WhatsApp.";
+  "Arepas rellenas y patacones 100% artesanales, maíz peto cocido y molido a mano. Domicilio en Chía, Cajicá y Cota. Pide por WhatsApp.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

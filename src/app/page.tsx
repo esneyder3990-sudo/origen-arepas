@@ -632,7 +632,7 @@ export default function Home() {
             className="relative mx-auto w-full max-w-6xl px-6 pb-20 text-center md:pb-24"
           >
             <p className="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-tostado">
-              Cocina en Chía · Domicilio en Chía y Cajicá
+              Cocina en Chía · Domicilio en Chía, Cajicá y Cota
             </p>
             {/* Titular: la marca "Origen" ya está en el header/logo, así que
                 acá solo va la línea "fantasma" en contorno — más grande y
@@ -952,6 +952,9 @@ export default function Home() {
                                 <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
                                   Domicilio Cajicá · $10.000
                                 </span>
+                                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
+                                  Domicilio Cota · $10.000
+                                </span>
                               </div>
                             </div>
                               )
@@ -1052,6 +1055,12 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+              )}
+
+              {cart.length === 1 && (
+                <p className="border-t border-paper/15 bg-achiote/10 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.1em] text-tostado">
+                  Pedido mínimo para domicilio: 2 productos — agrega uno más
+                </p>
               )}
 
               <div className="flex items-center justify-between border-t border-paper/15 p-5">
@@ -1155,7 +1164,7 @@ export default function Home() {
       <section id="cobertura" className="relative flex min-h-[70vh] items-center overflow-hidden bg-carbon text-paper">
         <Image
           src="/img/Pollo.png"
-          alt="Domicilio Origen en Chía y Cajicá"
+          alt="Domicilio Origen en Chía, Cajicá y Cota"
           fill
           sizes="100vw"
           style={{ objectPosition: "50% 42%" }}
@@ -1164,11 +1173,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-carbon/70" />
         <Reveal className="relative mx-auto max-w-2xl px-6 py-14 text-center">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-tostado">04 — Cobertura</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Chía y Cajicá</h2>
+          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Chía, Cajicá y Cota</h2>
           <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-paper">
             Sin sede física — todo el esfuerzo va en el maíz y en que tu
-            pedido llegue caliente. Entrega en 25 a 40 minutos, todos los días
-            de 8:00 a.m. a 10:00 p.m.
+            pedido llegue caliente. Pedido mínimo para domicilio: 2 productos. Entrega en 25 a 40
+            minutos, todos los días de 8:00 a.m. a 10:00 p.m.
           </p>
           <div className="mx-auto mt-6 flex flex-wrap justify-center gap-3 font-mono text-xs uppercase tracking-[0.15em]">
             <span className="border border-tostado/50 px-4 py-2 text-tostado">
@@ -1176,6 +1185,9 @@ export default function Home() {
             </span>
             <span className="border border-tostado/50 px-4 py-2 text-tostado">
               Domicilio Cajicá · $10.000
+            </span>
+            <span className="border border-tostado/50 px-4 py-2 text-tostado">
+              Domicilio Cota · $10.000
             </span>
           </div>
           <div className="mt-8 flex flex-col items-center gap-3">
@@ -1257,7 +1269,7 @@ export default function Home() {
               <ul className="space-y-2 text-paper/85">
                 <li>Lunes a domingo</li>
                 <li>8:00 a.m. – 10:00 p.m.</li>
-                <li>Chía y Cajicá</li>
+                <li>Chía, Cajicá y Cota</li>
               </ul>
             </div>
           </div>
