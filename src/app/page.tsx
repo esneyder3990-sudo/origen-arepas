@@ -90,7 +90,22 @@ interface MenuItem {
   price: string
 }
 
-const menuGroups: { category: string; items: MenuItem[] }[] = [
+// Precios de los productos nuevos. Los que están en 0 todavía no tienen precio
+// definido y se ocultan solos de la página hasta que se les ponga uno.
+const NEW_PRICES = {
+  arepaPolloChampinon: 18000,
+  arepaRanchera: 19000,
+  arepaSalami: 13500,
+  arepaHuevosRancheros: 15000,
+  pataconRanchero: 20000,
+  pataconPolloChampinon: 19000,
+  empanadasQueso: 0,
+  papaFrancesa: 6000,
+}
+const copLabel = (n: number) => `$${n.toLocaleString("es-CO")}`
+const PLACEHOLDER_IMG = "/img/hero-poster.jpg"
+
+const menuGroupsAll: { category: string; items: MenuItem[] }[] = [
   {
     category: "Arepas rellenas",
     items: [
@@ -102,6 +117,10 @@ const menuGroups: { category: string; items: MenuItem[] }[] = [
       { name: "Huevos revueltos", price: "$8.000" },
       { name: "Huevos pericos", price: "$8.500" },
       { name: "Huevos con tocineta", price: "$9.000" },
+      { name: "Pollo y champiñón", price: copLabel(NEW_PRICES.arepaPolloChampinon) },
+      { name: "Ranchera (chorizo, maíz, carne)", price: copLabel(NEW_PRICES.arepaRanchera) },
+      { name: "Salami", price: copLabel(NEW_PRICES.arepaSalami) },
+      { name: "Huevos rancheros", price: copLabel(NEW_PRICES.arepaHuevosRancheros) },
     ],
   },
   {
@@ -110,6 +129,8 @@ const menuGroups: { category: string; items: MenuItem[] }[] = [
       { name: "Carne desmechada", price: "$18.000" },
       { name: "Pollo desmechado", price: "$18.000" },
       { name: "Chicharrón", price: "$18.000" },
+      { name: "Pollo y champiñón", price: copLabel(NEW_PRICES.pataconPolloChampinon) },
+      { name: "Ranchero", price: copLabel(NEW_PRICES.pataconRanchero) },
     ],
   },
   {
@@ -121,6 +142,7 @@ const menuGroups: { category: string; items: MenuItem[] }[] = [
       { name: "Chicharrón", price: "$5.000" },
       { name: "Jamón ahumado", price: "$4.000" },
       { name: "Piña", price: "$4.000" },
+      { name: "Porción de papa francesa", price: copLabel(NEW_PRICES.papaFrancesa) },
     ],
   },
   {
@@ -130,12 +152,22 @@ const menuGroups: { category: string; items: MenuItem[] }[] = [
     ],
   },
   {
+    category: "Entradas",
+    items: [
+      { name: "Empanadas pequeñas de queso", price: copLabel(NEW_PRICES.empanadasQueso) },
+    ],
+  },
+  {
     category: "Bebidas",
     items: [
       { name: "Gaseosa Coca-Cola 400 ml", price: "$4.000" },
     ],
   },
 ]
+
+const menuGroups = menuGroupsAll
+  .map((g) => ({ ...g, items: g.items.filter((it) => it.price !== "$0") }))
+  .filter((g) => g.items.length > 0)
 
 const testimonials = [
   {
@@ -201,15 +233,21 @@ const fillingsByBase: Record<"arepa" | "patacon", Filling[]> = {
     { id: "huevos", label: "Huevos revueltos", price: 8000, image: "/img/Huevo.png" },
     { id: "huevos-pericos", label: "Huevos pericos", price: 8500, image: "/img/Huevo.png" },
     { id: "huevos-tocineta", label: "Huevos con tocineta", price: 9000, image: "/img/Huevo.png" },
+    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.arepaPolloChampinon, image: PLACEHOLDER_IMG },
+    { id: "ranchera", label: "Ranchera (chorizo, maíz, carne)", price: NEW_PRICES.arepaRanchera, image: PLACEHOLDER_IMG },
+    { id: "salami", label: "Salami", price: NEW_PRICES.arepaSalami, image: PLACEHOLDER_IMG },
+    { id: "huevos-rancheros", label: "Huevos rancheros", price: NEW_PRICES.arepaHuevosRancheros, image: PLACEHOLDER_IMG },
   ],
   patacon: [
     { id: "carne", label: "Carne desmechada", price: 18000, image: "/img/patacon-carne.jpg" },
     { id: "pollo", label: "Pollo desmechado", price: 18000, image: "/img/patacon-pollo.jpg" },
     { id: "chicharron", label: "Chicharrón", price: 18000, image: "/img/patacon-chicharron.jpg" },
+    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.pataconPolloChampinon, image: PLACEHOLDER_IMG },
+    { id: "ranchero", label: "Ranchero", price: NEW_PRICES.pataconRanchero, image: PLACEHOLDER_IMG },
   ],
 }
 
-const extrasList = [
+const extrasList = ([
   { id: "platano", label: "Plátano maduro", price: 4000 },
   { id: "codorniz", label: "Huevos de codorniz", price: 4000 },
   { id: "queso", label: "Queso extra", price: 2000 },
@@ -218,8 +256,10 @@ const extrasList = [
   { id: "chicharron-extra", label: "Chicharrón adicional", price: 5000 },
   { id: "jamon", label: "Jamón ahumado", price: 4000 },
   { id: "pina", label: "Piña", price: 4000 },
+  { id: "empanadas-queso", label: "Empanadas pequeñas de queso", price: NEW_PRICES.empanadasQueso },
+  { id: "papa-francesa", label: "Porción de papa francesa", price: NEW_PRICES.papaFrancesa },
   { id: "coca-cola", label: "Gaseosa Coca-Cola 400 ml", price: 4000 },
-]
+]).filter((e) => e.price > 0)
 
 const formatCOP = (n: number) => `$${n.toLocaleString("es-CO")}`
 
