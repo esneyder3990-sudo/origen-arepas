@@ -99,7 +99,6 @@ const NEW_PRICES = {
   arepaHuevosRancheros: 15000,
   pataconRanchero: 20000,
   pataconPolloChampinon: 19000,
-  empanadasQueso: 0,
   papaFrancesa: 6000,
 }
 const copLabel = (n: number) => `$${n.toLocaleString("es-CO")}`
@@ -149,12 +148,6 @@ const menuGroupsAll: { category: string; items: MenuItem[] }[] = [
     category: "Para llevar",
     items: [
       { name: "Arepas preasadas x5", price: "$18.000" },
-    ],
-  },
-  {
-    category: "Entradas",
-    items: [
-      { name: "Empanadas pequeñas de queso", price: copLabel(NEW_PRICES.empanadasQueso) },
     ],
   },
   {
@@ -256,7 +249,6 @@ const extrasList = ([
   { id: "chicharron-extra", label: "Chicharrón adicional", price: 5000 },
   { id: "jamon", label: "Jamón ahumado", price: 4000 },
   { id: "pina", label: "Piña", price: 4000 },
-  { id: "empanadas-queso", label: "Empanadas pequeñas de queso", price: NEW_PRICES.empanadasQueso },
   { id: "papa-francesa", label: "Porción de papa francesa", price: NEW_PRICES.papaFrancesa },
   { id: "coca-cola", label: "Gaseosa Coca-Cola 400 ml", price: 4000 },
 ]).filter((e) => e.price > 0)
