@@ -43,7 +43,7 @@ function Reveal({
 const proposal = [
   {
     title: "Arepas rellenas",
-    note: "8 opciones · desde $8.000",
+    note: "12 opciones · desde $8.000",
     description:
       "Maíz peto cocido y molido a mano, tostado en el fogón y relleno al momento.",
     image: "/img/Carne.png",
@@ -53,11 +53,47 @@ const proposal = [
   },
   {
     title: "Patacones rellenos",
-    note: "3 opciones · $18.000",
+    note: "5 opciones · desde $18.000",
     description:
       "Plátano verde dorado y crocante, relleno generoso, queso y hogao casero.",
     image: "/img/patacon-carne.jpg",
     position: "62% 50%",
+    baseTransform: "scale(1)",
+    hoverTransform: "scale(1.06)",
+  },
+  {
+    title: "Arepa ranchera",
+    note: "Nuevo · $19.000",
+    description: "Arepa de maíz peto rellena de chorizo, maíz tierno y carne.",
+    image: "/img/arepa-ranchera.jpg",
+    position: "50% 50%",
+    baseTransform: "scale(1)",
+    hoverTransform: "scale(1.06)",
+  },
+  {
+    title: "Arepa pollo y champiñón",
+    note: "Nuevo · $18.000",
+    description: "Pollo desmechado con champiñones en salsa cremosa, dentro de una arepa recién asada.",
+    image: "/img/arepa-pollo-champinon.jpg",
+    position: "50% 50%",
+    baseTransform: "scale(1)",
+    hoverTransform: "scale(1.06)",
+  },
+  {
+    title: "Patacón ranchero",
+    note: "Nuevo · $20.000",
+    description: "Patacón crocante relleno de chorizo, maíz tierno y carne.",
+    image: "/img/patacon-ranchero.jpg",
+    position: "50% 50%",
+    baseTransform: "scale(1)",
+    hoverTransform: "scale(1.06)",
+  },
+  {
+    title: "Patacón pollo y champiñón",
+    note: "Nuevo · $19.000",
+    description: "Patacón crocante relleno de pollo desmechado con champiñones en salsa cremosa.",
+    image: "/img/patacon-pollo-champinon.jpg",
+    position: "50% 50%",
     baseTransform: "scale(1)",
     hoverTransform: "scale(1.06)",
   },
@@ -255,10 +291,14 @@ const extrasList = ([
 
 const formatCOP = (n: number) => `$${n.toLocaleString("es-CO")}`
 
-const featuredProducts: { label: string; base: "arepa" | "patacon"; fillingId: string }[] = [
-  { label: "Arepa de carne desmechada", base: "arepa", fillingId: "carne" },
-  { label: "Patacón con pollo desmechado", base: "patacon", fillingId: "pollo" },
-  { label: "Arepa hawaiana", base: "arepa", fillingId: "hawaiana" },
+const featuredProducts: { label: string; base: "arepa" | "patacon"; fillingId: string; badge: string }[] = [
+  { label: "Arepa de carne desmechada", base: "arepa", fillingId: "carne", badge: "Los más pedidos ⭐" },
+  { label: "Patacón con pollo desmechado", base: "patacon", fillingId: "pollo", badge: "Los más pedidos ⭐" },
+  { label: "Arepa hawaiana", base: "arepa", fillingId: "hawaiana", badge: "Los más pedidos ⭐" },
+  { label: "Arepa ranchera", base: "arepa", fillingId: "ranchera", badge: "Nuevo" },
+  { label: "Arepa pollo y champiñón", base: "arepa", fillingId: "pollo-champinon", badge: "Nuevo" },
+  { label: "Patacón ranchero", base: "patacon", fillingId: "ranchero", badge: "Nuevo" },
+  { label: "Patacón pollo y champiñón", base: "patacon", fillingId: "pollo-champinon", badge: "Nuevo" },
 ]
 
 export default function Home() {
@@ -781,13 +821,13 @@ export default function Home() {
             producto en vez de quedar sueltas en un pedido aparte -------- */}
         <Reveal className="mx-auto mb-16 max-w-6xl">
           <p className="mb-6 font-display text-2xl italic text-paper/90">¿Ya sabes qué se te antoja?</p>
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredProducts.map((p) => {
               const filling = fillingsByBase[p.base].find((f) => f.id === p.fillingId)!
               return (
                 <div key={p.label} className="group relative border border-paper/15">
                   <span className="absolute left-3 top-3 z-10 border border-achiote bg-carbon/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.15em] text-tostado">
-                    Los más pedidos ⭐
+                    {p.badge}
                   </span>
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
