@@ -226,8 +226,8 @@ const fillingsByBase: Record<"arepa" | "patacon", Filling[]> = {
     { id: "huevos", label: "Huevos revueltos", price: 8000, image: "/img/Huevo.png" },
     { id: "huevos-pericos", label: "Huevos pericos", price: 8500, image: "/img/Huevo.png" },
     { id: "huevos-tocineta", label: "Huevos con tocineta", price: 9000, image: "/img/Huevo.png" },
-    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.arepaPolloChampinon, image: PLACEHOLDER_IMG },
-    { id: "ranchera", label: "Ranchera (chorizo, maíz, carne)", price: NEW_PRICES.arepaRanchera, image: PLACEHOLDER_IMG },
+    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.arepaPolloChampinon, image: "/img/arepa-pollo-champinon.jpg" },
+    { id: "ranchera", label: "Ranchera (chorizo, maíz, carne)", price: NEW_PRICES.arepaRanchera, image: "/img/arepa-ranchera.jpg" },
     { id: "salami", label: "Salami", price: NEW_PRICES.arepaSalami, image: PLACEHOLDER_IMG },
     { id: "huevos-rancheros", label: "Huevos rancheros", price: NEW_PRICES.arepaHuevosRancheros, image: PLACEHOLDER_IMG },
   ],
@@ -235,8 +235,8 @@ const fillingsByBase: Record<"arepa" | "patacon", Filling[]> = {
     { id: "carne", label: "Carne desmechada", price: 18000, image: "/img/patacon-carne.jpg" },
     { id: "pollo", label: "Pollo desmechado", price: 18000, image: "/img/patacon-pollo.jpg" },
     { id: "chicharron", label: "Chicharrón", price: 18000, image: "/img/patacon-chicharron.jpg" },
-    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.pataconPolloChampinon, image: PLACEHOLDER_IMG },
-    { id: "ranchero", label: "Ranchero", price: NEW_PRICES.pataconRanchero, image: PLACEHOLDER_IMG },
+    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.pataconPolloChampinon, image: "/img/patacon-pollo-champinon.jpg" },
+    { id: "ranchero", label: "Ranchero", price: NEW_PRICES.pataconRanchero, image: "/img/patacon-ranchero.jpg" },
   ],
 }
 
