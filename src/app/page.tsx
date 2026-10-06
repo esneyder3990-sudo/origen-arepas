@@ -315,15 +315,6 @@ const extrasList = ([
 
 const formatCOP = (n: number) => `$${n.toLocaleString("es-CO")}`
 
-const featuredProducts: { label: string; base: "arepa" | "patacon"; fillingId: string; badge: string }[] = [
-  { label: "Arepa de carne desmechada", base: "arepa", fillingId: "carne", badge: "Los más pedidos ⭐" },
-  { label: "Patacón con pollo desmechado", base: "patacon", fillingId: "pollo", badge: "Los más pedidos ⭐" },
-  { label: "Arepa hawaiana", base: "arepa", fillingId: "hawaiana", badge: "Los más pedidos ⭐" },
-  { label: "Arepa ranchera", base: "arepa", fillingId: "ranchera", badge: "Nuevo" },
-  { label: "Arepa pollo y champiñón", base: "arepa", fillingId: "pollo-champinon", badge: "Nuevo" },
-  { label: "Patacón ranchero", base: "patacon", fillingId: "ranchero", badge: "Nuevo" },
-  { label: "Patacón pollo y champiñón", base: "patacon", fillingId: "pollo-champinon", badge: "Nuevo" },
-]
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -843,49 +834,6 @@ export default function Home() {
           <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">
             <span className="text-tostado">// 02.</span> Pide en 3 pasos
           </h2>
-        </Reveal>
-
-        {/* -------- ¿ya sabes qué se te antoja? — atajo que suma directo al pedido
-            del builder, para que las adiciones del Paso 3 se apliquen al mismo
-            producto en vez de quedar sueltas en un pedido aparte -------- */}
-        <Reveal className="mx-auto mb-16 max-w-6xl">
-          <p className="mb-6 font-display text-2xl italic text-paper/90">¿Ya sabes qué se te antoja?</p>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((p) => {
-              const filling = fillingsByBase[p.base].find((f) => f.id === p.fillingId)!
-              return (
-                <div key={p.label} className="group relative border border-paper/15">
-                  <span className="absolute left-3 top-3 z-10 border border-achiote bg-carbon/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.15em] text-tostado">
-                    {p.badge}
-                  </span>
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={filling.image}
-                      alt={p.label}
-                      fill
-                      sizes="(min-width: 640px) 33vw, 100vw"
-                      className="object-cover transition duration-500 group-hover:scale-[1.04]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-carbon/85 via-transparent to-transparent" />
-                  </div>
-                  <div className="flex items-center justify-between gap-3 p-4">
-                    <div className="min-w-0">
-                      <p className="break-words font-mono text-[11px] uppercase leading-tight tracking-[0.05em] text-paper">{p.label}</p>
-                      <p className="font-mono text-xs text-tostado">{formatCOP(filling.price)}</p>
-                    </div>
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.94 }}
-                      onClick={(e) => addFillingToBase(p.base, filling, e)}
-                      className="shrink-0 border border-achiote px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-paper transition hover:bg-achiote"
-                    >
-                      Agregar
-                    </motion.button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
         </Reveal>
 
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1fr]">
