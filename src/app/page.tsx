@@ -918,13 +918,13 @@ export default function Home() {
                             <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60">
                               Elige el relleno (toca para añadir)
                             </p>
-                            <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
                               {catFillings.map((f) => (
                                 <button
                                   key={f.id}
                                   type="button"
                                   onClick={(e) => addFilling(f, e)}
-                                  className="group relative flex items-center gap-3 border border-paper/15 p-3 text-left transition hover:border-paper/40"
+                                  className="group relative flex min-h-[8.25rem] flex-col items-center justify-start gap-2 border border-paper/15 px-2 py-3 text-center transition hover:border-paper/40"
                                 >
                                   {fillingId === f.id && (
                                     <motion.div
@@ -933,12 +933,12 @@ export default function Home() {
                                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                     />
                                   )}
-                                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
-                                    <Image src={f.image} alt={f.label} fill sizes="40px" className="object-cover" />
+                                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-paper/15">
+                                    <Image src={f.image} alt={f.label} fill sizes="56px" className="object-cover" />
                                   </div>
-                                  <div className="relative min-w-0">
-                                    <p className="break-words font-mono text-[11px] uppercase leading-tight tracking-[0.05em] text-paper">{f.label}</p>
-                                    <p className="font-mono text-[10px] text-tostado">{formatCOP(f.price)}</p>
+                                  <div className="relative w-full">
+                                    <p className="text-sm font-medium leading-snug text-paper [overflow-wrap:normal] [word-break:normal]">{f.label}</p>
+                                    <p className="mt-1 font-mono text-xs text-tostado">{formatCOP(f.price)}</p>
                                   </div>
                                 </button>
                               ))}
