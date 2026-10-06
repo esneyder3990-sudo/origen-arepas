@@ -532,6 +532,25 @@ export default function Home() {
           el transform inline que deja motion crea un nuevo stacking context
           y corta el blending contra el fondo real de la sección. */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-paper/10 bg-carbon/80 backdrop-blur-md">
+        {/* Franja de anuncio: nuevos productos en camino */}
+        <a
+          href={WHATSAPP_MSG("Hola, quiero que me avisen cuando lleguen los nuevos productos de Origen")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center justify-center gap-2 bg-achiote px-4 py-1.5 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-carbon transition hover:brightness-110 sm:text-[11px]"
+        >
+          <motion.span
+            aria-hidden="true"
+            className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-carbon"
+            animate={{ opacity: [1, 0.25, 1] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <span>
+            Muy pronto: nuevos sabores de Colombia
+            <span className="hidden sm:inline"> — escríbenos y sé el primero en probarlos</span>
+          </span>
+          <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+        </a>
         <div className="flex items-center justify-between px-6 py-3 text-paper md:px-14">
           <a href="#top" className="flex items-center gap-3">
             <Image src="/img/logo-origen.png" alt="Origen" width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
