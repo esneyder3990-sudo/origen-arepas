@@ -98,6 +98,15 @@ const proposal = [
     hoverTransform: "scale(1.06)",
   },
   {
+    title: "Aborrajados",
+    note: "Entrada · 2 por $10.000",
+    description: "Plátano maduro relleno de queso y bocadillo, apanado y frito hasta quedar dorado.",
+    image: "/img/aborrajados.jpg",
+    position: "50% 50%",
+    baseTransform: "scale(1)",
+    hoverTransform: "scale(1.06)",
+  },
+  {
     title: "Arepas preasadas x5",
     note: "Para llevar · $18.000",
     description:
@@ -111,9 +120,9 @@ const proposal = [
   },
   {
     title: "Adiciones",
-    note: "6 opciones · desde $2.000",
+    note: "11 opciones · desde $2.000",
     description:
-      "Plátano maduro, queso, chicharrón, jamón, piña — para armar tu combinación.",
+      "Plátano maduro, queso, chicharrón, champiñones, chorizo, salchicha, maíz — para armar tu combinación.",
     image: "/img/Hawaiana.png",
     position: "50% 42%",
     baseTransform: "scale(1)",
@@ -177,7 +186,17 @@ const menuGroupsAll: { category: string; items: MenuItem[] }[] = [
       { name: "Chicharrón", price: "$5.000" },
       { name: "Jamón ahumado", price: "$4.000" },
       { name: "Piña", price: "$4.000" },
+      { name: "Champiñones", price: "$5.000" },
+      { name: "Chorizo", price: "$5.000" },
+      { name: "Salchicha", price: "$5.000" },
+      { name: "Maíz", price: "$3.000" },
       { name: "Porción de papa francesa", price: copLabel(NEW_PRICES.papaFrancesa) },
+    ],
+  },
+  {
+    category: "Entradas",
+    items: [
+      { name: "Aborrajados x2", price: "$10.000" },
     ],
   },
   {
@@ -285,6 +304,11 @@ const extrasList = ([
   { id: "chicharron-extra", label: "Chicharrón adicional", price: 5000 },
   { id: "jamon", label: "Jamón ahumado", price: 4000 },
   { id: "pina", label: "Piña", price: 4000 },
+  { id: "champinones", label: "Champiñones", price: 5000 },
+  { id: "chorizo", label: "Chorizo", price: 5000 },
+  { id: "salchicha", label: "Salchicha", price: 5000 },
+  { id: "maiz", label: "Maíz", price: 3000 },
+  { id: "aborrajados", label: "Aborrajados x2 (entrada)", price: 10000 },
   { id: "papa-francesa", label: "Porción de papa francesa", price: NEW_PRICES.papaFrancesa },
   { id: "coca-cola", label: "Gaseosa Coca-Cola 400 ml", price: 4000 },
 ]).filter((e) => e.price > 0)
@@ -963,7 +987,7 @@ export default function Home() {
                               return (
                             <div className="mt-6 border-t border-paper/15 pt-4">
                               <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-tostado">
-                                Adiciones y bebidas{" "}
+                                Adiciones, entradas y bebidas{" "}
                                 {itemHere ? (
                                   <>
                                     para <span className="text-tostado">{itemHere.fillingLabel}</span>
