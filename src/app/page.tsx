@@ -367,6 +367,9 @@ export default function Home() {
   const ss = String(elapsed % 60).padStart(2, "0")
 
   const [base, setBase] = useState<"arepa" | "patacon">("arepa")
+  // Qué acordeón (arepas / patacones) está desplegado. Arranca cerrado: solo se
+  // ven los dos títulos y los sabores aparecen al tocar uno de ellos.
+  const [openBase, setOpenBase] = useState<"arepa" | "patacon" | null>(null)
   const [fillingId, setFillingId] = useState(fillingsByBase.arepa[0].id)
   const [cart, setCart] = useState<
     { id: string; baseLabel: string; fillingLabel: string; fillingPrice: number; fillingImage: string; extraIds: string[] }[]
@@ -458,6 +461,7 @@ export default function Home() {
     setCart((prev) => [...prev, newItem])
     setActiveCartItemId(newItem.id)
     setBase(b)
+    setOpenBase(b)
     setFillingId(f.id)
     triggerFly(f.image, e.currentTarget)
   }
@@ -472,6 +476,7 @@ export default function Home() {
     setActiveCartItemId(item.id)
     const itemBase: "arepa" | "patacon" = item.baseLabel === "Patacón relleno" ? "patacon" : "arepa"
     setBase(itemBase)
+    setOpenBase(itemBase)
     const match = fillingsByBase[itemBase].find((f) => f.label === item.fillingLabel)
     if (match) setFillingId(match.id)
   }
@@ -841,7 +846,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center justify-between gap-3 p-4">
                     <div className="min-w-0">
-                      <p className="truncate font-mono text-[11px] uppercase tracking-[0.05em] text-paper">{p.label}</p>
+                      <p className="break-words font-mono text-[11px] uppercase leading-tight tracking-[0.05em] text-paper">{p.label}</p>
                       <p className="font-mono text-xs text-tostado">{formatCOP(filling.price)}</p>
                     </div>
                     <motion.button
@@ -864,7 +869,7 @@ export default function Home() {
           <div>
             <p className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">Elige tu arepa o patacón</p>
             {builderBases.map((b, bi) => {
-              const isOpen = base === b.id
+              const isOpen = openBase === b.id
               const catFillings = fillingsByBase[b.id]
               return (
                 <Reveal key={b.id} delay={bi * 0.1}>
@@ -872,7 +877,10 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (!isOpen) {
+                        if (isOpen) {
+                          setOpenBase(null)
+                        } else {
+                          setOpenBase(b.id)
                           // Si ya hay un producto de esta categoría en el pedido,
                           // lo reactivamos para seguir editando sus adiciones en
                           // vez de mostrar "agrega un producto primero" de nuevo.
@@ -938,7 +946,7 @@ export default function Home() {
                                     <Image src={f.image} alt={f.label} fill sizes="40px" className="object-cover" />
                                   </div>
                                   <div className="relative min-w-0">
-                                    <p className="truncate font-mono text-[11px] uppercase tracking-[0.05em] text-paper">{f.label}</p>
+                                    <p className="break-words font-mono text-[11px] uppercase leading-tight tracking-[0.05em] text-paper">{f.label}</p>
                                     <p className="font-mono text-[10px] text-tostado">{formatCOP(f.price)}</p>
                                   </div>
                                 </button>
