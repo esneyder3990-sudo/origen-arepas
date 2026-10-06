@@ -123,8 +123,8 @@ const proposal = [
     note: "11 opciones · desde $2.000",
     description:
       "Plátano maduro, queso, chicharrón, champiñones, chorizo, salchicha, maíz — para armar tu combinación.",
-    image: "/img/Hawaiana.png",
-    position: "50% 42%",
+    image: "/img/adiciones-maduro.jpg",
+    position: "50% 50%",
     baseTransform: "scale(1)",
     hoverTransform: "scale(1.06)",
   },
