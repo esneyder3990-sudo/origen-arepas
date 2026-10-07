@@ -392,6 +392,10 @@ export default function Home() {
   // A qué producto del pedido se le suman las adiciones que toques en el Paso 3
   // — sin esto, no había forma de saber a cuál arepa/patacón iba cada adición.
   const [activeCartItemId, setActiveCartItemId] = useState<string | null>(null)
+  // Aviso de domicilio: aparece unos segundos la primera vez que el cliente
+  // agrega un producto, para que sepa el costo antes de pedir por WhatsApp.
+  const [deliveryNotice, setDeliveryNotice] = useState(false)
+  const deliveryNoticeShown = useRef(false)
   const [flyPrice, setFlyPrice] = useState<{
     id: number
     image: string
@@ -518,6 +522,15 @@ export default function Home() {
   // Con un solo producto el precio ya queda claro en esa línea — agregar un
   // "Total:" aparte solo lo repite. El total en su propia línea únicamente
   // aporta cuando hay más de un producto que sumar.
+  useEffect(() => {
+    if (cart.length > 0 && !deliveryNoticeShown.current) {
+      deliveryNoticeShown.current = true
+      setDeliveryNotice(true)
+      const t = setTimeout(() => setDeliveryNotice(false), 6000)
+      return () => clearTimeout(t)
+    }
+  }, [cart.length])
+
   const orderMsg = cart.length === 0
     ? `Hola, quiero pedir: 1 ${baseLabel} de ${selectedFilling.label}. Total: *${formatCOP(selectedFilling.price)}*`
     : cart.length === 1
@@ -1102,10 +1115,21 @@ export default function Home() {
                 </p>
               )}
 
+              {cart.length > 0 && (
+                <div className="border-t border-paper/15 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.1em]">
+                  <p className="mb-2 text-[10px] tracking-[0.2em] text-paper/65">Domicilio — se suma al total</p>
+                  <div className="flex flex-wrap gap-2 text-tostado">
+                    <span className="border border-tostado/40 px-2.5 py-1">Chía · $5.000</span>
+                    <span className="border border-tostado/40 px-2.5 py-1">Cajicá · $10.000</span>
+                    <span className="border border-tostado/40 px-2.5 py-1">Cota · $10.000</span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between border-t border-paper/15 p-5">
                 <div ref={totalRef}>
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-paper/65">
-                    {cart.length ? "Total del pedido" : "Total"}
+                    {cart.length ? "Total del pedido (sin domicilio)" : "Total"}
                   </p>
                   <p className="font-display text-3xl text-achiote">{formatCOP(grandTotal)}</p>
                 </div>
@@ -1385,6 +1409,42 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Aviso de costo de domicilio al agregar el primer producto */}
+      <AnimatePresence>
+        {deliveryNotice && (
+          <motion.div
+            role="status"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-x-4 top-28 z-[60] mx-auto max-w-md border border-achiote bg-carbon/95 p-4 shadow-[0_0_30px_rgba(201,154,62,0.35)] backdrop-blur-md"
+          >
+            <div className="flex items-start gap-3">
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="mt-0.5 h-6 w-6 shrink-0 text-achiote" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" />
+                <circle cx="7" cy="17.5" r="1.8" />
+                <circle cx="17" cy="17.5" r="1.8" />
+              </svg>
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-tostado">Costo de domicilio</p>
+                <p className="mt-1 text-sm leading-snug text-paper">
+                  Chía <b className="text-achiote">$5.000</b> · Cajicá y Cota <b className="text-achiote">$10.000</b>. Se suma al total de tu pedido.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeliveryNotice(false)}
+                aria-label="Cerrar aviso"
+                className="-m-1 p-1 text-paper/60 transition hover:text-paper"
+              >
+                ×
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Barra de total fija en móvil — aparece al agregar algo al pedido. Mantiene
           el precio siempre visible y sirve de destino a la imagen voladora. */}
       {cart.length > 0 && (
@@ -1392,6 +1452,9 @@ export default function Home() {
           <div ref={mobileTotalRef}>
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-paper/40">Total del pedido</p>
             <p className="font-display text-xl leading-none text-achiote">{formatCOP(grandTotal)}</p>
+            <p className="mt-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.08em] text-tostado/90">
+              + Domicilio desde $5.000
+            </p>
           </div>
           <a
             href={WHATSAPP_MSG(orderMsg)}
