@@ -1066,7 +1066,7 @@ export default function Home() {
                             type="button"
                             onClick={() => removeExtraFromActiveItem(e.id)}
                             aria-label={`Quitar ${e.label}`}
-                            className="text-paper/50 transition hover:text-achiote"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-achiote/70 bg-achiote/15 text-lg leading-none text-paper transition hover:bg-achiote hover:text-carbon lg:h-7 lg:w-7 lg:text-base"
                           >
                             ×
                           </button>
@@ -1085,7 +1085,7 @@ export default function Home() {
                   {cart.map((item) => (
                     <div
                       key={item.id}
-                      className={`flex w-full items-start justify-between gap-2 border-l-2 py-1 pl-2 transition ${
+                      className={`flex w-full items-center justify-between gap-3 border-l-2 py-1.5 pl-2 transition ${
                         item.id === activeCartItemId ? "border-achiote text-paper" : "border-transparent text-paper/70"
                       }`}
                     >
@@ -1105,7 +1105,7 @@ export default function Home() {
                           type="button"
                           onClick={() => removeFromCart(item.id)}
                           aria-label="Quitar del pedido"
-                          className="text-paper/40 transition hover:text-achiote"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-achiote/70 bg-achiote/15 text-lg leading-none text-paper transition hover:bg-achiote hover:text-carbon lg:h-7 lg:w-7 lg:text-base"
                         >
                           ×
                         </button>
