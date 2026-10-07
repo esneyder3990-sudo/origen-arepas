@@ -79,6 +79,15 @@ const proposal = [
     hoverTransform: "scale(1.06)",
   },
   {
+    title: "Arepa huevos rancheros",
+    note: "Nuevo · $12.000",
+    description: "Huevos revueltos con salchicha, hogao y queso derretido, dentro de una arepa recién asada.",
+    image: "/img/arepa-huevos-rancheros.jpg",
+    position: "50% 50%",
+    baseTransform: "scale(1)",
+    hoverTransform: "scale(1.06)",
+  },
+  {
     title: "Patacón ranchero",
     note: "Nuevo · $20.000",
     description: "Patacón crocante relleno de chorizo, maíz tierno y carne.",
