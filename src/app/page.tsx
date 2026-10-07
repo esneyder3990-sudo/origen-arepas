@@ -10,7 +10,6 @@ import { DistortedGlass } from "@/components/ui/distorted-glass"
 
 const WHATSAPP = "https://wa.me/573143195593"
 const WHATSAPP_MSG = (text: string) => `${WHATSAPP}?text=${encodeURIComponent(text)}`
-const RAPPI = "https://www.rappi.com.co/restaurantes/900494342-origen-arepas-y-patacones"
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -833,15 +832,6 @@ export default function Home() {
                   Pedir por WhatsApp
                 </a>
               </Button>
-              <Button
-                asChild
-                size="lg"
-                className="w-full rounded-none border border-[#FF4412]/70 bg-transparent px-8 text-center font-mono text-xs uppercase tracking-[0.15em] text-paper hover:bg-[#FF4412]/15 sm:w-auto"
-              >
-                <a href={RAPPI} target="_blank" rel="noopener noreferrer">
-                  Pedir por Rappi
-                </a>
-              </Button>
             </div>
             <p className="mt-5 font-mono text-xs uppercase tracking-[0.1em] text-paper/70">
               ¿Prefieres hablar primero?{" "}
@@ -1292,9 +1282,6 @@ export default function Home() {
                 Pedir por WhatsApp
               </a>
             </BorderBeamButton>
-            <Button asChild size="lg" className="rounded-none bg-[#FF4412] px-8 font-mono text-xs uppercase tracking-[0.15em] text-paper hover:bg-[#FF4412]/90">
-              <a href={RAPPI} target="_blank" rel="noopener noreferrer">Pedir por Rappi</a>
-            </Button>
           </div>
         </Reveal>
       </section>
@@ -1398,7 +1385,6 @@ export default function Home() {
               <ul className="space-y-2 text-paper/85">
                 <li><a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="hover:text-achiote">WhatsApp: +57 314 319 5593</a></li>
                 <li><a href="tel:+573143195593" className="hover:text-achiote">📞 Llámanos: 314 319 5593</a></li>
-                <li><a href={RAPPI} target="_blank" rel="noopener noreferrer" className="hover:text-achiote">Rappi</a></li>
                 <li><a href="https://www.instagram.com/origen5752/" target="_blank" rel="noopener noreferrer" className="hover:text-achiote">Instagram @origen5752</a></li>
                 <li><a href="https://www.facebook.com/Origen1948/" target="_blank" rel="noopener noreferrer" className="hover:text-achiote">Facebook</a></li>
               </ul>
