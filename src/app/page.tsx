@@ -266,12 +266,16 @@ interface Filling {
   image: string
 }
 
-const builderBases: { id: "arepa" | "patacon"; label: string; note: string; image: string }[] = [
+type BaseId = "arepa" | "patacon" | "entrada"
+const BASE_LABEL: Record<BaseId, string> = { arepa: "Arepa rellena", patacon: "Patacón relleno", entrada: "Entradas" }
+
+const builderBases: { id: BaseId; label: string; note: string; image: string }[] = [
   { id: "arepa", label: "Arepa rellena", note: "Maíz peto artesanal", image: "/img/Carne.png" },
   { id: "patacon", label: "Patacón relleno", note: "Plátano verde crocante", image: "/img/patacon-carne.jpg" },
+  { id: "entrada", label: "Entradas", note: "Para abrir el apetito", image: "/img/aborrajados.jpg" },
 ]
 
-const fillingsByBase: Record<"arepa" | "patacon", Filling[]> = {
+const fillingsByBase: Record<BaseId, Filling[]> = {
   arepa: [
     { id: "carne", label: "Carne desmechada", price: 15500, image: "/img/Carne.png" },
     { id: "pollo", label: "Pollo desmechado", price: 15500, image: "/img/Pollo.png" },
@@ -293,6 +297,9 @@ const fillingsByBase: Record<"arepa" | "patacon", Filling[]> = {
     { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.pataconPolloChampinon, image: "/img/patacon-pollo-champinon.jpg" },
     { id: "ranchero", label: "Ranchero", price: NEW_PRICES.pataconRanchero, image: "/img/patacon-ranchero.jpg" },
   ],
+  entrada: [
+    { id: "aborrajados", label: "Aborrajados x2", price: 10000, image: "/img/aborrajados.jpg" },
+  ],
 }
 
 const extrasList = ([
@@ -308,7 +315,6 @@ const extrasList = ([
   { id: "chorizo", label: "Chorizo", price: 5000 },
   { id: "salchicha", label: "Salchicha", price: 5000 },
   { id: "maiz", label: "Maíz", price: 3000 },
-  { id: "aborrajados", label: "Aborrajados x2 (entrada)", price: 10000 },
   { id: "papa-francesa", label: "Porción de papa francesa", price: NEW_PRICES.papaFrancesa },
   { id: "coca-cola", label: "Gaseosa Coca-Cola 400 ml", price: 4000 },
 ]).filter((e) => e.price > 0)
@@ -381,10 +387,10 @@ export default function Home() {
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0")
   const ss = String(elapsed % 60).padStart(2, "0")
 
-  const [base, setBase] = useState<"arepa" | "patacon">("arepa")
+  const [base, setBase] = useState<BaseId>("arepa")
   // Qué acordeón (arepas / patacones) está desplegado. Arranca cerrado: solo se
   // ven los dos títulos y los sabores aparecen al tocar uno de ellos.
-  const [openBase, setOpenBase] = useState<"arepa" | "patacon" | null>(null)
+  const [openBase, setOpenBase] = useState<BaseId | null>(null)
   const [fillingId, setFillingId] = useState(fillingsByBase.arepa[0].id)
   const [cart, setCart] = useState<
     { id: string; baseLabel: string; fillingLabel: string; fillingPrice: number; fillingImage: string; extraIds: string[] }[]
@@ -410,7 +416,7 @@ export default function Home() {
 
   const fillings = fillingsByBase[base]
   const selectedFilling = fillings.find((f) => f.id === fillingId) ?? fillings[0]
-  const baseLabel = base === "arepa" ? "Arepa rellena" : "Patacón relleno"
+  const baseLabel = BASE_LABEL[base]
 
   const activeCartItem = cart.find((item) => item.id === activeCartItemId) ?? null
   const itemPrice = (item: (typeof cart)[number]) =>
@@ -468,10 +474,10 @@ export default function Home() {
 
   const grandTotal = cart.length ? cart.reduce((sum, item) => sum + itemPrice(item), 0) : selectedFilling.price
 
-  const addFillingToBase = (b: "arepa" | "patacon", f: Filling, e: React.MouseEvent<HTMLButtonElement>) => {
+  const addFillingToBase = (b: BaseId, f: Filling, e: React.MouseEvent<HTMLButtonElement>) => {
     const newItem = {
       id: `${Date.now()}-${f.id}`,
-      baseLabel: b === "arepa" ? "Arepa rellena" : "Patacón relleno",
+      baseLabel: BASE_LABEL[b],
       fillingLabel: f.label,
       fillingPrice: f.price,
       fillingImage: f.image,
@@ -493,7 +499,7 @@ export default function Home() {
   // parecen sueltas en vez de ir dentro de la arepa/patacón seleccionado.
   const selectCartItem = (item: (typeof cart)[number]) => {
     setActiveCartItemId(item.id)
-    const itemBase: "arepa" | "patacon" = item.baseLabel === "Patacón relleno" ? "patacon" : "arepa"
+    const itemBase: BaseId = (Object.keys(BASE_LABEL) as BaseId[]).find((k) => BASE_LABEL[k] === item.baseLabel) ?? "arepa"
     setBase(itemBase)
     setOpenBase(itemBase)
     const match = fillingsByBase[itemBase].find((f) => f.label === item.fillingLabel)
@@ -871,7 +877,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1fr]">
           {/* -------- pasos -------- */}
           <div>
-            <p className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">Elige tu arepa o patacón</p>
+            <p className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">Elige tu arepa, patacón o entradas</p>
             {builderBases.map((b, bi) => {
               const isOpen = openBase === b.id
               const catFillings = fillingsByBase[b.id]
@@ -929,7 +935,7 @@ export default function Home() {
                         <div className="border-t border-paper/15">
                           <div className="p-4">
                             <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60">
-                              Elige el relleno (toca para añadir)
+                              {b.id === "entrada" ? "Elige tu entrada (toca para añadir)" : "Elige el relleno (toca para añadir)"}
                             </p>
                             <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
                               {catFillings.map((f) => (
@@ -967,7 +973,7 @@ export default function Home() {
                               return (
                             <div className="mt-6 border-t border-paper/15 pt-4">
                               <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-tostado">
-                                Adiciones, entradas y bebidas{" "}
+                                {b.id === "entrada" ? "Bebidas" : "Adiciones y bebidas"}{" "}
                                 {itemHere ? (
                                   <>
                                     para <span className="text-tostado">{itemHere.fillingLabel}</span>
@@ -977,7 +983,7 @@ export default function Home() {
                                 )}
                               </p>
                               <div className="flex flex-wrap gap-2">
-                                {extrasList.map((e) => {
+                                {(b.id === "entrada" ? extrasList.filter((x) => x.id === "coca-cola") : extrasList).map((e) => {
                                   const active = itemHere?.extraIds.includes(e.id) ?? false
                                   return (
                                     <motion.button
