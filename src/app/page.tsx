@@ -535,11 +535,11 @@ export default function Home() {
     }
   }, [cart.length])
 
-  // Se oculta solo a los 12 s. Va en su propio efecto para que agregar más
+  // Se oculta solo a los 5 s. Va en su propio efecto para que agregar más
   // productos mientras está visible no cancele el temporizador.
   useEffect(() => {
     if (!deliveryNotice) return
-    const t = setTimeout(() => setDeliveryNotice(false), 12000)
+    const t = setTimeout(() => setDeliveryNotice(false), 5000)
     return () => clearTimeout(t)
   }, [deliveryNotice])
 
@@ -812,8 +812,8 @@ export default function Home() {
         {/* cinta horizontal continua — las tarjetas se desplazan solas hacia la izquierda */}
         <Reveal>
           <div className="relative overflow-hidden">
-            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-carbon to-transparent md:w-32" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-carbon to-transparent md:w-32" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden bg-gradient-to-r from-carbon to-transparent md:block md:w-32" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden bg-gradient-to-l from-carbon to-transparent md:block md:w-32" />
             <motion.div
               className="flex w-max gap-8"
               animate={{ x: ["0%", "-50%"] }}
@@ -839,9 +839,9 @@ export default function Home() {
                     {/* iluminación de borde: en desktop se ve al pasar el mouse, y
                         además pulsa sola de forma periódica para que en celular
                         (donde no hay hover) también se note la animación. */}
-                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_45px_10px_rgba(201,154,62,0.65)] transition duration-500 group-hover:opacity-100" />
+                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 transition duration-500 group-hover:opacity-100" />
                     <motion.div
-                      className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[0_0_45px_10px_rgba(201,154,62,0.65)]"
+                      className="pointer-events-none absolute inset-0 border-2 border-achiote"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0, 1, 0] }}
                       transition={{
