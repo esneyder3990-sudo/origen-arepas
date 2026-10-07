@@ -370,43 +370,44 @@ export default function Home() {
   })
   const heroScale = useTransform(heroProgress, [0, 1], [1, 1.25])
 
-  // Silencia el video en cuanto el hero termina de desplazarse fuera de
-  // pantalla (progreso ≈ 1), para que la "música" del fogón no siga sonando
-  // en el resto de las secciones. Vuelve a sonar si el usuario sube de nuevo,
+  // Silencia el video apenas la persona empieza a desplazarse por la página
+  // (progreso del hero > 12 %), para que la "música" del fogón no siga sonando
+  // mientras recorre el menú. Vuelve a sonar si el usuario sube de nuevo,
   // siempre que el sonido ya estuviera activado.
-  useMotionValueEvent(heroProgress, "change", (v) => setHeroInView(v < 0.995))
+  useMotionValueEvent(heroProgress, "change", (v) => setHeroInView(v < 0.12))
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = !soundOn || !heroInView || !audioUnlocked
   }, [soundOn, heroInView, audioUnlocked])
 
-  // Intento de sonido al abrir + desbloqueo con el primer gesto.
+  // Intento de sonido al abrir + desbloqueo con el primer toque/clic.
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
     let done = false
-    const unlock = () => {
+    const events = ["click", "touchend", "keydown"] as const
+    const remove = () => events.forEach((ev) => window.removeEventListener(ev, unlock, true))
+    const markUnlocked = (fromGesture: boolean) => {
       if (done) return
       done = true
-      justUnlocked.current = true
-      setTimeout(() => { justUnlocked.current = false }, 400)
+      if (fromGesture) {
+        justUnlocked.current = true
+        setTimeout(() => { justUnlocked.current = false }, 400)
+      }
       setAudioUnlocked(true)
-      v.play().catch(() => {})
       remove()
     }
-    const events = ["pointerdown", "touchstart", "keydown", "click"] as const
-    const remove = () => events.forEach((ev) => window.removeEventListener(ev, unlock, true))
+    // Solo cuentan gestos que el navegador acepta como "activación" (un toque
+    // o clic, no un deslizamiento).
+    function unlock() {
+      if (done) return
+      v!.muted = false
+      v!.play().catch(() => {})
+      markUnlocked(true)
+    }
+    events.forEach((ev) => window.addEventListener(ev, unlock, { capture: true, passive: true }))
     // ¿El navegador permite audio sin interacción? (pasa en visitas repetidas)
-    v.muted = false
-    v.play()
-      .then(() => {
-        done = true
-        setAudioUnlocked(true)
-      })
-      .catch(() => {
-        v.muted = true
-        v.play().catch(() => {})
-        events.forEach((ev) => window.addEventListener(ev, unlock, { capture: true, passive: true }))
-      })
+    const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation
+    if (ua?.hasBeenActive) markUnlocked(false)
     return remove
   }, [])
 
@@ -720,7 +721,7 @@ export default function Home() {
             <video
               ref={videoRef}
               autoPlay
-              muted
+              muted={!soundOn || !heroInView || !audioUnlocked}
               loop
               playsInline
               poster="/img/hero-poster.jpg"
@@ -732,6 +733,16 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/55 to-carbon/20" />
 
           {/* campanita de sonido: el audio queda activo por defecto; aquí solo se silencia */}
+          {soundOn && !audioUnlocked && (
+            <motion.span
+              aria-hidden="true"
+              className="pointer-events-none absolute right-[4.25rem] top-[6.6rem] z-20 whitespace-nowrap border border-achiote/60 bg-carbon/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-tostado backdrop-blur-sm md:right-[6.75rem] md:top-[7.6rem]"
+              animate={{ opacity: [0.55, 1, 0.55] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            >
+              Toca la pantalla para el sonido
+            </motion.span>
+          )}
           <button
             type="button"
             onClick={toggleSound}
