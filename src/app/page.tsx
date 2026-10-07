@@ -532,10 +532,16 @@ export default function Home() {
     if (cart.length > 0 && !deliveryNoticeShown.current) {
       deliveryNoticeShown.current = true
       setDeliveryNotice(true)
-      const t = setTimeout(() => setDeliveryNotice(false), 6000)
-      return () => clearTimeout(t)
     }
   }, [cart.length])
+
+  // Se oculta solo a los 12 s. Va en su propio efecto para que agregar más
+  // productos mientras está visible no cancele el temporizador.
+  useEffect(() => {
+    if (!deliveryNotice) return
+    const t = setTimeout(() => setDeliveryNotice(false), 12000)
+    return () => clearTimeout(t)
+  }, [deliveryNotice])
 
   const orderMsg = cart.length === 0
     ? `Hola, quiero pedir: 1 ${baseLabel} de ${selectedFilling.label}. Total: *${formatCOP(selectedFilling.price)}*`
