@@ -149,7 +149,7 @@ const NEW_PRICES = {
   arepaPolloChampinon: 18000,
   arepaRanchera: 19000,
   arepaSalami: 13500,
-  arepaHuevosRancheros: 15000,
+  arepaHuevosRancheros: 12000,
   pataconRanchero: 20000,
   pataconPolloChampinon: 19000,
   papaFrancesa: 6000,
@@ -297,7 +297,7 @@ const fillingsByBase: Record<BaseId, Filling[]> = {
     { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.arepaPolloChampinon, image: "/img/arepa-pollo-champinon.jpg" },
     { id: "ranchera", label: "Ranchera (chorizo, maíz, carne)", price: NEW_PRICES.arepaRanchera, image: "/img/arepa-ranchera.jpg" },
     { id: "salami", label: "Salami", price: NEW_PRICES.arepaSalami, image: PLACEHOLDER_IMG },
-    { id: "huevos-rancheros", label: "Huevos rancheros", price: NEW_PRICES.arepaHuevosRancheros, image: PLACEHOLDER_IMG },
+    { id: "huevos-rancheros", label: "Huevos rancheros", price: NEW_PRICES.arepaHuevosRancheros, image: "/img/arepa-huevos-rancheros.jpg" },
   ],
   patacon: [
     { id: "carne", label: "Carne desmechada", price: 18000, image: "/img/patacon-carne.jpg" },
