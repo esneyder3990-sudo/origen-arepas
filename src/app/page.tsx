@@ -836,18 +836,17 @@ export default function Home() {
                       className="object-cover transition duration-700 group-hover:[transform:var(--hover-transform)]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-carbon/80 via-carbon/10 to-transparent" />
-                    {/* iluminación de borde: en desktop se ve al pasar el mouse, y
-                        además pulsa sola de forma periódica para que en celular
-                        (donde no hay hover) también se note la animación. */}
-                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 transition duration-500 group-hover:opacity-100" />
+                    {/* borde dorado siempre visible (da relevancia a la tarjeta) y un
+                        segundo borde que titila encima, sin sombra/resplandor. */}
+                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote/60 transition duration-500 group-hover:border-achiote" />
                     <motion.div
                       className="pointer-events-none absolute inset-0 border-2 border-achiote"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0, 1, 0] }}
                       transition={{
-                        duration: 2.4,
+                        duration: 1.8,
                         repeat: Infinity,
-                        repeatDelay: 3.6,
+                        repeatDelay: 1.2,
                         delay: (i % proposal.length) * 0.7,
                         ease: "easeInOut",
                       }}
