@@ -107,6 +107,15 @@ const proposal = [
     hoverTransform: "scale(1.06)",
   },
   {
+    title: "Canasta de hogao",
+    note: "Entrada · $3.500",
+    description: "Canastita crocante de plátano rellena de hogao, queso gratinado y orégano.",
+    image: "/img/canasta-hogao.jpg",
+    position: "50% 50%",
+    baseTransform: "scale(1)",
+    hoverTransform: "scale(1.06)",
+  },
+  {
     title: "Arepas preasadas x5",
     note: "Para llevar · $18.000",
     description:
@@ -197,6 +206,7 @@ const menuGroupsAll: { category: string; items: MenuItem[] }[] = [
     category: "Entradas",
     items: [
       { name: "Aborrajados x2", price: "$10.000" },
+      { name: "Canasta de hogao (hogao, queso, orégano)", price: "$3.500" },
     ],
   },
   {
@@ -299,6 +309,7 @@ const fillingsByBase: Record<BaseId, Filling[]> = {
   ],
   entrada: [
     { id: "aborrajados", label: "Aborrajados x2", price: 10000, image: "/img/aborrajados.jpg" },
+    { id: "canasta-hogao", label: "Canasta de hogao", price: 3500, image: "/img/canasta-hogao.jpg" },
   ],
 }
 
