@@ -337,7 +337,13 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState(0)
   const [elapsed, setElapsed] = useState(0)
-  const [soundOn, setSoundOn] = useState(false)
+  // El sonido arranca "encendido". Los navegadores no dejan reproducir audio
+  // hasta que la persona toca la página, así que se intenta al cargar y, si el
+  // navegador lo bloquea, se activa solo con el primer toque/clic en cualquier
+  // parte. La campanita solo sirve para silenciar (o volver a activar).
+  const [soundOn, setSoundOn] = useState(true)
+  const [audioUnlocked, setAudioUnlocked] = useState(false)
+  const justUnlocked = useRef(false)
   const [heroInView, setHeroInView] = useState(true)
   const heroRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -345,6 +351,13 @@ export default function Home() {
   const toggleSound = () => {
     const v = videoRef.current
     if (!v) return
+    // Si este mismo toque fue el que desbloqueó el audio, la persona quería
+    // escuchar (todavía no sonaba nada): no lo silenciamos.
+    if (justUnlocked.current) {
+      justUnlocked.current = false
+      setSoundOn(true)
+      return
+    }
     const next = !soundOn
     v.muted = !next
     if (next) v.play().catch(() => {})
@@ -363,8 +376,39 @@ export default function Home() {
   // siempre que el sonido ya estuviera activado.
   useMotionValueEvent(heroProgress, "change", (v) => setHeroInView(v < 0.995))
   useEffect(() => {
-    if (videoRef.current) videoRef.current.muted = !soundOn || !heroInView
-  }, [soundOn, heroInView])
+    if (videoRef.current) videoRef.current.muted = !soundOn || !heroInView || !audioUnlocked
+  }, [soundOn, heroInView, audioUnlocked])
+
+  // Intento de sonido al abrir + desbloqueo con el primer gesto.
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    let done = false
+    const unlock = () => {
+      if (done) return
+      done = true
+      justUnlocked.current = true
+      setTimeout(() => { justUnlocked.current = false }, 400)
+      setAudioUnlocked(true)
+      v.play().catch(() => {})
+      remove()
+    }
+    const events = ["pointerdown", "touchstart", "keydown", "click"] as const
+    const remove = () => events.forEach((ev) => window.removeEventListener(ev, unlock, true))
+    // ¿El navegador permite audio sin interacción? (pasa en visitas repetidas)
+    v.muted = false
+    v.play()
+      .then(() => {
+        done = true
+        setAudioUnlocked(true)
+      })
+      .catch(() => {
+        v.muted = true
+        v.play().catch(() => {})
+        events.forEach((ev) => window.addEventListener(ev, unlock, { capture: true, passive: true }))
+      })
+    return remove
+  }, [])
 
   const { scrollYProgress: pageProgress } = useScroll()
   const progressWidth = useTransform(pageProgress, [0, 1], ["0%", "100%"])
@@ -676,7 +720,7 @@ export default function Home() {
             <video
               ref={videoRef}
               autoPlay
-              muted={!soundOn || !heroInView}
+              muted
               loop
               playsInline
               poster="/img/hero-poster.jpg"
@@ -687,12 +731,11 @@ export default function Home() {
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/55 to-carbon/20" />
 
-          {/* control de sonido discreto — el video arranca en silencio (regla del
-              navegador); un toque activa el ambiente de fogón. */}
+          {/* campanita de sonido: el audio queda activo por defecto; aquí solo se silencia */}
           <button
             type="button"
             onClick={toggleSound}
-            aria-label={soundOn ? "Silenciar" : "Activar sonido"}
+            aria-label={soundOn && audioUnlocked ? "Silenciar" : "Activar sonido"}
             className={`absolute right-6 top-24 z-20 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition md:right-14 md:top-28 ${
               soundOn
                 ? "border border-achiote bg-achiote/20 text-tostado shadow-[0_0_16px_rgba(201,154,62,0.5)] hover:bg-achiote/30"
