@@ -821,7 +821,7 @@ export default function Home() {
             </h1>
             <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-paper md:text-xl">
               Arepas rellenas y patacones artesanales, hechos con maíz peto
-              cocido y molido a mano, todos los días.
+              cocido y molido a mano, de martes a domingo.
             </p>
             <div className="mt-5 flex flex-col items-center gap-3">
               <a
@@ -1312,7 +1312,7 @@ export default function Home() {
           <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-paper">
             Sin sede física — todo el esfuerzo va en el maíz y en que tu
             pedido llegue caliente. Pedido mínimo para domicilio: 2 productos. Entrega en 25 a 40
-            minutos, todos los días de 8:00 a.m. a 10:00 p.m.
+            minutos, de martes a domingo de 9:00 a.m. a 11:00 p.m. (lunes cerrado).
           </p>
           <div className="mx-auto mt-6 flex flex-wrap justify-center gap-3 font-mono text-xs uppercase tracking-[0.15em]">
             <span className="border border-tostado/50 px-4 py-2 text-tostado">
@@ -1401,8 +1401,9 @@ export default function Home() {
             <div>
               <p className="mb-3 uppercase tracking-[0.15em] text-achiote">Horario</p>
               <ul className="space-y-2 text-paper/85">
-                <li>Lunes a domingo</li>
-                <li>8:00 a.m. – 10:00 p.m.</li>
+                <li>Martes a domingo</li>
+                <li>9:00 a.m. – 11:00 p.m.</li>
+                <li>Lunes cerrado</li>
                 <li>Chía, Cajicá y Cota</li>
               </ul>
             </div>
