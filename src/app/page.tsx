@@ -81,7 +81,7 @@ const proposal = [
   {
     title: "Arepa huevos rancheros",
     note: "Nuevo · $12.000",
-    description: "Huevos revueltos con salchicha, hogao y queso derretido, dentro de una arepa recién asada.",
+    description: "Huevos revueltos con salchicha y queso derretido, dentro de una arepa recién asada.",
     image: "/img/arepa-huevos-rancheros.jpg",
     position: "50% 50%",
     baseTransform: "scale(1)",
