@@ -654,10 +654,8 @@ export default function Home() {
           </nav>
           <div className="flex items-center gap-3">
             <a
-              href={WHATSAPP_MSG("Hola, quiero hacer un pedido en Origen 🌽")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden border border-paper/60 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.15em] transition hover:bg-paper/10 sm:inline-block"
+              href="/pedir"
+              className="hidden border border-achiote bg-achiote/15 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.15em] transition hover:bg-achiote hover:text-carbon sm:inline-block"
             >
               Pedir ahora
             </a>
@@ -705,11 +703,9 @@ export default function Home() {
                   </a>
                 ))}
                 <a
-                  href={WHATSAPP_MSG("Hola, quiero hacer un pedido en Origen 🌽")}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/pedir"
                   onClick={() => setMenuOpen(false)}
-                  className="mt-3 mb-2 inline-block border border-paper/40 px-4 py-2 text-center text-[10px] transition hover:bg-paper/10"
+                  className="mt-3 mb-2 inline-block border border-achiote bg-achiote/15 px-4 py-2 text-center text-[10px] transition hover:bg-achiote/30"
                 >
                   Pedir ahora
                 </a>
@@ -832,6 +828,16 @@ export default function Home() {
               </a>
             </div>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:gap-5">
+              <BorderBeamButton
+                asChild
+                beamSize="md"
+                colorVariant="sunset"
+                theme="dark"
+                size="lg"
+                className="w-full rounded-none border border-achiote bg-achiote px-8 text-center font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon hover:bg-tostado sm:w-auto"
+              >
+                <a href="/pedir">Pedir en línea</a>
+              </BorderBeamButton>
               <Button
                 asChild
                 size="lg"
