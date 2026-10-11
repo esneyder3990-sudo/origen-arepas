@@ -6,7 +6,7 @@ import Link from "next/link"
 import { motion } from "motion/react"
 import { Check, RotateCcw } from "lucide-react"
 
-import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, numeroPedido, resumenPedido, rpc, waLink } from "@/lib/tienda"
+import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, guardarLocal, leerLocal, numeroPedido, resumenPedido, rpc, waLink } from "@/lib/tienda"
 import { Cargando, EASE, Etiqueta, WhatsAppIcono, waBotonCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +20,8 @@ const DESCRIPCION: Partial<Record<EstadoPedido, string>> = {
 
 export function Seguimiento({ id, token }: { id: string; token: string }) {
   const [pedido, setPedido] = useState<Pedido | null | undefined>(undefined)
+  // El primer render siempre es "Cargando", así que leer localStorage aquí no desajusta la hidratación.
+  const [enviado, setEnviado] = useState(() => typeof window !== "undefined" && leerLocal<boolean>(`origen_wa_${id}`, false))
 
   useEffect(() => {
     let vivo = true
@@ -78,6 +80,41 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
             </span>
           </motion.div>
         </div>
+
+        {/* ---- enviar el pedido a Origen por WhatsApp ---- */}
+        {pedido.estado !== "cancelado" && pedido.origen === "cliente" && pedido.whatsapp && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55, duration: 0.6, ease: EASE }}
+            className={cn("mt-8 border p-5 text-center", enviado ? "border-paper/15" : "border-[#25D366]/60 bg-[#25D366]/[0.07]")}
+          >
+            {!enviado ? (
+              <>
+                <p className="font-display text-2xl">Último paso</p>
+                <p className="mt-1 text-sm text-paper/70">Envíanos tu pedido por WhatsApp para confirmarlo y empezar a prepararlo.</p>
+              </>
+            ) : (
+              <p className="flex items-center justify-center gap-2 text-sm text-paper/70">
+                <Check className="h-4 w-4 text-[#25D366]" /> Pedido enviado por WhatsApp. Puedes reenviarlo si lo necesitas.
+              </p>
+            )}
+            <motion.a
+              href={waLink(pedido.whatsapp, mensajePedido(pedido))}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
+                guardarLocal(`origen_wa_${pedido.id}`, true)
+                setEnviado(true)
+              }}
+              animate={enviado ? {} : { scale: [1, 1.03, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              className={cn("mt-4 flex items-center justify-center gap-3 py-4 font-mono text-sm font-bold uppercase tracking-[0.1em]", waBotonCls)}
+            >
+              <WhatsAppIcono className="h-7 w-7" /> {enviado ? "Reenviar por WhatsApp" : "Envía tu pedido por WhatsApp"}
+            </motion.a>
+          </motion.div>
+        )}
 
         {/* ---- transferencia pendiente ---- */}
         {pendienteTransferencia && (
@@ -210,4 +247,17 @@ function Fondo({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   )
+}
+
+/** Mensaje completo para Origen: productos, total, datos de entrega, pago, GPS y link de seguimiento. */
+function mensajePedido(p: Pedido) {
+  const entrega = [
+    `👤 ${p.cliente_nombre}${p.cliente_celular ? ` · ${p.cliente_celular}` : ""}`,
+    p.tipo === "domicilio" ? `🛵 Domicilio a ${p.zona_nombre}: ${p.direccion}` : p.tipo === "recoger" ? "🛍️ Para recoger" : `🪑 ${p.mesa_nombre}`,
+    p.nota_domiciliario ? `📝 ${p.nota_domiciliario}` : "",
+    p.lat !== null && p.lng !== null ? `📍 Ubicación: https://www.google.com/maps?q=${p.lat},${p.lng}` : "",
+    p.metodo_pago ? `💳 Pago: ${p.metodo_pago === "efectivo" ? "Efectivo" : "Transferencia"}` : "",
+  ].filter(Boolean)
+  const seguimiento = typeof window !== "undefined" ? `Seguimiento: ${window.location.href}` : ""
+  return [`Hola Origen 🌽, acabo de hacer este pedido:`, resumenPedido(p), entrega.join("\n"), seguimiento].filter(Boolean).join("\n\n")
 }
