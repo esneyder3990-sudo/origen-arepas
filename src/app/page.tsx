@@ -389,6 +389,18 @@ const hora12 = (h: string) => {
   return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, "0")} ${ampm}`
 }
 
+// Agrupa las zonas por tarifa: "Domicilio a Chía $5.000 · a Cajicá y Cota $10.000"
+function textoDomicilios(zonas: Menu["zonas"]) {
+  if (!zonas.length) return "Domicilio a Chía $5.000 · a Cajicá y Cota $10.000"
+  const grupos = new Map<number, string[]>()
+  for (const z of zonas) grupos.set(z.tarifa, [...(grupos.get(z.tarifa) ?? []), z.nombre])
+  const partes = [...grupos].map(([tarifa, nombres]) => {
+    const lugares = nombres.length > 1 ? `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}` : nombres[0]
+    return `a ${lugares} ${tarifa ? formatCOP(tarifa) : "gratis"}`
+  })
+  return `Domicilio ${partes.join(" · ")}`
+}
+
 function Marco({
   children,
   abierto = true,
@@ -403,7 +415,7 @@ function Marco({
   const [info, setInfo] = useState(false)
   const hoy = ajustes?.horario?.[new Date().getDay()]
   const frases = [
-    zonas.length ? `Domicilio: ${zonas.map((z) => `${z.nombre} ${z.tarifa ? formatCOP(z.tarifa) : "gratis"}`).join(" · ")}` : "Domicilio: Chía $5.000 · Cajicá $10.000 · Cota $10.000",
+    textoDomicilios(zonas),
     "Sabores de Colombia",
     hoy ? (hoy.abierto ? `Hoy de ${hora12(hoy.abre)} a ${hora12(hoy.cierra)}` : "Hoy cerrado") : "",
     ajustes?.pedido_minimo_domicilio ? `Domicilio desde ${ajustes.pedido_minimo_domicilio} productos` : "",
