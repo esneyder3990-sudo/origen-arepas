@@ -4,10 +4,10 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "motion/react"
-import { Check, MessageCircle, RotateCcw } from "lucide-react"
+import { Check, RotateCcw } from "lucide-react"
 
 import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, numeroPedido, resumenPedido, rpc, waLink } from "@/lib/tienda"
-import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
+import { Cargando, EASE, Etiqueta, WhatsAppIcono, waBotonCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
 
 const DESCRIPCION: Partial<Record<EstadoPedido, string>> = {
@@ -89,9 +89,9 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
               href={waLink(pedido.whatsapp ?? "", `Hola Origen, envío el comprobante de pago 🌽\n\n${resumenPedido(pedido)}`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 flex items-center justify-center gap-2 bg-achiote py-3.5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-carbon transition hover:bg-tostado"
+              className={cn("mt-4 flex items-center justify-center gap-3 py-4 font-mono text-xs font-bold uppercase tracking-[0.12em]", waBotonCls)}
             >
-              <MessageCircle className="h-4 w-4" /> Enviar comprobante de pago
+              <WhatsAppIcono className="h-6 w-6" /> Enviar comprobante de pago
             </a>
           </motion.div>
         )}
@@ -180,9 +180,9 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
             href={waLink(pedido.whatsapp ?? "", `Hola Origen, quiero preguntar por mi pedido ${numeroPedido(pedido.numero)} 🌽`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 border border-paper/25 py-3.5 font-mono text-[11px] uppercase tracking-[0.15em] transition hover:border-achiote"
+            className={cn("flex items-center justify-center gap-3 py-4 font-mono text-xs font-bold uppercase tracking-[0.12em]", waBotonCls)}
           >
-            <MessageCircle className="h-4 w-4" /> Escribirnos por WhatsApp
+            <WhatsAppIcono className="h-6 w-6" /> Escríbenos por WhatsApp
           </a>
           <Link
             href="/"

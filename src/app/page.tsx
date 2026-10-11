@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "motion/react"
-import { ArrowLeft, Check, ChevronLeft, CupSoda, Info, LocateFixed, MessageCircle, Phone, Search, ShoppingBag, Trash2 } from "lucide-react"
+import { ArrowLeft, Check, ChevronLeft, CupSoda, Info, LocateFixed, Phone, Search, ShoppingBag, Trash2 } from "lucide-react"
 
 import {
   type Adicion,
@@ -28,7 +28,9 @@ import {
   Etiqueta,
   Hoja,
   Opcion,
+  WhatsAppIcono,
   inputCls,
+  waBotonCls,
 } from "@/components/tienda/ui"
 import { Destino, Monto, VueloProvider, useVuelo } from "@/components/tienda/vuelo"
 import { cn } from "@/lib/utils"
@@ -184,7 +186,7 @@ function PedirContenido() {
     <Marco abierto={menu.abierto} ajustes={menu.ajustes} zonas={menu.zonas}>
       {/* ============ MENÚ: barra lateral de categorías + grilla ============ */}
       <div className="mx-auto flex w-full max-w-5xl flex-1">
-        <nav aria-label="Categorías" className="sticky top-[65px] flex h-[calc(100svh-65px)] w-[84px] shrink-0 flex-col gap-1 overflow-y-auto border-r border-paper/10 py-3 sm:w-28">
+        <nav aria-label="Categorías" className="sticky top-[89px] flex h-[calc(100svh-89px)] w-[84px] shrink-0 flex-col gap-1 overflow-y-auto border-r border-paper/10 py-3 sm:w-28">
           {menu.categorias.map((c) => {
             const activa = c.id === categoria?.id
             return (
@@ -219,12 +221,18 @@ function PedirContenido() {
             href={waLink(menu.ajustes.whatsapp, "Hola Origen, tengo una pregunta sobre mi pedido 🌽")}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-auto flex flex-col items-center gap-1.5 px-1 py-3 text-center"
+            aria-label="Escríbenos por WhatsApp"
+            className="mt-auto flex flex-col items-center gap-1.5 px-1 pb-24 pt-3 text-center"
           >
-            <span className="flex h-11 w-11 items-center justify-center border border-paper/15 text-paper/60">
-              <MessageCircle className="h-5 w-5" strokeWidth={1.5} />
-            </span>
-            <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-paper/55">WhatsApp</span>
+            <motion.span
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              className={cn("relative flex h-14 w-14 items-center justify-center rounded-full sm:h-16 sm:w-16", waBotonCls)}
+            >
+              <span className="absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-30 [animation-duration:2.4s]" />
+              <WhatsAppIcono className="relative h-8 w-8 sm:h-9 sm:w-9" />
+            </motion.span>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[#25D366]">WhatsApp</span>
           </a>
         </nav>
 
@@ -395,8 +403,8 @@ function Marco({
   const [info, setInfo] = useState(false)
   const hoy = ajustes?.horario?.[new Date().getDay()]
   const frases = [
-    zonas.length ? `Domicilio a ${zonas.map((z) => z.nombre).join(" · ")}` : "Domicilio a Chía · Cajicá · Cota",
-    "Hecho a mano con maíz peto",
+    zonas.length ? `Domicilio: ${zonas.map((z) => `${z.nombre} ${z.tarifa ? formatCOP(z.tarifa) : "gratis"}`).join(" · ")}` : "Domicilio: Chía $5.000 · Cajicá $10.000 · Cota $10.000",
+    "Sabores de Colombia",
     hoy ? (hoy.abierto ? `Hoy de ${hora12(hoy.abre)} a ${hora12(hoy.cierra)}` : "Hoy cerrado") : "",
     ajustes?.pedido_minimo_domicilio ? `Domicilio desde ${ajustes.pedido_minimo_domicilio} productos` : "",
     ajustes?.tiempo_entrega ? `Entrega en ${ajustes.tiempo_entrega}` : "",
@@ -404,7 +412,7 @@ function Marco({
   return (
     <div className="flex min-h-svh flex-1 flex-col bg-carbon font-sans text-paper">
       <header className="sticky top-0 z-40 border-b border-paper/10 bg-carbon/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="mx-auto flex h-[88px] max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <motion.span
               initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
@@ -412,26 +420,45 @@ function Marco({
               transition={{ duration: 0.9, ease: EASE }}
               className="block rounded-full shadow-[0_0_18px_rgba(201,154,62,0.35)]"
             >
-              <Image src="/img/logo-origen-2026.png" alt="Origen" width={44} height={44} priority className="h-11 w-11 rounded-full object-cover" />
+              <Image src="/img/logo-origen-2026.png" alt="Origen" width={72} height={72} priority className="h-[72px] w-[72px] rounded-full object-cover" />
             </motion.span>
-            <span className="font-display text-xl font-semibold uppercase tracking-tight">Origen</span>
+            <span className="hidden font-display text-2xl font-semibold uppercase tracking-tight sm:inline">Origen</span>
           </Link>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em]">
-            <span className="relative flex h-2 w-2">
-              {abierto && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-achiote opacity-75" />}
-              <span className={cn("relative inline-flex h-2 w-2 rounded-full", abierto ? "bg-achiote" : "bg-paper/30")} />
-            </span>
-            <span className={abierto ? "text-tostado" : "text-paper/50"}>
-              {abierto ? `Abierto · ${ajustes?.tiempo_entrega ?? ""}` : "Cerrado"}
-            </span>
+          <div className="flex items-center gap-2">
+            {/* Estado: grande y claro, con el tiempo de entrega completo debajo */}
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
+              className={cn(
+                "relative flex flex-col items-end border px-3 py-1.5 sm:px-4",
+                abierto ? "border-achiote/60 bg-achiote/10 shadow-[0_0_20px_rgba(201,154,62,0.25)]" : "border-paper/15"
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  {abierto && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-achiote opacity-75" />}
+                  <span className={cn("relative inline-flex h-2.5 w-2.5 rounded-full", abierto ? "bg-achiote" : "bg-paper/30")} />
+                </span>
+                <span className={cn("font-mono text-sm font-bold uppercase tracking-[0.15em] sm:text-base", abierto ? "text-tostado" : "text-paper/55")}>
+                  {abierto ? "Abierto" : "Cerrado"}
+                </span>
+              </span>
+              {ajustes?.tiempo_entrega && (
+                <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-paper/75 sm:text-[11px]">
+                  {abierto ? `Entrega en ${ajustes.tiempo_entrega}` : hoy?.abierto ? `Abrimos ${hora12(hoy.abre)}` : "Hoy no atendemos"}
+                </span>
+              )}
+            </motion.div>
             {ajustes && (
               <button
                 type="button"
                 onClick={() => setInfo(true)}
                 aria-label="Información de Origen"
-                className="ml-2 flex h-8 items-center gap-1.5 border border-paper/20 px-2.5 text-paper/80 transition hover:border-achiote hover:text-tostado"
+                className="flex h-11 w-11 items-center justify-center border border-paper/20 text-paper/80 transition hover:border-achiote hover:text-tostado sm:w-auto sm:gap-1.5 sm:px-3"
               >
-                <Info className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Info</span>
+                <Info className="h-4 w-4" />
+                <span className="hidden font-mono text-[11px] uppercase tracking-[0.12em] sm:inline">Info</span>
               </button>
             )}
           </div>
@@ -518,8 +545,8 @@ function InfoOrigen({ abierta, onCerrar, ajustes, zonas }: { abierta: boolean; o
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26, ease: EASE }} className="grid grid-cols-2 gap-2">
-          <a href={waLink(ajustes.whatsapp, "Hola Origen 🌽")} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-achiote py-3 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-carbon hover:bg-tostado">
-            <MessageCircle className="h-4 w-4" /> WhatsApp
+          <a href={waLink(ajustes.whatsapp, "Hola Origen 🌽")} target="_blank" rel="noopener noreferrer" className={cn("col-span-2 flex items-center justify-center gap-3 py-4 font-mono text-sm font-bold uppercase tracking-[0.12em]", waBotonCls)}>
+            <WhatsAppIcono className="h-6 w-6" /> Escríbenos por WhatsApp
           </a>
           <a href={`tel:+57${tel}`} className="flex items-center justify-center gap-2 border border-paper/20 py-3 font-mono text-[11px] uppercase tracking-[0.12em] hover:border-achiote">
             <Phone className="h-4 w-4" /> Llamar
@@ -593,7 +620,7 @@ function DetalleContenido({
 
               {adiciones.length > 0 && (
                 <div>
-                  <Etiqueta className="mb-2 text-tostado">Agrega más</Etiqueta>
+                  <Etiqueta className="mb-2 text-tostado">¿Adicionas algo más?</Etiqueta>
                   <div className="divide-y divide-paper/10 border-y border-paper/10">
                     {adiciones.map((a) => {
                       const on = sel.includes(a.id)
