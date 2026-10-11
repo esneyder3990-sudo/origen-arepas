@@ -60,7 +60,8 @@ export function TomarPedido({
 
   const prod = useMemo(() => new Map(menu.productos.map((p) => [p.id, p])), [menu])
   const ad = useMemo(() => new Map(menu.adiciones.map((a) => [a.id, a])), [menu])
-  const totalLinea = (l: Linea) => (prod.get(l.producto_id)!.precio + l.adiciones.reduce((s, id) => s + (ad.get(id)?.precio ?? 0), 0)) * l.cantidad
+  // En Caja/Mesero la cantidad de cada adición es el TOTAL de la línea (4 arepas + 4 maduros = 4 maduros).
+  const totalLinea = (l: Linea) => prod.get(l.producto_id)!.precio * l.cantidad + l.adiciones.reduce((s, id) => s + (ad.get(id)?.precio ?? 0), 0)
   const productos = lineas.reduce((s, l) => s + totalLinea(l), 0)
   const valorDomicilio = tipo === "domicilio" ? (domicilio !== "" ? Number(domicilio) : zona?.tarifa ?? 0) : 0
   const total = productos + valorDomicilio
@@ -87,7 +88,7 @@ export function TomarPedido({
           metodo_pago: metodo,
           ...(ventaPasada ? { fecha } : {}),
           ...(tipo === "domicilio" ? { zona_id: zonaId, domicilio: String(valorDomicilio) } : {}),
-          items: lineas.map(({ producto_id, cantidad, adiciones }) => ({ producto_id, cantidad, adiciones })),
+          items: lineas.map(({ producto_id, cantidad, adiciones }) => ({ producto_id, cantidad, adiciones, adiciones_total: true })),
         },
       })
       setLineas([])
@@ -172,7 +173,8 @@ export function TomarPedido({
                   </div>
                   {abierta === l.key && opciones.length > 0 && (
                     <>
-                    <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                    <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-tostado">Adiciones para {l.cantidad}× {p.nombre}</p>
+                    <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
                       {opciones.map((a) => {
                         const n = l.adiciones.filter((y) => y === a.id).length
                         const poner = (v: number) =>
@@ -188,12 +190,12 @@ export function TomarPedido({
                               <span className={cn("block truncate", n ? "text-paper" : "text-paper/70")}>{a.nombre}</span>
                               <span className="text-tostado">+{formatCOP(a.precio)}</span>
                             </button>
-                            <Contador compacto valor={n} max={10} onCambiar={poner} />
+                            <Contador compacto valor={n} max={50} onCambiar={poner} />
                           </div>
                         )
                       })}
                     </div>
-                    <p className="mt-1 text-[10px] text-paper/40">Las adiciones son por cada unidad de este producto.</p>
+                    <p className="mt-1 text-[10px] text-paper/45">Pon el total de la línea. Ej.: si las {l.cantidad} llevan maduro, marca {l.cantidad} maduros.</p>
                     </>
                   )}
                 </motion.div>
