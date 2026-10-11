@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import { motion } from "motion/react"
-import { Check, Plus, Trash2 } from "lucide-react"
+import { Check, FileText, Plus, Trash2 } from "lucide-react"
 
 import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
 import { type Insumo, type Producto, formatCOP } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 import { ListaEditable, Pestanas, useTabla } from "./comun"
+import { EscanearFactura } from "./factura"
 import { Insignia } from "./pedidos"
 
 export function SeccionInventario() {
@@ -101,7 +102,7 @@ function Margenes() {
   )
 }
 
-interface Compra { id: number; fecha: string; item: string; cantidad: number; unidad: string; precio: number }
+interface Compra { id: number; fecha: string; item: string; cantidad: number; unidad: string; precio: number; factura: string }
 
 function Compras() {
   const { filas, recargar, borrar } = useTabla<Compra & Record<string, unknown>>("compras")
@@ -118,10 +119,20 @@ function Compras() {
   const nombreMes = (m: string) => new Date(`${m}-15T12:00:00`).toLocaleDateString("es-CO", { month: "long", year: "numeric" })
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Boton onClick={() => setNueva(true)}>
-          <Plus className="h-4 w-4" /> Registrar compra
-        </Boton>
+      <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          <EscanearFactura
+            insumos={insumos ?? []}
+            onListo={async (n, fecha) => {
+              await Promise.all([recargar(), recargarInsumos()])
+              setMes(fecha.slice(0, 7))
+              mostrar(`${n} ${n === 1 ? "compra registrada" : "compras registradas"} desde la factura`)
+            }}
+          />
+          <Boton variante="borde" onClick={() => setNueva(true)}>
+            <Plus className="h-4 w-4" /> Registrar a mano
+          </Boton>
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
         {meses.map((m) => (
@@ -145,7 +156,14 @@ function Compras() {
             {delMes.map((c) => (
               <tr key={c.id} className="border-t border-paper/8">
                 <td className="px-4 py-2.5 font-mono text-xs text-paper/60">{c.fecha}</td>
-                <td className="px-4 py-2.5">{c.item}</td>
+                <td className="px-4 py-2.5">
+                  {c.item}
+                  {c.factura && (
+                    <a href={c.factura} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 align-middle font-mono text-[10px] uppercase text-tostado underline">
+                      <FileText className="h-3 w-3" /> factura
+                    </a>
+                  )}
+                </td>
                 <td className="px-4 py-2.5 font-mono text-xs">{Number(c.cantidad).toLocaleString("es-CO")} {c.unidad}</td>
                 <td className="px-4 py-2.5 font-mono text-tostado">{formatCOP(c.precio)}</td>
                 <td className="px-2 py-2.5 text-right">

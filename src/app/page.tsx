@@ -96,7 +96,6 @@ function PedirContenido() {
     typeof window === "undefined" ? [] : leerLocal<LineaCarrito[]>(CARRITO_KEY, [])
   )
   const [detalle, setDetalle] = useState<Producto | null>(null)
-  const [sugerir, setSugerir] = useState(false)
   const [vista, setVista] = useState<"menu" | "carrito" | "datos">("menu")
   const [aviso, setAviso] = useState<string | null>(null)
   const { lanzar } = useVuelo()
@@ -179,7 +178,6 @@ function PedirContenido() {
 
   const categoria = menu.categorias.find((c) => c.id === categoriaId) ?? menu.categorias[0]
   const productos = menu.productos.filter((p) => p.categoria_id === categoria?.id)
-  const sugeridos = menu.productos.filter((p) => p.sugerido)
   const bebidas = menu.categorias.find((c) => c.icono === "bebida")
 
   return (
@@ -315,28 +313,9 @@ function PedirContenido() {
           agregar(linea, p.imagen, origen)
           setDetalle(null)
           avisar("Agregado al pedido")
-          if (sugeridos.some((s) => s.id !== p.id)) window.setTimeout(() => setSugerir(true), 450)
         }}
       />
 
-      {/* ============ ¿le agregas algo más? ============ */}
-      <AgregarMas
-        abierta={sugerir}
-        productos={sugeridos}
-        onCerrar={() => setSugerir(false)}
-        onAgregar={(sel) => {
-          sel.forEach(({ producto, cantidad }, i) =>
-            agregar(
-              { producto_id: producto.id, cantidad, adiciones: [], nota: "" },
-              producto.imagen,
-              document.querySelector(`[data-sugerido="${producto.id}"]`),
-              i * 140
-            )
-          )
-          setSugerir(false)
-          avisar("Agregado al pedido")
-        }}
-      />
 
       {/* ============ carrito ============ */}
       <Carrito
@@ -710,86 +689,6 @@ function DetalleContenido({
             </motion.button>
           </div>
         </>
-  )
-}
-
-function AgregarMas({
-  abierta,
-  productos,
-  onCerrar,
-  onAgregar,
-}: {
-  abierta: boolean
-  productos: Producto[]
-  onCerrar: () => void
-  onAgregar: (sel: { producto: Producto; cantidad: number }[]) => void
-}) {
-  return (
-    <Hoja abierta={abierta} onCerrar={onCerrar} titulo="¿Le agregas algo más?">
-      <AgregarMasContenido productos={productos} onCerrar={onCerrar} onAgregar={onAgregar} />
-    </Hoja>
-  )
-}
-
-// La hoja solo monta a sus hijos mientras está abierta → los contadores arrancan en 0.
-function AgregarMasContenido({
-  productos,
-  onCerrar,
-  onAgregar,
-}: {
-  productos: Producto[]
-  onCerrar: () => void
-  onAgregar: (sel: { producto: Producto; cantidad: number }[]) => void
-}) {
-  const { lanzar } = useVuelo()
-  const [cant, setCant] = useState<Record<number, number>>({})
-  const sel = productos.filter((p) => (cant[p.id] ?? 0) > 0).map((p) => ({ producto: p, cantidad: cant[p.id] }))
-  const total = sel.reduce((s, x) => s + x.producto.precio * x.cantidad, 0)
-
-  return (
-    <>
-      <div className="px-5 pb-3 pt-5 text-center">
-        <h2 className="font-display text-3xl font-semibold">¿Le agregas algo más?</h2>
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/55">Opcional — puedes elegir varios</p>
-      </div>
-      <div className="min-h-0 flex-1 divide-y divide-paper/10 overflow-y-auto border-y border-paper/10 px-5">
-        {productos.map((p, i) => (
-          <motion.div
-            key={p.id}
-            initial={{ opacity: 0, x: -14 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 + i * 0.05, duration: 0.4, ease: EASE }}
-            className="flex items-center gap-3 py-3"
-          >
-            <div data-sugerido={p.id} className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-paper/15">
-              <Image src={p.imagen} alt="" fill sizes="48px" className="object-cover" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm text-paper">{p.nombre}</p>
-              <p className="font-mono text-xs text-tostado">+ {formatCOP(p.precio)}</p>
-            </div>
-            <Contador compacto valor={cant[p.id] ?? 0} onCambiar={(v) => {
-                if (v > (cant[p.id] ?? 0)) lanzar({ desde: document.querySelector(`[data-sugerido="${p.id}"]`), destino: "boton-sugeridos", img: p.imagen })
-                setCant((c) => ({ ...c, [p.id]: v }))
-              }} />
-          </motion.div>
-        ))}
-      </div>
-      <div className="space-y-2 p-4">
-        <motion.button
-          type="button"
-          whileTap={{ scale: 0.97 }}
-          disabled={sel.length === 0}
-          onClick={() => onAgregar(sel)}
-          className="w-full bg-achiote py-4 font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon transition hover:bg-tostado disabled:opacity-40"
-        >
-          Agregar — <Destino nombre="boton-sugeridos" as="span"><Monto valor={total} /></Destino>
-        </motion.button>
-        <button type="button" onClick={onCerrar} className="w-full py-2 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60 hover:text-paper">
-          No gracias
-        </button>
-      </div>
-    </>
   )
 }
 

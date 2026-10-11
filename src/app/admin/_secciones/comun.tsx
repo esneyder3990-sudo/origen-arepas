@@ -288,9 +288,9 @@ export function Pestanas<T extends string>({ valor, opciones, onCambiar }: { val
 }
 
 /** Achica la foto en el celular (máx. 1200 px, JPEG) y la sube al panel con el PIN. */
-async function prepararFoto(file: File): Promise<string> {
+export async function prepararFoto(file: File, max = 1200): Promise<string> {
   const bmp = await createImageBitmap(file)
-  const max = 1200
+
   const k = Math.min(1, max / Math.max(bmp.width, bmp.height))
   const canvas = document.createElement("canvas")
   canvas.width = Math.round(bmp.width * k)

@@ -26,7 +26,6 @@ export function SeccionMenu() {
     { k: "categoria_id", label: "Categoría", tipo: "select", opciones: (categorias ?? []).map((c) => ({ valor: c.id, label: c.nombre })) },
     { k: "aplica_adiciones", label: "Adiciones que se ofrecen", tipo: "select", opciones: APLICA },
     { k: "imagen", label: "Foto", tipo: "imagen" },
-    { k: "sugerido", label: "Sugerir en “¿Le agregas algo más?”", tipo: "bool" },
     { k: "activo", label: "Disponible", tipo: "bool" },
     { k: "orden", label: "Orden", tipo: "numero" },
   ]
