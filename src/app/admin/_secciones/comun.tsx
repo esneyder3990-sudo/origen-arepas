@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import Image from "next/image"
 import { AnimatePresence, motion } from "motion/react"
-import { Check, Pencil, Plus, Trash2 } from "lucide-react"
+import { Camera, Check, Pencil, Plus, Trash2 } from "lucide-react"
 
 import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
@@ -148,6 +148,14 @@ function Formulario<T extends Fila>({
             return (
               <div key={c.k}>
                 <Etiqueta className="mb-2">{c.label}</Etiqueta>
+                <div className="mb-2 flex items-center gap-3">
+                  {v ? (
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden border-2 border-achiote">
+                      <Image src={String(v)} alt="" fill sizes="80px" className="object-cover" />
+                    </div>
+                  ) : null}
+                  <SubirFoto onSubida={(url) => set(c.k, url)} />
+                </div>
                 <div className="grid grid-cols-6 gap-1.5">
                   {IMAGENES.map((src) => (
                     <button key={src} type="button" onClick={() => set(c.k, src)} className={cn("relative aspect-square overflow-hidden border-2", v === src ? "border-achiote" : "border-transparent opacity-70 hover:opacity-100")}>
@@ -273,6 +281,63 @@ export function Pestanas<T extends string>({ valor, opciones, onCambiar }: { val
           <span className="relative">{o.label}</span>
         </button>
       ))}
+    </div>
+  )
+}
+
+/** Achica la foto en el celular (máx. 1200 px, JPEG) y la sube al panel con el PIN. */
+async function prepararFoto(file: File): Promise<string> {
+  const bmp = await createImageBitmap(file)
+  const max = 1200
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height))
+  const canvas = document.createElement("canvas")
+  canvas.width = Math.round(bmp.width * k)
+  canvas.height = Math.round(bmp.height * k)
+  canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height)
+  let calidad = 0.86
+  let url = canvas.toDataURL("image/jpeg", calidad)
+  while (url.length > 1_900_000 && calidad > 0.5) {
+    calidad -= 0.1
+    url = canvas.toDataURL("image/jpeg", calidad)
+  }
+  return url.split(",")[1]
+}
+
+function SubirFoto({ onSubida }: { onSubida: (url: string) => void }) {
+  const { llamar } = useAdmin()
+  const [estado, setEstado] = useState<"idle" | "subiendo">("idle")
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <div className="flex-1">
+      <label className={cn("relative flex cursor-pointer items-center justify-center gap-2 overflow-hidden border border-achiote/60 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.12em] text-tostado transition hover:bg-achiote/10", estado === "subiendo" && "pointer-events-none opacity-70")}>
+        {estado === "subiendo" && (
+          <motion.span className="absolute inset-0 bg-achiote/15" initial={{ x: "-100%" }} animate={{ x: "100%" }} transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }} />
+        )}
+        <Camera className="relative h-4 w-4" />
+        <span className="relative">{estado === "subiendo" ? "Subiendo…" : "Subir foto"}</span>
+        <input
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={async (e) => {
+            const file = e.target.files?.[0]
+            e.target.value = ""
+            if (!file) return
+            setError(null)
+            setEstado("subiendo")
+            try {
+              const datos = await prepararFoto(file)
+              const id = await llamar<string>("tienda_admin_subir_imagen", { p_datos: datos, p_tipo: "image/jpeg" })
+              onSubida(`/fotos/${id}.jpg`)
+            } catch (err) {
+              setError((err as Error).message || "No se pudo subir la foto")
+            } finally {
+              setEstado("idle")
+            }
+          }}
+        />
+      </label>
+      <p className="mt-1 text-[11px] text-paper/45">{error ?? "Desde el celular puedes tomarla con la cámara. Recuerda tocar Guardar."}</p>
     </div>
   )
 }

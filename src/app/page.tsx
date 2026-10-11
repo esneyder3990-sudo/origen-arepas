@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform }
 import { Button } from "@/components/ui/button"
 import { BorderBeamButton } from "@/components/ui/border-beam-button"
 import { DistortedGlass } from "@/components/ui/distorted-glass"
+import { type Menu, formatCOP as copTienda, rpc } from "@/lib/tienda"
 
 const WHATSAPP = "https://wa.me/573143195593"
 const WHATSAPP_MSG = (text: string) => `${WHATSAPP}?text=${encodeURIComponent(text)}`
@@ -341,7 +342,32 @@ const extrasList = ([
 const formatCOP = (n: number) => `$${n.toLocaleString("es-CO")}`
 
 
+// El menú de esta página se arma con lo que hay en el panel (Admin → Menú):
+// así un cambio de precio o de producto se ve aquí sin tocar el código.
+// Mientras carga (o si falla la conexión) se muestra la lista fija de arriba.
+function useMenuDelPanel() {
+  const [grupos, setGrupos] = useState(menuGroups)
+  useEffect(() => {
+    rpc<Menu>("tienda_menu")
+      .then((m) => {
+        const porCategoria = m.categorias
+          .map((c) => ({
+            category: c.nombre,
+            items: m.productos.filter((p) => p.categoria_id === c.id).map((p) => ({ name: p.nombre, price: copTienda(p.precio) })),
+          }))
+          .filter((g) => g.items.length > 0)
+        const adiciones = { category: "Adiciones", items: m.adiciones.map((a) => ({ name: a.nombre, price: copTienda(a.precio) })) }
+        const i = porCategoria.findIndex((g) => g.category.toLowerCase().startsWith("patac"))
+        if (adiciones.items.length) porCategoria.splice(i >= 0 ? i + 1 : porCategoria.length, 0, adiciones)
+        if (porCategoria.length) setGrupos(porCategoria)
+      })
+      .catch(() => {})
+  }, [])
+  return grupos
+}
+
 export default function Home() {
+  const menuVivo = useMenuDelPanel()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState(0)
   const [elapsed, setElapsed] = useState(0)
@@ -1266,7 +1292,7 @@ export default function Home() {
         </Reveal>
 
         <div className="mx-auto grid max-w-5xl gap-16 sm:grid-cols-2 lg:grid-cols-4">
-          {menuGroups.map((group, gi) => (
+          {menuVivo.map((group, gi) => (
             <Reveal key={group.category} delay={gi * 0.1}>
               <h3 className="mb-6 font-display text-2xl font-semibold uppercase tracking-tight text-tostado">{group.category}</h3>
               <ul className="space-y-4">
