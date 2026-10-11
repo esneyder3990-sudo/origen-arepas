@@ -4,7 +4,7 @@ import { useState } from "react"
 import { motion } from "motion/react"
 import { Check, FileText, Plus, Trash2 } from "lucide-react"
 
-import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
+import { Boton, SelectorCuenta, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, Opcion, inputCls } from "@/components/tienda/ui"
 import { type Insumo, type Producto, formatCOP } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
@@ -227,6 +227,7 @@ function FormCompra({
     precio: "",
     insumo_id: "",
     metodo: "efectivo",
+    cuenta: "",
   }))
   const [error, setError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -287,21 +288,22 @@ function FormCompra({
           <Etiqueta className="mb-2">Pagado con</Etiqueta>
           <div className="grid grid-cols-2 gap-2">
             <Opcion grupo="metodo-compra" activa={f.metodo === "efectivo"} onClick={() => set("metodo", "efectivo")}>Efectivo</Opcion>
-            <Opcion grupo="metodo-compra" activa={f.metodo === "transferencia"} onClick={() => set("metodo", "transferencia")}>Nequi / transferencia</Opcion>
+            <Opcion grupo="metodo-compra" activa={f.metodo === "transferencia"} onClick={() => set("metodo", "transferencia")}>Transferencia</Opcion>
           </div>
+          {f.metodo === "transferencia" && <SelectorCuenta grupo="compra-cuenta" valor={f.cuenta} onCambio={(c) => set("cuenta", c)} titulo="¿De qué cuenta salió?" />}
         </div>
         {error && <p className="text-sm text-red-300">{error}</p>}
       </div>
       <div className="border-t border-paper/10 p-4">
         <Boton
           className="w-full py-3.5"
-          disabled={guardando || !f.item.trim() || !f.precio}
+          disabled={guardando || !f.item.trim() || !f.precio || (f.metodo === "transferencia" && !f.cuenta)}
           onClick={async () => {
             setGuardando(true)
             setError(null)
             try {
               await llamar("tienda_admin_registrar_compra", {
-                p_compra: { fecha: f.fecha, item: f.item, cantidad: Number(f.cantidad || 0), unidad: f.unidad, precio: Number(f.precio), insumo_id: f.insumo_id, metodo: f.metodo },
+                p_compra: { fecha: f.fecha, item: f.item, cantidad: Number(f.cantidad || 0), unidad: f.unidad, precio: Number(f.precio), insumo_id: f.insumo_id, metodo: f.metodo, cuenta: f.metodo === "transferencia" ? f.cuenta : "" },
               })
               await onGuardada(f.fecha, !!f.insumo_id && Number(f.cantidad) > 0)
             } catch (e) {

@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { Lock, LogOut } from "lucide-react"
 
 import { type Pedido, guardarLocal, leerLocal, rpc } from "@/lib/tienda"
-import { Cargando, EASE, Etiqueta, inputCls } from "@/components/tienda/ui"
+import { Cargando, EASE, Etiqueta, Opcion, inputCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
 
 const PIN_KEY = "origen_admin_pin"
@@ -168,7 +168,7 @@ export function usePedidos(intervaloMs = 6000, dias = 2) {
   }, [recargar, intervaloMs])
 
   const actualizar = useCallback(
-    async (id: string, cambios: Partial<Pick<Pedido, "estado" | "pago_confirmado" | "metodo_pago">>) => {
+    async (id: string, cambios: Partial<Pick<Pedido, "estado" | "pago_confirmado" | "metodo_pago" | "cuenta">>) => {
       setPedidos((ps) => ps?.map((p) => (p.id === id ? { ...p, ...cambios } : p)) ?? ps)
       await llamar("tienda_admin_actualizar_pedido", { p_id: id, p_cambios: cambios })
       recargar()
@@ -269,5 +269,44 @@ export function Boton({
     >
       {children}
     </motion.button>
+  )
+}
+
+// ---------- cuentas de transferencia (Nequi, Bre-B, DaviPlata…) ----------
+export const CUENTAS_POR_DEFECTO = ["Nequi", "Bre-B", "DaviPlata"]
+let cacheCuentas: string[] | null = null
+
+/** Lista de cuentas configurada en Ajustes (se pide una sola vez por sesión). */
+export function useCuentas() {
+  const [cuentas, setCuentas] = useState<string[]>(cacheCuentas ?? CUENTAS_POR_DEFECTO)
+  useEffect(() => {
+    if (cacheCuentas) return
+    rpc<{ ajustes: { cuentas?: string[] } }>("tienda_menu")
+      .then((m) => {
+        cacheCuentas = m.ajustes.cuentas?.length ? m.ajustes.cuentas : CUENTAS_POR_DEFECTO
+        setCuentas(cacheCuentas)
+      })
+      .catch(() => {})
+  }, [])
+  return cuentas
+}
+export const olvidarCuentas = () => {
+  cacheCuentas = null
+}
+
+/** "¿A qué cuenta entró?" — botones Nequi / Bre-B / DaviPlata. */
+export function SelectorCuenta({ valor, onCambio, grupo, titulo = "¿A qué cuenta?" }: { valor: string; onCambio: (c: string) => void; grupo: string; titulo?: string }) {
+  const cuentas = useCuentas()
+  return (
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="overflow-hidden">
+      <p className="mb-1.5 mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-tostado">{titulo}</p>
+      <div className={cn("grid gap-2", cuentas.length <= 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4")}>
+        {cuentas.map((c) => (
+          <Opcion key={c} grupo={grupo} activa={valor === c} onClick={() => onCambio(c)}>
+            {c}
+          </Opcion>
+        ))}
+      </div>
+    </motion.div>
   )
 }

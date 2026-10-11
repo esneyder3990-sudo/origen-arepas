@@ -38,6 +38,7 @@ export interface Ajustes {
   horario: DiaHorario[]
   fidelizacion: { activo: boolean; cada_n: number; recompensa: string }
   ciclo_dia?: number
+  cuentas?: string[]
 }
 export interface Menu {
   categorias: Categoria[]; productos: Producto[]; adiciones: Adicion[]; zonas: Zona[]; mesas: Mesa[]
@@ -57,7 +58,7 @@ export interface Pedido {
   zona_id: number | null; zona_nombre: string; nota_domiciliario: string
   lat: number | null; lng: number | null
   mesa_id: number | null; mesa_nombre: string
-  metodo_pago: "efectivo" | "transferencia" | "rappi" | "otro" | null; pago_confirmado: boolean; cerrado: boolean
+  metodo_pago: "efectivo" | "transferencia" | "rappi" | "otro" | null; cuenta?: string; pago_confirmado: boolean; cerrado: boolean
   items: ItemPedido[]; subtotal: number; descuento: number; cupon: string; domicilio: number; total: number
   origen: "cliente" | "personal" | "importado"
   transferencia?: string; whatsapp?: string

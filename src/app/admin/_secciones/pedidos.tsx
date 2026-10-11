@@ -4,7 +4,7 @@ import { useState } from "react"
 import { motion } from "motion/react"
 import { Check, MessageCircle, Printer, Trash2, X } from "lucide-react"
 
-import { Boton, Tarjeta, Toast, useAdmin, usePedidos, useToast } from "@/components/tienda/admin"
+import { Boton, SelectorCuenta, Tarjeta, Toast, useAdmin, usePedidos, useToast } from "@/components/tienda/admin"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja } from "@/components/tienda/ui"
 import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, mapaPedido, numeroPedido, resumenPedido, waLink, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
@@ -60,7 +60,7 @@ export function SeccionPedidos() {
                   </td>
                   <td className="px-4 py-3">{TIPO_LABEL[p.tipo]}{p.mesa_nombre ? ` · ${p.mesa_nombre}` : ""}</td>
                   <td className="px-4 py-3">
-                    <span className="capitalize">{p.metodo_pago ?? "—"}</span>
+                    <span className="capitalize">{p.cuenta || p.metodo_pago || "—"}</span>
                     {p.metodo_pago === "transferencia" && !p.pago_confirmado && p.estado !== "cancelado" && <Insignia className="ml-2">Sin confirmar</Insignia>}
                   </td>
                   <td className="px-4 py-3 font-mono text-tostado">{formatCOP(p.total)}</td>
@@ -99,11 +99,12 @@ export function DetallePedido({
 }: {
   pedido: Pedido | null
   onCerrar: () => void
-  onActualizar: (cambios: Partial<Pick<Pedido, "estado" | "pago_confirmado">>, msg: string) => Promise<void>
+  onActualizar: (cambios: Partial<Pick<Pedido, "estado" | "pago_confirmado" | "cuenta">>, msg: string) => Promise<void>
   onBorrado?: () => void
 }) {
   const { llamar } = useAdmin()
   const [confirmarBorrar, setConfirmarBorrar] = useState(false)
+  const [cuenta, setCuenta] = useState("")
   const p = pedido
   const pendiente = p?.metodo_pago === "transferencia" && !p.pago_confirmado && p.estado !== "cancelado"
   const estados: EstadoPedido[] = p?.tipo === "domicilio" ? ["recibido", "preparacion", "listo", "en_camino", "entregado"] : ["recibido", "preparacion", "listo", "entregado"]
@@ -157,7 +158,7 @@ export function DetallePedido({
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <Etiqueta>Método de pago</Etiqueta>
-              <span className="capitalize">{p.metodo_pago ?? "—"}</span>
+              <span className="capitalize">{p.metodo_pago ?? "—"}{p.cuenta ? ` · ${p.cuenta}` : ""}</span>
               {pendiente && <Insignia>Pago sin confirmar</Insignia>}
               {p.metodo_pago === "transferencia" && p.pago_confirmado && <Insignia tono="ok">Confirmado</Insignia>}
             </div>
@@ -185,9 +186,19 @@ export function DetallePedido({
 
             <div className="grid gap-2">
               {pendiente && (
-                <Boton onClick={() => onActualizar({ pago_confirmado: true }, "Pago confirmado — el pedido ya está visible en cocina")}>
-                  <Check className="h-4 w-4" /> Confirmar pago y enviar a cocina
-                </Boton>
+                <div className="space-y-2 border border-achiote/40 bg-achiote/[0.06] p-3">
+                  <SelectorCuenta grupo={`confirmar-${p.id}`} valor={cuenta} onCambio={setCuenta} titulo="¿A qué cuenta llegó la transferencia?" />
+                  <Boton
+                    className="w-full"
+                    disabled={!cuenta}
+                    onClick={async () => {
+                      await onActualizar({ pago_confirmado: true, cuenta }, `Pago confirmado en ${cuenta} — el pedido ya está visible en cocina`)
+                      setCuenta("")
+                    }}
+                  >
+                    <Check className="h-4 w-4" /> Confirmar pago {cuenta ? `en ${cuenta}` : ""} y enviar a cocina
+                  </Boton>
+                </div>
               )}
               {p.cliente_celular && (
                 <a

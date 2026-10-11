@@ -4,7 +4,7 @@ import { useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { Bike, CalendarDays, Check, ChevronLeft, ReceiptText, Wallet } from "lucide-react"
 
-import { Boton, PanelBarra, Tarjeta, Toast, useAdmin, usePedidos, useToast } from "@/components/tienda/admin"
+import { Boton, PanelBarra, Tarjeta, Toast, useAdmin, usePedidos, useToast, SelectorCuenta } from "@/components/tienda/admin"
 import { MesasGrid, useMenu } from "@/components/tienda/mesas"
 import { TomarPedido } from "@/components/tienda/tomar-pedido"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, Opcion } from "@/components/tienda/ui"
@@ -20,6 +20,7 @@ export default function CajaPage() {
   const [modo, setModo] = useState<"inicio" | "mostrador" | "pasada" | { mesa: Mesa }>("inicio")
   const [cobrar, setCobrar] = useState<Mesa | null>(null)
   const [metodo, setMetodo] = useState<"efectivo" | "transferencia" | null>(null)
+  const [cuentaMesa, setCuentaMesa] = useState("")
   const [domis, setDomis] = useState(false)
   const [sel, setSel] = useState<string | null>(null)
   const { texto, mostrar } = useToast()
@@ -160,12 +161,14 @@ export default function CajaPage() {
               <Opcion grupo="cobro" activa={metodo === "efectivo"} onClick={() => setMetodo("efectivo")}>Efectivo</Opcion>
               <Opcion grupo="cobro" activa={metodo === "transferencia"} onClick={() => setMetodo("transferencia")}>Transferencia</Opcion>
             </div>
+            {metodo === "transferencia" && <SelectorCuenta grupo="cobro-cuenta" valor={cuentaMesa} onCambio={setCuentaMesa} />}
             <Boton
               variante="exito"
               className="w-full py-3.5"
-              disabled={!metodo}
+              disabled={!metodo || (metodo === "transferencia" && !cuentaMesa)}
               onClick={async () => {
-                await llamar("tienda_admin_cobrar_mesa", { p_mesa_id: cobrar.id, p_metodo: metodo })
+                await llamar("tienda_admin_cobrar_mesa", { p_mesa_id: cobrar.id, p_metodo: metodo, p_cuenta: metodo === "transferencia" ? cuentaMesa : "" })
+                setCuentaMesa("")
                 setCobrar(null)
                 mostrar("Mesa cobrada y liberada")
                 recargar()

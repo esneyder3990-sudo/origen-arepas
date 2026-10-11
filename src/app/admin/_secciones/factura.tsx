@@ -4,7 +4,7 @@ import { useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { Check, ScanLine, Sparkles } from "lucide-react"
 
-import { Boton, useAdmin } from "@/components/tienda/admin"
+import { Boton, SelectorCuenta, useAdmin } from "@/components/tienda/admin"
 import { BotonCerrar, EASE, Etiqueta, Hoja, Opcion, inputCls } from "@/components/tienda/ui"
 import { type Insumo, formatCOP } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
@@ -24,6 +24,7 @@ interface Lote {
   total: number
   foto: string
   metodo: "efectivo" | "transferencia"
+  cuenta: string
   lineas: Linea[]
 }
 interface Lectura {
@@ -66,6 +67,7 @@ export function EscanearFactura({ insumos, onListo }: { insumos: Insumo[]; onLis
         total: res.total,
         foto: fotoId ? `/fotos/${fotoId}.jpg` : "",
         metodo: "efectivo",
+        cuenta: "",
         lineas: res.items.map((i) => ({ ...i, incluir: true, insumo_id: insumos.some((x) => x.id === i.insumo_id) ? i.insumo_id : null })),
       })
       setEstado("revisar")
@@ -127,6 +129,7 @@ export function EscanearFactura({ insumos, onListo }: { insumos: Insumo[]; onLis
                     insumo_id: x.insumo_id ?? "",
                     factura: l.foto,
                     metodo: l.metodo,
+                    cuenta: l.metodo === "transferencia" ? l.cuenta : "",
                   },
                 })
               }
@@ -186,8 +189,9 @@ function Revision({
           <Etiqueta className="mb-2">Pagado con</Etiqueta>
           <div className="grid grid-cols-2 gap-2">
             <Opcion grupo="metodo-factura" activa={l.metodo === "efectivo"} onClick={() => setL((x) => ({ ...x, metodo: "efectivo" }))}>Efectivo</Opcion>
-            <Opcion grupo="metodo-factura" activa={l.metodo === "transferencia"} onClick={() => setL((x) => ({ ...x, metodo: "transferencia" }))}>Nequi / transferencia</Opcion>
+            <Opcion grupo="metodo-factura" activa={l.metodo === "transferencia"} onClick={() => setL((x) => ({ ...x, metodo: "transferencia" }))}>Transferencia</Opcion>
           </div>
+          {l.metodo === "transferencia" && <SelectorCuenta grupo="factura-cuenta" valor={l.cuenta} onCambio={(c) => setL((x) => ({ ...x, cuenta: c }))} titulo="¿De qué cuenta salió?" />}
         </div>
 
         <div className="space-y-2">
@@ -244,7 +248,7 @@ function Revision({
       <div className="border-t border-paper/10 p-4">
         <Boton
           className="w-full py-3.5"
-          disabled={guardando || n === 0}
+          disabled={guardando || n === 0 || (l.metodo === "transferencia" && !l.cuenta)}
           onClick={async () => {
             setGuardando(true)
             setError(null)

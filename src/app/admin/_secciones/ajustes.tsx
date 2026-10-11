@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Check, Copy, CloudDownload } from "lucide-react"
 
-import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
+import { Boton, CUENTAS_POR_DEFECTO, Tarjeta, Toast, olvidarCuentas, useAdmin, useToast } from "@/components/tienda/admin"
 import { Cargando, Etiqueta, inputCls } from "@/components/tienda/ui"
 import { type Ajustes, type Zona, formatCOP, guardarLocal, rpc } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
@@ -18,6 +18,7 @@ export function SeccionAjustes() {
 
 function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Partial<Ajustes>) => Promise<void> }) {
   const [f, setF] = useState<Partial<Ajustes>>(ajustes)
+  const [cuentasTxt, setCuentasTxt] = useState((ajustes.cuentas ?? CUENTAS_POR_DEFECTO).join(", "))
   const [pin, setPin] = useState({ actual: "", nuevo: "" })
   const [pinMsg, setPinMsg] = useState<string | null>(null)
   const { texto, mostrar } = useToast()
@@ -46,6 +47,16 @@ function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Part
             <Etiqueta className="mb-2">Datos para transferencia (los ve el cliente al pagar)</Etiqueta>
             <textarea rows={4} className={cn(inputCls, "resize-none")} value={f.transferencia ?? ""} onChange={(e) => setF((x) => ({ ...x, transferencia: e.target.value }))} placeholder={"Nequi: 300 000 0000\nBancolombia ahorros: 000-000000-00\nLlave Bre-B: …"} />
           </label>
+          <label className="block">
+            <Etiqueta className="mb-2">Cuentas donde recibes transferencias (separadas por coma)</Etiqueta>
+            <input
+              className={inputCls}
+              value={cuentasTxt}
+              onChange={(e) => setCuentasTxt(e.target.value)}
+              placeholder="Nequi, Bre-B, DaviPlata"
+            />
+            <span className="mt-1 block text-xs text-paper/45">Aparecen al registrar o confirmar una transferencia, y Finanzas te dice cuánto debe haber en cada una.</span>
+          </label>
           <div className="grid grid-cols-2 gap-3">
             <label>
               <Etiqueta className="mb-2">Mínimo de productos para domicilio</Etiqueta>
@@ -66,7 +77,9 @@ function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Part
           <Boton
             onClick={async () => {
               const { whatsapp, transferencia, pedido_minimo_domicilio, tiempo_entrega, mesas_activas } = f
-              await guardar({ whatsapp, transferencia, pedido_minimo_domicilio, tiempo_entrega, mesas_activas })
+              const cuentas = [...new Set(cuentasTxt.split(",").map((c) => c.trim()).filter(Boolean))].slice(0, 8)
+              await guardar({ whatsapp, transferencia, pedido_minimo_domicilio, tiempo_entrega, mesas_activas, cuentas: cuentas.length ? cuentas : CUENTAS_POR_DEFECTO })
+              olvidarCuentas()
               mostrar("Ajustes guardados")
             }}
           >

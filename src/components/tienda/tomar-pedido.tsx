@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { X } from "lucide-react"
 
 import { type Menu, type TipoPedido, formatCOP, rpc, textoAdiciones } from "@/lib/tienda"
-import { useAdmin } from "@/components/tienda/admin"
+import { SelectorCuenta, useAdmin } from "@/components/tienda/admin"
 import { Contador, EASE, Etiqueta, Opcion, inputCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
 
@@ -55,6 +55,7 @@ export function TomarPedido({
   const [nombre, setNombre] = useState("")
   const [celular, setCelular] = useState("")
   const [metodo, setMetodo] = useState<Metodo | null>(null)
+  const [cuenta, setCuenta] = useState("")
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -65,7 +66,8 @@ export function TomarPedido({
   const productos = lineas.reduce((s, l) => s + totalLinea(l), 0)
   const valorDomicilio = tipo === "domicilio" ? (domicilio !== "" ? Number(domicilio) : zona?.tarifa ?? 0) : 0
   const total = productos + valorDomicilio
-  const listo = lineas.length > 0 && (!ventaPasada || (!!metodo && !!fecha && (tipo !== "domicilio" || !!zona)))
+  const listo =
+    lineas.length > 0 && (metodo !== "transferencia" || !!cuenta) && (!ventaPasada || (!!metodo && !!fecha && (tipo !== "domicilio" || !!zona)))
 
   const sumar = (id: number) =>
     setLineas((ls) => {
@@ -86,6 +88,7 @@ export function TomarPedido({
           nombre,
           celular,
           metodo_pago: metodo,
+          cuenta: metodo === "transferencia" ? cuenta : "",
           ...(ventaPasada ? { fecha } : {}),
           ...(tipo === "domicilio" ? { zona_id: zonaId, domicilio: String(valorDomicilio) } : {}),
           items: lineas.map(({ producto_id, cantidad, adiciones }) => ({ producto_id, cantidad, adiciones, adiciones_total: true })),
@@ -93,6 +96,7 @@ export function TomarPedido({
       })
       setLineas([])
       setMetodo(null)
+      setCuenta("")
       onEnviado(r.numero, r.fecha)
     } catch (e) {
       setError((e as Error).message)
@@ -259,6 +263,7 @@ export function TomarPedido({
                 <Opcion grupo={`metodo-${tipoInicial}`} activa={metodo === "rappi"} onClick={() => setMetodo(metodo === "rappi" ? null : "rappi")}>Rappi</Opcion>
               )}
             </div>
+            {metodo === "transferencia" && <SelectorCuenta grupo={`cuenta-${tipoInicial}`} valor={cuenta} onCambio={setCuenta} />}
           </div>
           {error && <p className="text-sm text-red-300">{error}</p>}
           {valorDomicilio > 0 && (

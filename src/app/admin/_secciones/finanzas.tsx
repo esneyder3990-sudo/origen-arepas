@@ -27,8 +27,10 @@ interface Finanzas {
   balance: number
   bolsas: Partial<Record<"efectivo" | "cuentas" | "pendiente" | "rappi" | "otro", Bolsa>>
   compras_metodo: Partial<Record<"efectivo" | "transferencia", number>>
-  lista_pedidos: { numero: number; fecha: string; tipo: string; zona: string; mesa: string; cliente: string; metodo: string | null; bolsa: string; venta: number; domicilio: number; origen: string }[]
-  lista_compras: { fecha: string; item: string; cantidad: number; unidad: string; precio: number; metodo: string; factura: string }[]
+  por_cuenta: Record<string, number>
+  compras_por_cuenta: Record<string, number>
+  lista_pedidos: { numero: number; fecha: string; tipo: string; zona: string; mesa: string; cliente: string; metodo: string | null; cuenta: string; bolsa: string; venta: number; domicilio: number; origen: string }[]
+  lista_compras: { fecha: string; item: string; cantidad: number; unidad: string; precio: number; metodo: string; cuenta: string; factura: string }[]
   lista_gastos: { nombre: string; mensual: number; prorrateo: number }[]
 }
 interface Gasto { id: number; nombre: string; valor_mensual: number; activo: boolean }
@@ -196,7 +198,7 @@ export function SeccionFinanzas() {
               corto(p.fecha),
               String(p.numero).padStart(3, "0"),
               p.tipo === "domicilio" ? `Domicilio ${p.zona}` : p.tipo === "mesa" ? p.mesa : "Recoger",
-              ETIQUETA_BOLSA[p.bolsa] ?? "—",
+              p.bolsa === "cuentas" && p.cuenta ? p.cuenta : ETIQUETA_BOLSA[p.bolsa] ?? "—",
               formatCOP(p.venta),
               p.domicilio ? formatCOP(p.domicilio) : "—",
             ])}
@@ -205,7 +207,7 @@ export function SeccionFinanzas() {
         <Desplegable titulo={`Compras (${per.lista_compras.length})`} total={-per.compras}>
           <Tabla
             cabecera={["Fecha", "Ítem", "Cantidad", "Pagado con", "Precio"]}
-            filas={per.lista_compras.map((c) => [corto(c.fecha), c.item, `${Number(c.cantidad).toLocaleString("es-CO")} ${c.unidad}`, c.metodo === "transferencia" ? "Cuentas" : "Efectivo", formatCOP(c.precio)])}
+            filas={per.lista_compras.map((c) => [corto(c.fecha), c.item, `${Number(c.cantidad).toLocaleString("es-CO")} ${c.unidad}`, c.metodo === "transferencia" ? c.cuenta || "Transferencia" : "Efectivo", formatCOP(c.precio)])}
           />
         </Desplegable>
         <Desplegable titulo={`Gastos fijos (repartidos × ${per.dias} ${per.dias === 1 ? "día" : "días"})`} total={-per.gastos} abierto>
@@ -324,11 +326,11 @@ function DondeEstaLaPlata({ f, nombre }: { f: Finanzas; nombre: string }) {
       destacada: true,
     },
     {
-      label: "Debe haber en Nequi / Bre-B",
+      label: "Debe haber en cuentas",
       icono: Smartphone,
       valor: cu.ventas + cu.domicilios - comprasCu,
       detalle: [
-        [`Transferencias confirmadas (${cu.pedidos})`, cu.ventas + cu.domicilios],
+        [`Transferencias recibidas (${cu.pedidos})`, cu.ventas + cu.domicilios],
         ["− Compras pagadas por transferencia", -comprasCu],
       ],
       destacada: true,
@@ -375,7 +377,45 @@ function DondeEstaLaPlata({ f, nombre }: { f: Finanzas; nombre: string }) {
           </motion.div>
         ))}
       </div>
+      <PorCuenta f={f} />
     </section>
+  )
+}
+
+/** Cuánto debe haber en cada cuenta: lo que entró por transferencia menos lo que se pagó desde ahí. */
+function PorCuenta({ f }: { f: Finanzas }) {
+  const nombres = [...new Set([...Object.keys(f.por_cuenta ?? {}), ...Object.keys(f.compras_por_cuenta ?? {})])].sort((a, b) =>
+    a === "Sin especificar" ? 1 : b === "Sin especificar" ? -1 : a.localeCompare(b)
+  )
+  if (nombres.length === 0) return null
+  return (
+    <div className="mt-4">
+      <Etiqueta className="mb-2">Por cuenta</Etiqueta>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {nombres.map((n, i) => {
+          const entro = f.por_cuenta?.[n] ?? 0
+          const salio = f.compras_por_cuenta?.[n] ?? 0
+          return (
+            <motion.div
+              key={n}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + i * 0.05, ease: EASE }}
+              className={cn("border p-3", n === "Sin especificar" ? "border-dashed border-paper/15" : "border-paper/12")}
+            >
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <Smartphone className="h-3.5 w-3.5 text-tostado" /> {n}
+              </p>
+              <Monto valor={entro - salio} className={cn("mt-1 block font-display text-2xl", entro - salio < 0 ? "text-[#d0654a]" : "text-paper")} />
+              <p className="mt-1 font-mono text-[10px] text-paper/50">
+                Entró {formatCOP(entro)} · salió {formatCOP(salio)}
+              </p>
+              {n === "Sin especificar" && <p className="mt-1 text-[10px] text-paper/40">Transferencias anteriores, sin cuenta registrada.</p>}
+            </motion.div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
