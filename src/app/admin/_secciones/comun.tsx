@@ -62,6 +62,7 @@ export const IMAGENES = [
   "/img/adiciones/chicharron.jpg",
   "/img/adiciones/jamon.jpg",
   "/img/adiciones/pina.jpg",
+  "/img/adiciones/papa-francesa.jpg",
   "/img/hero-poster.jpg",
   "/img/arepa-hero.png",
 ]
