@@ -55,6 +55,7 @@ export const IMAGENES = [
   "/img/canasta-hogao.jpg",
   "/img/adiciones-maduro.jpg",
   "/img/arepas-preasadas.jpg",
+  "/img/coca-cola.jpg",
   "/img/adiciones/maduro.jpg",
   "/img/adiciones/codorniz.jpg",
   "/img/adiciones/queso.jpg",
