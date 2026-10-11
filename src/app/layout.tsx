@@ -16,9 +16,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 const SITE_URL = "https://arepasypataconesorigen.vercel.app";
-const TITLE = "Origen — Arepas y patacones artesanales | Chía, Cajicá y Cota";
+const TITLE = "Origen — Pide en línea arepas y patacones | Chía, Cajicá y Cota";
 const DESCRIPTION =
-  "Arepas rellenas y patacones 100% artesanales, maíz peto cocido y molido a mano. Domicilio en Chía, Cajicá y Cota. Pide por WhatsApp.";
+  "Arepas rellenas y patacones artesanales de maíz peto. Pide en línea: domicilio a Chía $5.000, a Cajicá y Cota $10.000. Sabores de Colombia.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -33,10 +33,10 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     images: [
       {
-        url: "/img/og-image.jpg",
+        url: "/img/og-image-2026.jpg",
         width: 1200,
         height: 630,
-        alt: "Origen — Arepas y patacones artesanales, hecho a mano",
+        alt: "Origen — Pide en línea arepas y patacones. Domicilio a Chía, Cajicá y Cota",
       },
     ],
   },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    images: ["/img/og-image.jpg"],
+    images: ["/img/og-image-2026.jpg"],
   },
 };
 
