@@ -100,9 +100,16 @@ export const mapaPedido = (p: Pedido) =>
 export const waLink = (numero: string, texto: string) =>
   `https://wa.me/${numero.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`
 
+/** "2× Queso extra, Piña" — agrupa adiciones repetidas (se pueden pedir varias veces). */
+export function textoAdiciones(ads: { nombre: string }[]) {
+  const n = new Map<string, number>()
+  for (const a of ads) n.set(a.nombre, (n.get(a.nombre) ?? 0) + 1)
+  return [...n].map(([nombre, c]) => (c > 1 ? `${c}× ${nombre}` : nombre)).join(", ")
+}
+
 export const resumenPedido = (p: Pedido) => {
   const lineas = p.items.map((i) => {
-    const ads = i.adiciones.length ? ` (+ ${i.adiciones.map((a) => a.nombre).join(", ")})` : ""
+    const ads = i.adiciones.length ? ` (+ ${textoAdiciones(i.adiciones)})` : ""
     return `${i.cantidad}x ${i.nombre}${ads} — ${formatCOP(i.total)}`
   })
   const extra = [

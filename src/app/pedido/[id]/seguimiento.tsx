@@ -6,7 +6,7 @@ import Link from "next/link"
 import { motion } from "motion/react"
 import { Check, RotateCcw } from "lucide-react"
 
-import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, guardarLocal, leerLocal, numeroPedido, resumenPedido, rpc, waLink } from "@/lib/tienda"
+import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, guardarLocal, leerLocal, numeroPedido, resumenPedido, rpc, waLink, textoAdiciones } from "@/lib/tienda"
 import { Cargando, EASE, Etiqueta, WhatsAppIcono, waBotonCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
 
@@ -186,7 +186,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
               <li key={i} className="flex justify-between gap-3">
                 <span className="text-paper/85">
                   {it.cantidad}x {it.nombre}
-                  {it.adiciones.length > 0 && <span className="block text-xs text-paper/50">+ {it.adiciones.map((a) => a.nombre).join(", ")}</span>}
+                  {it.adiciones.length > 0 && <span className="block text-xs text-paper/50">+ {textoAdiciones(it.adiciones)}</span>}
                 </span>
                 <span className="font-mono text-paper">{formatCOP(it.total)}</span>
               </li>

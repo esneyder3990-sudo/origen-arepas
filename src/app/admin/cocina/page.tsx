@@ -6,7 +6,7 @@ import { Bell, BellOff, ChefHat, Printer } from "lucide-react"
 
 import { PanelBarra, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
-import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroPedido, visibleEnCocina } from "@/lib/tienda"
+import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroPedido, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
 import { cn } from "@/lib/utils"
 
@@ -130,7 +130,7 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
         {p.items.map((it, i) => (
           <li key={i}>
             <b className="text-tostado">{it.cantidad}x</b> {it.nombre}
-            {it.adiciones.length > 0 && <span className="block pl-6 text-xs text-paper/60">+ {it.adiciones.map((a) => a.nombre).join(", ")}</span>}
+            {it.adiciones.length > 0 && <span className="block pl-6 text-xs text-paper/60">+ {textoAdiciones(it.adiciones)}</span>}
             {it.nota && <span className="block pl-6 text-xs italic text-tostado/90">“{it.nota}”</span>}
           </li>
         ))}

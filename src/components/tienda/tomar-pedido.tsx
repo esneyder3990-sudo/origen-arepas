@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { X } from "lucide-react"
 
-import { type Menu, type TipoPedido, formatCOP, rpc } from "@/lib/tienda"
+import { type Menu, type TipoPedido, formatCOP, rpc, textoAdiciones } from "@/lib/tienda"
 import { useAdmin } from "@/components/tienda/admin"
 import { Contador, EASE, Etiqueta, Opcion, inputCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
@@ -161,7 +161,7 @@ export function TomarPedido({
                   <div className="flex items-center gap-2">
                     <button type="button" onClick={() => setAbierta(abierta === l.key ? null : l.key)} className="min-w-0 flex-1 text-left text-sm">
                       {p.nombre}
-                      {l.adiciones.length > 0 && <span className="block text-xs text-paper/55">+ {l.adiciones.map((id) => ad.get(id)?.nombre).join(", ")}</span>}
+                      {l.adiciones.length > 0 && <span className="block text-xs text-paper/55">+ {textoAdiciones(l.adiciones.map((id) => ({ nombre: ad.get(id)?.nombre ?? "" })))}</span>}
                       {opciones.length > 0 && <span className="block font-mono text-[9px] uppercase tracking-[0.1em] text-tostado/80">{abierta === l.key ? "Cerrar adiciones" : "+ adiciones"}</span>}
                     </button>
                     <Contador compacto valor={l.cantidad} min={1} onCambiar={(v) => setLineas((ls) => ls.map((x) => (x.key === l.key ? { ...x, cantidad: v } : x)))} />
@@ -171,21 +171,30 @@ export function TomarPedido({
                     </button>
                   </div>
                   {abierta === l.key && opciones.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
+                    <>
+                    <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
                       {opciones.map((a) => {
-                        const on = l.adiciones.includes(a.id)
+                        const n = l.adiciones.filter((y) => y === a.id).length
+                        const poner = (v: number) =>
+                          setLineas((ls) =>
+                            ls.map((x) => (x.key === l.key ? { ...x, adiciones: [...x.adiciones.filter((y) => y !== a.id), ...Array(Math.max(v, 0)).fill(a.id)] } : x))
+                          )
                         return (
-                          <button
+                          <div
                             key={a.id}
-                            type="button"
-                            onClick={() => setLineas((ls) => ls.map((x) => (x.key === l.key ? { ...x, adiciones: on ? x.adiciones.filter((y) => y !== a.id) : [...x.adiciones, a.id] } : x)))}
-                            className={cn("border px-2 py-1 font-mono text-[10px]", on ? "border-achiote bg-achiote/15" : "border-paper/15 text-paper/60")}
+                            className={cn("flex items-center justify-between gap-2 border px-2 py-1.5 transition", n ? "border-achiote bg-achiote/10" : "border-paper/15")}
                           >
-                            {a.nombre} +{formatCOP(a.precio)}
-                          </button>
+                            <button type="button" onClick={() => poner(n + 1)} className="min-w-0 flex-1 text-left font-mono text-[11px]">
+                              <span className={cn("block truncate", n ? "text-paper" : "text-paper/70")}>{a.nombre}</span>
+                              <span className="text-tostado">+{formatCOP(a.precio)}</span>
+                            </button>
+                            <Contador compacto valor={n} max={10} onCambiar={poner} />
+                          </div>
                         )
                       })}
                     </div>
+                    <p className="mt-1 text-[10px] text-paper/40">Las adiciones son por cada unidad de este producto.</p>
+                    </>
                   )}
                 </motion.div>
               )

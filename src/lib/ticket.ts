@@ -1,4 +1,4 @@
-import { type Pedido, TIPO_LABEL, formatCOP, numeroPedido } from "@/lib/tienda"
+import { type Pedido, TIPO_LABEL, formatCOP, numeroPedido, textoAdiciones } from "@/lib/tienda"
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!)
 
@@ -9,7 +9,7 @@ export function imprimirTicket(p: Pedido) {
   const items = p.items
     .map(
       (i) =>
-        `<tr><td>${i.cantidad}x ${esc(i.nombre)}${i.adiciones.map((a) => `<br><small>+ ${esc(a.nombre)}</small>`).join("")}${
+        `<tr><td>${i.cantidad}x ${esc(i.nombre)}${i.adiciones.length ? `<br><small>+ ${esc(textoAdiciones(i.adiciones))}</small>` : ""}${
           i.nota ? `<br><small><i>${esc(i.nota)}</i></small>` : ""
         }</td><td class="r">${formatCOP(i.total)}</td></tr>`
     )

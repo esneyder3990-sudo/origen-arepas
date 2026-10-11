@@ -6,7 +6,7 @@ import { Check, MessageCircle, Printer, Trash2, X } from "lucide-react"
 
 import { Boton, Tarjeta, Toast, useAdmin, usePedidos, useToast } from "@/components/tienda/admin"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja } from "@/components/tienda/ui"
-import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, mapaPedido, numeroPedido, resumenPedido, waLink } from "@/lib/tienda"
+import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, mapaPedido, numeroPedido, resumenPedido, waLink, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
 import { cn } from "@/lib/utils"
 
@@ -142,7 +142,7 @@ export function DetallePedido({
                   <li key={i} className="flex justify-between gap-3">
                     <span>
                       <b className="text-tostado">{it.cantidad}x</b> {it.nombre}
-                      {it.adiciones.length > 0 && <span className="block text-xs text-paper/55">+ {it.adiciones.map((a) => a.nombre).join(", ")}</span>}
+                      {it.adiciones.length > 0 && <span className="block text-xs text-paper/55">+ {textoAdiciones(it.adiciones)}</span>}
                       {it.nota && <span className="block text-xs italic text-paper/55">“{it.nota}”</span>}
                     </span>
                     <span className="font-mono">{formatCOP(it.total)}</span>
