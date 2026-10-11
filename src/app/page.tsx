@@ -17,6 +17,7 @@ import {
   leerLocal,
   rpc,
   waLink,
+  avisarEquipo,
 } from "@/lib/tienda"
 import {
   Aviso,
@@ -347,6 +348,7 @@ function PedirContenido() {
               items: lineas.map((l) => ({ producto_id: l.producto_id, cantidad: l.cantidad, adiciones: l.adiciones, nota: l.nota })),
             },
           })
+          avisarEquipo(res.id, res.token)
           const mios = leerLocal<{ id: string; token: string; numero: number; creado: string }[]>(MIS_PEDIDOS_KEY, [])
           guardarLocal(MIS_PEDIDOS_KEY, [{ ...res, creado: new Date().toISOString() }, ...mios].slice(0, 20))
           setCarrito([])

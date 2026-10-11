@@ -193,6 +193,7 @@ export function PanelBarra({ rol, icono: Icono, children }: { rol: string; icono
           <span className="border-l border-paper/15 pl-3 font-mono text-[10px] uppercase tracking-[0.2em] text-paper/50">{rol}</span>
         </div>
         <div className="flex items-center gap-2">
+          <ActivarAvisos rol={(["cocina", "caja", "domicilios", "mesero"] as const).find((r) => r === rol.toLowerCase()) ?? "panel"} />
           {children}
           <Link href="/admin" className="hidden border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/70 hover:border-achiote sm:block">
             Panel
@@ -308,5 +309,129 @@ export function SelectorCuenta({ valor, onCambio, grupo, titulo = "¿A qué cuen
         ))}
       </div>
     </motion.div>
+  )
+}
+
+// ---------- sonido de Origen + avisos push ----------
+
+/** Campanita de Origen: tres notas que suben (Do–Mi–Sol), dos veces. Se reconoce como "del negocio". */
+export function sonidoOrigen() {
+  try {
+    const ctx = new AudioContext()
+    const notas = [1046.5, 1318.5, 1568]
+    for (let vuelta = 0; vuelta < 2; vuelta++) {
+      notas.forEach((f, i) => {
+        const t = ctx.currentTime + vuelta * 0.75 + i * 0.16
+        for (const [mult, vol] of [[1, 0.28], [2, 0.06]] as const) {
+          const o = ctx.createOscillator()
+          const g = ctx.createGain()
+          o.type = "sine"
+          o.frequency.value = f * mult
+          g.gain.setValueAtTime(0.0001, t)
+          g.gain.exponentialRampToValueAtTime(vol, t + 0.015)
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55)
+          o.connect(g).connect(ctx.destination)
+          o.start(t)
+          o.stop(t + 0.6)
+        }
+      })
+    }
+  } catch {}
+}
+
+const claveAUint8 = (b64: string) => {
+  const s = atob((b64 + "=".repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/"))
+  return Uint8Array.from(s, (c) => c.charCodeAt(0))
+}
+
+/** Botón para que este celular reciba avisos de pedidos nuevos (con pantalla apagada). */
+export function ActivarAvisos({ rol }: { rol: "cocina" | "caja" | "domicilios" | "mesero" | "panel" }) {
+  const { llamar } = useAdmin()
+  const [estado, setEstado] = useState<"cargando" | "no-soportado" | "iphone" | "bloqueado" | "apagado" | "activo">("cargando")
+  const [ocupado, setOcupado] = useState(false)
+
+  useEffect(() => {
+    const revisar = async () => {
+      const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
+      const instalada = window.matchMedia("(display-mode: standalone)").matches
+      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+        setEstado(ios && !instalada ? "iphone" : "no-soportado")
+        return
+      }
+      if (Notification.permission === "denied") return setEstado("bloqueado")
+      const reg = await navigator.serviceWorker.register("/sw.js")
+      const sub = await reg.pushManager.getSubscription()
+      setEstado(sub && Notification.permission === "granted" ? "activo" : "apagado")
+    }
+    revisar().catch(() => setEstado("no-soportado"))
+
+    // Con el panel abierto, cada aviso suena también con la campanita de Origen.
+    const alMensaje = (e: MessageEvent) => {
+      if (e.data?.tipo === "pedido-nuevo") sonidoOrigen()
+    }
+    navigator.serviceWorker?.addEventListener("message", alMensaje)
+    return () => navigator.serviceWorker?.removeEventListener("message", alMensaje)
+  }, [])
+
+  const activar = async () => {
+    setOcupado(true)
+    try {
+      const permiso = await Notification.requestPermission()
+      if (permiso !== "granted") {
+        setEstado(permiso === "denied" ? "bloqueado" : "apagado")
+        return
+      }
+      const reg = await navigator.serviceWorker.register("/sw.js")
+      await navigator.serviceWorker.ready
+      const clave = await rpc<string | null>("tienda_push_clave")
+      if (!clave) throw new Error("Avisos no configurados")
+      const sub = (await reg.pushManager.getSubscription()) ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: claveAUint8(clave) }))
+      await llamar("tienda_admin_guardar_push", { p_sub: sub.toJSON(), p_rol: rol })
+      sonidoOrigen()
+      setEstado("activo")
+    } catch {
+      setEstado("no-soportado")
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  if (estado === "cargando") return null
+  if (estado === "activo")
+    return (
+      <button
+        type="button"
+        onClick={sonidoOrigen}
+        title="Avisos activos en este celular · toca para escuchar el sonido"
+        className="flex h-9 items-center gap-1.5 border border-achiote/60 bg-achiote/15 px-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-tostado"
+      >
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-achiote opacity-70" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-achiote" />
+        </span>
+        <span className="hidden sm:inline">Avisos activos</span>
+        <span className="sm:hidden">🔔</span>
+      </button>
+    )
+  const texto =
+    estado === "iphone"
+      ? "En iPhone: agrégala a la pantalla de inicio y ábrela desde ahí"
+      : estado === "bloqueado"
+        ? "Avisos bloqueados: actívalos en los ajustes del navegador"
+        : estado === "no-soportado"
+          ? "Este navegador no admite avisos"
+          : null
+  if (texto) return <span className="max-w-[12rem] text-right text-[10px] leading-tight text-paper/50">{texto}</span>
+  return (
+    <motion.button
+      type="button"
+      onClick={activar}
+      disabled={ocupado}
+      animate={{ boxShadow: ["0 0 0 0 rgba(201,154,62,0.6)", "0 0 0 8px rgba(201,154,62,0)"] }}
+      transition={{ duration: 1.6, repeat: Infinity }}
+      className="flex h-9 items-center gap-1.5 bg-achiote px-3 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-carbon"
+    >
+      🔔 {ocupado ? "Activando…" : "Activar avisos"}
+    </motion.button>
   )
 }

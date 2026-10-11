@@ -64,6 +64,13 @@ export interface Pedido {
   transferencia?: string; whatsapp?: string
 }
 
+/** Avisa a los celulares del equipo que entró un pedido (no bloquea si falla). */
+export function avisarEquipo(id: string, token: string) {
+  try {
+    void fetch("/api/notificar", { method: "POST", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, token }) }).catch(() => {})
+  } catch {}
+}
+
 export const formatCOP = (n: number) => `${n < 0 ? "−" : ""}$${Math.abs(Math.round(n)).toLocaleString("es-CO")}`
 export const numeroPedido = (n: number) => `#${String(n).padStart(3, "0")}`
 

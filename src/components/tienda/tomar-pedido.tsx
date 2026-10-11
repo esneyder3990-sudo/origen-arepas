@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { X } from "lucide-react"
 
-import { type Menu, type TipoPedido, formatCOP, rpc, textoAdiciones } from "@/lib/tienda"
+import { type Menu, type TipoPedido, avisarEquipo, formatCOP, rpc, textoAdiciones } from "@/lib/tienda"
 import { SelectorCuenta, useAdmin } from "@/components/tienda/admin"
 import { Contador, EASE, Etiqueta, Opcion, inputCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
@@ -80,7 +80,7 @@ export function TomarPedido({
     setEnviando(true)
     setError(null)
     try {
-      const r = await rpc<{ numero: number; fecha: string }>("tienda_crear_pedido", {
+      const r = await rpc<{ id: string; token: string; numero: number; fecha: string }>("tienda_crear_pedido", {
         p: {
           pin,
           tipo,
@@ -94,6 +94,7 @@ export function TomarPedido({
           items: lineas.map(({ producto_id, cantidad, adiciones }) => ({ producto_id, cantidad, adiciones, adiciones_total: true })),
         },
       })
+      if (!ventaPasada) avisarEquipo(r.id, r.token)
       setLineas([])
       setMetodo(null)
       setCuenta("")

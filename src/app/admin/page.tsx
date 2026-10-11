@@ -25,7 +25,7 @@ import {
   X,
 } from "lucide-react"
 
-import { useAdmin } from "@/components/tienda/admin"
+import { ActivarAvisos, useAdmin } from "@/components/tienda/admin"
 import { EASE } from "@/components/tienda/ui"
 import { guardarLocal, leerLocal } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
@@ -156,6 +156,7 @@ export default function AdminPage() {
             {abierto ? <X className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
           <h1 className="font-display text-2xl font-semibold">{actual.label}</h1>
+          <div className="ml-auto"><ActivarAvisos rol="panel" /></div>
         </header>
         <main className="flex-1 px-4 py-6 sm:px-8">
           <AnimatePresence mode="wait">

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { Bell, BellOff, ChefHat, Printer } from "lucide-react"
 
-import { PanelBarra, usePedidos } from "@/components/tienda/admin"
+import { PanelBarra, sonidoOrigen, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
 import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroPedido, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
@@ -15,24 +15,6 @@ const COLUMNAS: { estado: EstadoPedido; titulo: string; accion?: { label: string
   { estado: "preparacion", titulo: "En preparación", accion: { label: "Listo", siguiente: "listo" } },
   { estado: "listo", titulo: "Listos para entregar" },
 ]
-
-/** Pitido corto con WebAudio — sin archivos de sonido. */
-function pitar() {
-  try {
-    const ctx = new AudioContext()
-    ;[0, 0.18].forEach((t) => {
-      const o = ctx.createOscillator()
-      const g = ctx.createGain()
-      o.frequency.value = 880
-      g.gain.setValueAtTime(0.0001, ctx.currentTime + t)
-      g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + t + 0.02)
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 0.15)
-      o.connect(g).connect(ctx.destination)
-      o.start(ctx.currentTime + t)
-      o.stop(ctx.currentTime + t + 0.16)
-    })
-  } catch {}
-}
 
 export default function CocinaPage() {
   const { pedidos, actualizar } = usePedidos(5000, 1)
@@ -50,7 +32,8 @@ export default function CocinaPage() {
   useEffect(() => {
     if (!pedidos) return
     const ids = new Set(cola.filter((p) => p.estado === "recibido").map((p) => p.id))
-    if (vistos.current && sonido && [...ids].some((id) => !vistos.current!.has(id))) pitar()
+    const pushActivo = typeof Notification !== "undefined" && Notification.permission === "granted"
+    if (vistos.current && sonido && !pushActivo && [...ids].some((id) => !vistos.current!.has(id))) sonidoOrigen()
     vistos.current = new Set([...(vistos.current ?? []), ...ids])
   }, [pedidos, cola, sonido])
 
