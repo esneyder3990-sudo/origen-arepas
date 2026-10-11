@@ -37,6 +37,7 @@ export interface Ajustes {
   cerrado_manual: boolean
   horario: DiaHorario[]
   fidelizacion: { activo: boolean; cada_n: number; recompensa: string }
+  ciclo_dia?: number
 }
 export interface Menu {
   categorias: Categoria[]; productos: Producto[]; adiciones: Adicion[]; zonas: Zona[]; mesas: Mesa[]

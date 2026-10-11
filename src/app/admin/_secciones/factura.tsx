@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { Check, ScanLine, Sparkles } from "lucide-react"
 
 import { Boton, useAdmin } from "@/components/tienda/admin"
-import { BotonCerrar, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
+import { BotonCerrar, EASE, Etiqueta, Hoja, Opcion, inputCls } from "@/components/tienda/ui"
 import { type Insumo, formatCOP } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 import { prepararFoto } from "./comun"
@@ -17,6 +17,14 @@ interface Linea {
   unidad: string
   precio_total: number
   insumo_id: number | null
+}
+interface Lote {
+  proveedor: string
+  fecha: string
+  total: number
+  foto: string
+  metodo: "efectivo" | "transferencia"
+  lineas: Linea[]
 }
 interface Lectura {
   es_factura: boolean
@@ -33,7 +41,7 @@ export function EscanearFactura({ insumos, onListo }: { insumos: Insumo[]; onLis
   const { pin, llamar } = useAdmin()
   const [estado, setEstado] = useState<"idle" | "leyendo" | "revisar">("idle")
   const [error, setError] = useState<string | null>(null)
-  const [lectura, setLectura] = useState<{ proveedor: string; fecha: string; total: number; foto: string; lineas: Linea[] } | null>(null)
+  const [lectura, setLectura] = useState<Lote | null>(null)
 
   const leer = async (file: File) => {
     setError(null)
@@ -57,6 +65,7 @@ export function EscanearFactura({ insumos, onListo }: { insumos: Insumo[]; onLis
         fecha: /^\d{4}-\d{2}-\d{2}$/.test(res.fecha) ? res.fecha : hoy(),
         total: res.total,
         foto: fotoId ? `/fotos/${fotoId}.jpg` : "",
+        metodo: "efectivo",
         lineas: res.items.map((i) => ({ ...i, incluir: true, insumo_id: insumos.some((x) => x.id === i.insumo_id) ? i.insumo_id : null })),
       })
       setEstado("revisar")
@@ -117,6 +126,7 @@ export function EscanearFactura({ insumos, onListo }: { insumos: Insumo[]; onLis
                     precio: Math.round(x.precio_total),
                     insumo_id: x.insumo_id ?? "",
                     factura: l.foto,
+                    metodo: l.metodo,
                   },
                 })
               }
@@ -136,10 +146,10 @@ function Revision({
   onCerrar,
   onConfirmar,
 }: {
-  inicial: { proveedor: string; fecha: string; total: number; foto: string; lineas: Linea[] }
+  inicial: Lote
   insumos: Insumo[]
   onCerrar: () => void
-  onConfirmar: (l: { proveedor: string; fecha: string; total: number; foto: string; lineas: Linea[] }) => Promise<void>
+  onConfirmar: (l: Lote) => Promise<void>
 }) {
   const [l, setL] = useState(inicial)
   const [guardando, setGuardando] = useState(false)
@@ -170,6 +180,14 @@ function Revision({
             <Etiqueta className="mb-1">Fecha</Etiqueta>
             <input type="date" className={cn(inputCls, "py-2")} value={l.fecha} onChange={(e) => setL((x) => ({ ...x, fecha: e.target.value }))} />
           </label>
+        </div>
+
+        <div>
+          <Etiqueta className="mb-2">Pagado con</Etiqueta>
+          <div className="grid grid-cols-2 gap-2">
+            <Opcion grupo="metodo-factura" activa={l.metodo === "efectivo"} onClick={() => setL((x) => ({ ...x, metodo: "efectivo" }))}>Efectivo</Opcion>
+            <Opcion grupo="metodo-factura" activa={l.metodo === "transferencia"} onClick={() => setL((x) => ({ ...x, metodo: "transferencia" }))}>Nequi / transferencia</Opcion>
+          </div>
         </div>
 
         <div className="space-y-2">

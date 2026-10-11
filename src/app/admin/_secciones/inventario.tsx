@@ -5,7 +5,7 @@ import { motion } from "motion/react"
 import { Check, FileText, Plus, Trash2 } from "lucide-react"
 
 import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
-import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
+import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, Opcion, inputCls } from "@/components/tienda/ui"
 import { type Insumo, type Producto, formatCOP } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 import { ListaEditable, Pestanas, useTabla } from "./comun"
@@ -226,6 +226,7 @@ function FormCompra({
     unidad: "",
     precio: "",
     insumo_id: "",
+    metodo: "efectivo",
   }))
   const [error, setError] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -282,6 +283,13 @@ function FormCompra({
             <input type="date" className={inputCls} value={f.fecha} onChange={(e) => set("fecha", e.target.value)} />
           </label>
         </div>
+        <div>
+          <Etiqueta className="mb-2">Pagado con</Etiqueta>
+          <div className="grid grid-cols-2 gap-2">
+            <Opcion grupo="metodo-compra" activa={f.metodo === "efectivo"} onClick={() => set("metodo", "efectivo")}>Efectivo</Opcion>
+            <Opcion grupo="metodo-compra" activa={f.metodo === "transferencia"} onClick={() => set("metodo", "transferencia")}>Nequi / transferencia</Opcion>
+          </div>
+        </div>
         {error && <p className="text-sm text-red-300">{error}</p>}
       </div>
       <div className="border-t border-paper/10 p-4">
@@ -293,7 +301,7 @@ function FormCompra({
             setError(null)
             try {
               await llamar("tienda_admin_registrar_compra", {
-                p_compra: { fecha: f.fecha, item: f.item, cantidad: Number(f.cantidad || 0), unidad: f.unidad, precio: Number(f.precio), insumo_id: f.insumo_id },
+                p_compra: { fecha: f.fecha, item: f.item, cantidad: Number(f.cantidad || 0), unidad: f.unidad, precio: Number(f.precio), insumo_id: f.insumo_id, metodo: f.metodo },
               })
               await onGuardada(f.fecha, !!f.insumo_id && Number(f.cantidad) > 0)
             } catch (e) {
