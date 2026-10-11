@@ -16,34 +16,55 @@ interface Linea {
   adiciones: number[]
 }
 
-/** Toma de pedido rápida para el personal (mesero en mesa, caja en mostrador). */
+const hoyISO = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" })
+const ayerISO = () => {
+  const d = new Date(`${hoyISO()}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
+type Metodo = "efectivo" | "transferencia" | "rappi"
+
+/** Toma de pedido rápida para el personal (mesero en mesa, caja en mostrador).
+ *  Con `ventaPasada`, registra una venta de otro día: se elige fecha, tipo (recoger/domicilio),
+ *  zona y cómo se pagó; queda entregada y pagada en su fecha, sin pasar por cocina. */
 export function TomarPedido({
   menu,
-  tipo,
+  tipo: tipoInicial,
   mesaId,
   titulo,
   onEnviado,
+  ventaPasada = false,
 }: {
   menu: Menu
   tipo: Extract<TipoPedido, "mesa" | "recoger">
   mesaId?: number
   titulo: string
-  onEnviado: (numero: number) => void
+  onEnviado: (numero: number, fecha?: string) => void
+  ventaPasada?: boolean
 }) {
+  const [tipo, setTipo] = useState<TipoPedido>(tipoInicial)
+  const [fecha, setFecha] = useState(ayerISO)
+  const [zonaId, setZonaId] = useState<number | null>(null)
+  const [domicilio, setDomicilio] = useState("")
+  const zona = menu.zonas.find((z) => z.id === zonaId) ?? null
   const { pin } = useAdmin()
   const [cat, setCat] = useState(menu.categorias[0]?.id)
   const [lineas, setLineas] = useState<Linea[]>([])
   const [abierta, setAbierta] = useState<string | null>(null)
   const [nombre, setNombre] = useState("")
   const [celular, setCelular] = useState("")
-  const [metodo, setMetodo] = useState<"efectivo" | "transferencia" | null>(null)
+  const [metodo, setMetodo] = useState<Metodo | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const prod = useMemo(() => new Map(menu.productos.map((p) => [p.id, p])), [menu])
   const ad = useMemo(() => new Map(menu.adiciones.map((a) => [a.id, a])), [menu])
   const totalLinea = (l: Linea) => (prod.get(l.producto_id)!.precio + l.adiciones.reduce((s, id) => s + (ad.get(id)?.precio ?? 0), 0)) * l.cantidad
-  const total = lineas.reduce((s, l) => s + totalLinea(l), 0)
+  const productos = lineas.reduce((s, l) => s + totalLinea(l), 0)
+  const valorDomicilio = tipo === "domicilio" ? (domicilio !== "" ? Number(domicilio) : zona?.tarifa ?? 0) : 0
+  const total = productos + valorDomicilio
+  const listo = lineas.length > 0 && (!ventaPasada || (!!metodo && !!fecha && (tipo !== "domicilio" || !!zona)))
 
   const sumar = (id: number) =>
     setLineas((ls) => {
@@ -56,7 +77,7 @@ export function TomarPedido({
     setEnviando(true)
     setError(null)
     try {
-      const r = await rpc<{ numero: number }>("tienda_crear_pedido", {
+      const r = await rpc<{ numero: number; fecha: string }>("tienda_crear_pedido", {
         p: {
           pin,
           tipo,
@@ -64,11 +85,14 @@ export function TomarPedido({
           nombre,
           celular,
           metodo_pago: metodo,
+          ...(ventaPasada ? { fecha } : {}),
+          ...(tipo === "domicilio" ? { zona_id: zonaId, domicilio: String(valorDomicilio) } : {}),
           items: lineas.map(({ producto_id, cantidad, adiciones }) => ({ producto_id, cantidad, adiciones })),
         },
       })
       setLineas([])
-      onEnviado(r.numero)
+      setMetodo(null)
+      onEnviado(r.numero, r.fecha)
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -170,18 +194,68 @@ export function TomarPedido({
           {lineas.length === 0 && <p className="px-4 py-6 text-center text-sm text-paper/45">Toca productos para agregarlos.</p>}
         </div>
         <div className="space-y-3 border-t border-paper/10 p-4">
+          {ventaPasada && (
+            <div className="space-y-3 border border-achiote/40 bg-achiote/[0.06] p-3">
+              <label className="block">
+                <Etiqueta className="mb-2 text-tostado">Fecha de la venta</Etiqueta>
+                <input type="date" max={hoyISO()} className={inputCls} value={fecha} onChange={(e) => setFecha(e.target.value)} />
+              </label>
+              <div>
+                <Etiqueta className="mb-2">¿Cómo se entregó?</Etiqueta>
+                <div className="grid grid-cols-2 gap-2">
+                  <Opcion grupo="pasada-tipo" activa={tipo === "recoger"} onClick={() => setTipo("recoger")}>Recogió / mostrador</Opcion>
+                  <Opcion grupo="pasada-tipo" activa={tipo === "domicilio"} onClick={() => setTipo("domicilio")}>Domicilio</Opcion>
+                </div>
+              </div>
+              {tipo === "domicilio" && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-2">
+                    {menu.zonas.map((z) => (
+                      <Opcion
+                        key={z.id}
+                        grupo="pasada-zona"
+                        activa={zonaId === z.id}
+                        onClick={() => {
+                          setZonaId(z.id)
+                          setDomicilio("")
+                        }}
+                      >
+                        <span className="block font-bold">{z.nombre}</span>
+                        <span className="block text-tostado">{formatCOP(z.tarifa)}</span>
+                      </Opcion>
+                    ))}
+                  </div>
+                  {zona && (
+                    <label className="flex items-center justify-between gap-3 text-xs text-paper/60">
+                      Domicilio cobrado (si fue distinto)
+                      <input className={cn(inputCls, "w-32 py-2")} inputMode="numeric" placeholder={String(zona.tarifa)} value={domicilio} onChange={(e) => setDomicilio(e.target.value.replace(/\D/g, ""))} />
+                    </label>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <input className={inputCls} placeholder="Nombre (opcional)" value={nombre} onChange={(e) => setNombre(e.target.value)} />
             <input className={inputCls} placeholder="Celular (opcional)" inputMode="tel" value={celular} onChange={(e) => setCelular(e.target.value)} />
           </div>
           <div>
-            <Etiqueta className="mb-2">Método de pago {tipo === "mesa" && "(opcional)"}</Etiqueta>
-            <div className="grid grid-cols-2 gap-2">
-              <Opcion grupo={`metodo-${tipo}`} activa={metodo === "efectivo"} onClick={() => setMetodo(metodo === "efectivo" ? null : "efectivo")}>Efectivo</Opcion>
-              <Opcion grupo={`metodo-${tipo}`} activa={metodo === "transferencia"} onClick={() => setMetodo(metodo === "transferencia" ? null : "transferencia")}>Transferencia</Opcion>
+            <Etiqueta className="mb-2">{ventaPasada ? "¿Cómo se pagó?" : "Método de pago"} {tipo === "mesa" && "(opcional)"}</Etiqueta>
+            <div className={cn("grid gap-2", ventaPasada ? "grid-cols-3" : "grid-cols-2")}>
+              <Opcion grupo={`metodo-${tipoInicial}`} activa={metodo === "efectivo"} onClick={() => setMetodo(metodo === "efectivo" ? null : "efectivo")}>Efectivo</Opcion>
+              <Opcion grupo={`metodo-${tipoInicial}`} activa={metodo === "transferencia"} onClick={() => setMetodo(metodo === "transferencia" ? null : "transferencia")}>Transferencia</Opcion>
+              {ventaPasada && (
+                <Opcion grupo={`metodo-${tipoInicial}`} activa={metodo === "rappi"} onClick={() => setMetodo(metodo === "rappi" ? null : "rappi")}>Rappi</Opcion>
+              )}
             </div>
           </div>
           {error && <p className="text-sm text-red-300">{error}</p>}
+          {valorDomicilio > 0 && (
+            <p className="flex justify-between font-mono text-xs text-paper/60">
+              <span>Productos {formatCOP(productos)} + domicilio</span>
+              <span>{formatCOP(valorDomicilio)}</span>
+            </p>
+          )}
           <div className="flex items-baseline justify-between">
             <Etiqueta>Total</Etiqueta>
             <span className="font-display text-3xl text-achiote">{formatCOP(total)}</span>
@@ -189,11 +263,11 @@ export function TomarPedido({
           <motion.button
             type="button"
             whileTap={{ scale: 0.97 }}
-            disabled={lineas.length === 0 || enviando}
+            disabled={!listo || enviando}
             onClick={enviar}
             className="w-full bg-achiote py-3.5 font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon transition hover:bg-tostado disabled:opacity-40"
           >
-            {enviando ? "Enviando…" : "Enviar a cocina"}
+            {enviando ? "Guardando…" : ventaPasada ? "Guardar venta" : "Enviar a cocina"}
           </motion.button>
         </div>
       </div>

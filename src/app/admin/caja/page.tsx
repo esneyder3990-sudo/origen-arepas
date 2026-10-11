@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Bike, Check, ChevronLeft, ReceiptText, Wallet } from "lucide-react"
+import { Bike, CalendarDays, Check, ChevronLeft, ReceiptText, Wallet } from "lucide-react"
 
 import { Boton, PanelBarra, Tarjeta, Toast, useAdmin, usePedidos, useToast } from "@/components/tienda/admin"
 import { MesasGrid, useMenu } from "@/components/tienda/mesas"
@@ -17,7 +17,7 @@ export default function CajaPage() {
   const menu = useMenu()
   const { llamar } = useAdmin()
   const { pedidos, recargar, actualizar } = usePedidos(6000, 2)
-  const [modo, setModo] = useState<"inicio" | "mostrador" | { mesa: Mesa }>("inicio")
+  const [modo, setModo] = useState<"inicio" | "mostrador" | "pasada" | { mesa: Mesa }>("inicio")
   const [cobrar, setCobrar] = useState<Mesa | null>(null)
   const [metodo, setMetodo] = useState<"efectivo" | "transferencia" | null>(null)
   const [domis, setDomis] = useState(false)
@@ -50,6 +50,9 @@ export default function CajaPage() {
               <div className="grid gap-2">
                 <Boton className="py-3.5" onClick={() => setModo("mostrador")}>
                   <ReceiptText className="h-4 w-4" /> Nuevo pedido de mostrador
+                </Boton>
+                <Boton variante="borde" className="py-3.5" onClick={() => setModo("pasada")}>
+                  <CalendarDays className="h-4 w-4" /> Registrar venta de otro día
                 </Boton>
                 <Boton variante="borde" className="py-3.5" onClick={() => setDomis(true)}>
                   <Bike className="h-4 w-4" /> Pagar domiciliario
@@ -105,12 +108,25 @@ export default function CajaPage() {
               <button type="button" onClick={() => setModo("inicio")} className="mb-4 flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60 hover:text-paper">
                 <ChevronLeft className="h-4 w-4" /> Volver
               </button>
+              {modo === "pasada" && (
+                <p className="mb-4 border border-achiote/40 bg-achiote/10 px-4 py-3 text-sm text-paper/75">
+                  Para ventas que no alcanzaron a entrar al sistema (por ejemplo, pedidos por WhatsApp). Quedan guardadas en su fecha, ya entregadas y pagadas, y cuentan en Reportes y Finanzas de ese día.
+                </p>
+              )}
               <TomarPedido
+                key={typeof modo === "string" ? modo : `mesa-${modo.mesa.id}`}
                 menu={menu}
-                tipo={modo === "mostrador" ? "recoger" : "mesa"}
-                mesaId={modo === "mostrador" ? undefined : modo.mesa.id}
-                titulo={modo === "mostrador" ? "Pedido de mostrador" : modo.mesa.nombre}
-                onEnviado={(n) => {
+                tipo={modo === "mostrador" || modo === "pasada" ? "recoger" : "mesa"}
+                mesaId={typeof modo === "object" ? modo.mesa.id : undefined}
+                titulo={modo === "pasada" ? "Venta de otro día" : modo === "mostrador" ? "Pedido de mostrador" : modo.mesa.nombre}
+                ventaPasada={modo === "pasada"}
+                onEnviado={(n, fecha) => {
+                  if (modo === "pasada") {
+                    const dia = fecha ? new Date(`${fecha}T12:00:00Z`).toLocaleDateString("es-CO", { day: "numeric", month: "long", timeZone: "UTC" }) : ""
+                    mostrar(`Venta ${numeroPedido(n)} guardada el ${dia}`)
+                    recargar()
+                    return // se queda en el formulario para registrar la siguiente
+                  }
                   mostrar(`Pedido ${numeroPedido(n)} enviado a cocina`)
                   recargar()
                   setModo("inicio")
