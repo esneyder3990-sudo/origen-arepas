@@ -9,7 +9,7 @@ import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/a
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
 
-export type Tabla = "categorias" | "productos" | "adiciones" | "zonas" | "cupones" | "mesas" | "insumos" | "clientes" | "compras"
+export type Tabla = "categorias" | "productos" | "adiciones" | "zonas" | "cupones" | "mesas" | "insumos" | "clientes" | "compras" | "gastos"
 type Fila = { id?: number } & Record<string, unknown>
 
 export function useTabla<T extends Fila>(tabla: Tabla) {
@@ -217,6 +217,7 @@ export function ListaEditable<T extends Fila>({
   render,
   filtrar,
   vacio,
+  onCambio,
 }: {
   tabla: Tabla
   campos: Campo[]
@@ -225,6 +226,7 @@ export function ListaEditable<T extends Fila>({
   render: (f: T) => React.ReactNode
   filtrar?: (f: T) => boolean
   vacio?: string
+  onCambio?: () => void
 }) {
   const { filas, guardar, borrar } = useTabla<T>(tabla)
   const [editando, setEditando] = useState<Partial<T> | null>(null)
@@ -264,8 +266,8 @@ export function ListaEditable<T extends Fila>({
         campos={campos}
         titulo={editando?.id ? `Editar ${nombre}` : `Nuevo ${nombre}`}
         onCerrar={() => setEditando(null)}
-        onGuardar={async (f) => { await guardar(f); mostrar("Guardado") }}
-        onBorrar={async (id) => { await borrar(id); mostrar("Eliminado") }}
+        onGuardar={async (f) => { await guardar(f); mostrar("Guardado"); onCambio?.() }}
+        onBorrar={async (id) => { await borrar(id); mostrar("Eliminado"); onCambio?.() }}
       />
       <Toast texto={texto} />
     </>

@@ -62,7 +62,7 @@ export interface Pedido {
   transferencia?: string; whatsapp?: string
 }
 
-export const formatCOP = (n: number) => `$${Math.round(n).toLocaleString("es-CO")}`
+export const formatCOP = (n: number) => `${n < 0 ? "−" : ""}$${Math.abs(Math.round(n)).toLocaleString("es-CO")}`
 export const numeroPedido = (n: number) => `#${String(n).padStart(3, "0")}`
 
 export const TIPO_LABEL: Record<TipoPedido, string> = { domicilio: "Domicilio", recoger: "Recoger", mesa: "Mesa" }

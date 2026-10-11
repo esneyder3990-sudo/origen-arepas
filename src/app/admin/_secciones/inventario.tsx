@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import { motion } from "motion/react"
+import { Check, Plus, Trash2 } from "lucide-react"
 
-import { Tarjeta } from "@/components/tienda/admin"
-import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
+import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
+import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
 import { type Insumo, type Producto, formatCOP } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 import { ListaEditable, Pestanas, useTabla } from "./comun"
@@ -103,8 +104,12 @@ function Margenes() {
 interface Compra { id: number; fecha: string; item: string; cantidad: number; unidad: string; precio: number }
 
 function Compras() {
-  const { filas } = useTabla<Compra & Record<string, unknown>>("compras")
+  const { filas, recargar, borrar } = useTabla<Compra & Record<string, unknown>>("compras")
+  const { filas: insumos, recargar: recargarInsumos } = useTabla<Insumo & Record<string, unknown>>("insumos")
   const [mes, setMes] = useState<string | null>(null)
+  const [nueva, setNueva] = useState(false)
+  const [borrando, setBorrando] = useState<number | null>(null)
+  const { texto, mostrar } = useToast()
   if (!filas) return <Cargando />
   const meses = [...new Set(filas.map((c) => c.fecha.slice(0, 7)))].sort().reverse()
   const actual = mes ?? meses[0] ?? ""
@@ -113,6 +118,11 @@ function Compras() {
   const nombreMes = (m: string) => new Date(`${m}-15T12:00:00`).toLocaleDateString("es-CO", { month: "long", year: "numeric" })
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <Boton onClick={() => setNueva(true)}>
+          <Plus className="h-4 w-4" /> Registrar compra
+        </Boton>
+      </div>
       <div className="flex flex-wrap gap-2">
         {meses.map((m) => (
           <button key={m} type="button" onClick={() => setMes(m)} className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em]", m === actual ? "border-achiote text-tostado" : "border-paper/15 text-paper/55")}>
@@ -128,7 +138,7 @@ function Compras() {
         <table className="w-full min-w-[480px] text-sm">
           <thead>
             <tr className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper/45">
-              {["Fecha", "Ítem", "Cantidad", "Precio"].map((h) => <th key={h} className="px-4 py-2.5 text-left font-normal">{h}</th>)}
+              {["Fecha", "Ítem", "Cantidad", "Precio", ""].map((h, i) => <th key={i} className="px-4 py-2.5 text-left font-normal">{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -138,12 +148,145 @@ function Compras() {
                 <td className="px-4 py-2.5">{c.item}</td>
                 <td className="px-4 py-2.5 font-mono text-xs">{Number(c.cantidad).toLocaleString("es-CO")} {c.unidad}</td>
                 <td className="px-4 py-2.5 font-mono text-tostado">{formatCOP(c.precio)}</td>
+                <td className="px-2 py-2.5 text-right">
+                  {borrando === c.id ? (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await borrar(c.id)
+                        setBorrando(null)
+                        mostrar("Compra eliminada")
+                      }}
+                      className="border border-red-400/40 bg-red-400/10 px-2 py-1 font-mono text-[10px] uppercase text-red-200"
+                    >
+                      ¿Borrar?
+                    </button>
+                  ) : (
+                    <button type="button" aria-label="Borrar compra" onClick={() => setBorrando(c.id)} className="p-1 text-paper/35 hover:text-red-300">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
         {delMes.length === 0 && <p className="px-4 py-8 text-center text-sm text-paper/45">Sin compras registradas.</p>}
       </Tarjeta>
+      <Hoja abierta={nueva} onCerrar={() => setNueva(false)} titulo="Registrar compra">
+        <FormCompra
+          insumos={insumos ?? []}
+          onCerrar={() => setNueva(false)}
+          onGuardada={async (fecha, sumoStock) => {
+            await Promise.all([recargar(), recargarInsumos()])
+            setMes(fecha.slice(0, 7))
+            setNueva(false)
+            mostrar(sumoStock ? "Compra registrada y sumada al stock" : "Compra registrada")
+          }}
+        />
+      </Hoja>
+      <Toast texto={texto} />
     </div>
+  )
+}
+
+// Se monta de cero cada vez que se abre la hoja.
+function FormCompra({
+  insumos,
+  onCerrar,
+  onGuardada,
+}: {
+  insumos: Insumo[]
+  onCerrar: () => void
+  onGuardada: (fecha: string, sumoStock: boolean) => Promise<void>
+}) {
+  const { llamar } = useAdmin()
+  const [f, setF] = useState(() => ({
+    fecha: new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" }),
+    item: "",
+    cantidad: "",
+    unidad: "",
+    precio: "",
+    insumo_id: "",
+  }))
+  const [error, setError] = useState<string | null>(null)
+  const [guardando, setGuardando] = useState(false)
+  const set = (k: keyof typeof f, v: string) => setF((x) => ({ ...x, [k]: v }))
+  const insumo = insumos.find((i) => String(i.id) === f.insumo_id)
+
+  return (
+    <>
+      <div className="flex items-center justify-between px-5 pb-2 pt-4">
+        <h2 className="font-display text-2xl">Registrar compra</h2>
+        <BotonCerrar onClick={onCerrar} />
+      </div>
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-5">
+        <label className="block">
+          <Etiqueta className="mb-2">¿Es un insumo del inventario? (opcional)</Etiqueta>
+          <select
+            className={inputCls}
+            value={f.insumo_id}
+            onChange={(e) => {
+              const i = insumos.find((x) => String(x.id) === e.target.value)
+              setF((x) => ({ ...x, insumo_id: e.target.value, item: i ? i.nombre : x.item, unidad: i ? i.unidad : x.unidad }))
+            }}
+          >
+            <option value="" className="bg-carbon">— No, es otra compra —</option>
+            {insumos.map((i) => (
+              <option key={i.id} value={i.id} className="bg-carbon">
+                {i.nombre}
+              </option>
+            ))}
+          </select>
+          {insumo && <p className="mt-1 text-xs text-tostado">La cantidad se sumará al stock de {insumo.nombre} (hoy: {Number(insumo.stock).toLocaleString("es-CO")}).</p>}
+        </label>
+        <label className="block">
+          <Etiqueta className="mb-2">¿Qué compraste?</Etiqueta>
+          <input className={inputCls} value={f.item} onChange={(e) => set("item", e.target.value)} placeholder="Maíz peto, queso, gas…" />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label>
+            <Etiqueta className="mb-2">Cantidad</Etiqueta>
+            <input className={inputCls} inputMode="decimal" value={f.cantidad} onChange={(e) => set("cantidad", e.target.value.replace(",", "."))} placeholder="2" />
+          </label>
+          <label>
+            <Etiqueta className="mb-2">Unidad</Etiqueta>
+            <input className={inputCls} value={f.unidad} onChange={(e) => set("unidad", e.target.value)} placeholder="kg, bulto, und…" />
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <label>
+            <Etiqueta className="mb-2">Precio total (COP)</Etiqueta>
+            <input className={inputCls} inputMode="numeric" value={f.precio} onChange={(e) => set("precio", e.target.value.replace(/\D/g, ""))} placeholder="16400" />
+          </label>
+          <label>
+            <Etiqueta className="mb-2">Fecha</Etiqueta>
+            <input type="date" className={inputCls} value={f.fecha} onChange={(e) => set("fecha", e.target.value)} />
+          </label>
+        </div>
+        {error && <p className="text-sm text-red-300">{error}</p>}
+      </div>
+      <div className="border-t border-paper/10 p-4">
+        <Boton
+          className="w-full py-3.5"
+          disabled={guardando || !f.item.trim() || !f.precio}
+          onClick={async () => {
+            setGuardando(true)
+            setError(null)
+            try {
+              await llamar("tienda_admin_registrar_compra", {
+                p_compra: { fecha: f.fecha, item: f.item, cantidad: Number(f.cantidad || 0), unidad: f.unidad, precio: Number(f.precio), insumo_id: f.insumo_id },
+              })
+              await onGuardada(f.fecha, !!f.insumo_id && Number(f.cantidad) > 0)
+            } catch (e) {
+              setError((e as Error).message)
+              setGuardando(false)
+            }
+          }}
+        >
+          <Check className="h-4 w-4" /> {guardando ? "Guardando…" : "Guardar compra"}
+        </Boton>
+      </div>
+    </>
   )
 }

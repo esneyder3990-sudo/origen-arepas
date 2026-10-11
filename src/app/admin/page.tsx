@@ -8,6 +8,7 @@ import {
   Armchair,
   Bike,
   ChartColumn,
+  PiggyBank,
   ChefHat,
   ClipboardList,
   Clock,
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils"
 
 import { SeccionPedidos } from "./_secciones/pedidos"
 import { SeccionReportes } from "./_secciones/reportes"
+import { SeccionFinanzas } from "./_secciones/finanzas"
 import { SeccionMenu } from "./_secciones/menu"
 import { SeccionInventario } from "./_secciones/inventario"
 import { SeccionMesas } from "./_secciones/mesas"
@@ -42,6 +44,7 @@ import { SeccionAjustes } from "./_secciones/ajustes"
 const SECCIONES = [
   { id: "pedidos", label: "Pedidos", icono: ClipboardList, C: SeccionPedidos },
   { id: "reportes", label: "Reportes", icono: ChartColumn, C: SeccionReportes },
+  { id: "finanzas", label: "Finanzas", icono: PiggyBank, C: SeccionFinanzas },
   { id: "menu", label: "Menú", icono: UtensilsCrossed, C: SeccionMenu },
   { id: "inventario", label: "Inventario", icono: Package, C: SeccionInventario },
   { id: "mesas", label: "Mesas", icono: Armchair, C: SeccionMesas },
