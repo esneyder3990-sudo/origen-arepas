@@ -1,1585 +1,1250 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform } from "motion/react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { AnimatePresence, motion } from "motion/react"
+import { ArrowLeft, Check, ChevronLeft, CupSoda, Info, LocateFixed, MessageCircle, Phone, Search, ShoppingBag, Trash2 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { BorderBeamButton } from "@/components/ui/border-beam-button"
-import { DistortedGlass } from "@/components/ui/distorted-glass"
-import { type Menu, formatCOP as copTienda, rpc } from "@/lib/tienda"
+import {
+  type Adicion,
+  type Menu,
+  type Producto,
+  type TipoPedido,
+  formatCOP,
+  guardarLocal,
+  leerLocal,
+  rpc,
+  waLink,
+} from "@/lib/tienda"
+import {
+  Aviso,
+  BotonCerrar,
+  Cargando,
+  CategoriaIcono,
+  Contador,
+  EASE,
+  Etiqueta,
+  Hoja,
+  Opcion,
+  inputCls,
+} from "@/components/tienda/ui"
+import { Destino, Monto, VueloProvider, useVuelo } from "@/components/tienda/vuelo"
+import { cn } from "@/lib/utils"
 
-const WHATSAPP = "https://wa.me/573143195593"
-const WHATSAPP_MSG = (text: string) => `${WHATSAPP}?text=${encodeURIComponent(text)}`
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0 },
+interface LineaCarrito {
+  key: string
+  producto_id: number
+  cantidad: number
+  adiciones: number[]
+  nota: string
 }
 
-function Reveal({
-  children,
-  className,
-  delay = 0,
-}: {
-  children: React.ReactNode
-  className?: string
-  delay?: number
-}) {
+interface DatosCliente {
+  nombre: string
+  celular: string
+  tipo: TipoPedido
+  direccion: string
+  zona_id: number | null
+  nota_domiciliario: string
+  mesa_id: number | null
+  metodo_pago: "efectivo" | "transferencia" | null
+  lat: number | null
+  lng: number | null
+}
+
+const DATOS_VACIOS: DatosCliente = {
+  nombre: "",
+  celular: "",
+  tipo: "domicilio",
+  direccion: "",
+  zona_id: null,
+  nota_domiciliario: "",
+  mesa_id: null,
+  metodo_pago: null,
+  lat: null,
+  lng: null,
+}
+
+const CARRITO_KEY = "origen_carrito"
+const DATOS_KEY = "origen_datos_cliente"
+const MIS_PEDIDOS_KEY = "origen_mis_pedidos"
+
+const adicionesPara = (p: Producto, adiciones: Adicion[]) =>
+  p.aplica_adiciones === "ninguna" ? [] : adiciones.filter((a) => a.aplica === "todos" || a.aplica === p.aplica_adiciones)
+
+export default function PedirPage() {
   return (
-    <motion.div
-      className={className}
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
+    <VueloProvider>
+      <PedirContenido />
+    </VueloProvider>
   )
 }
 
-const proposal = [
-  {
-    title: "Arepas rellenas",
-    note: "12 opciones · desde $8.000",
-    description:
-      "Maíz peto cocido y molido a mano, tostado en el fogón y relleno al momento.",
-    image: "/img/Carne.png",
-    position: "50% 42%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Patacones rellenos",
-    note: "5 opciones · desde $18.000",
-    description:
-      "Plátano verde dorado y crocante, relleno generoso, queso y hogao casero.",
-    image: "/img/patacon-carne.jpg",
-    position: "62% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Arepa ranchera",
-    note: "Nuevo · $19.000",
-    description: "Arepa de maíz peto rellena de chorizo, maíz tierno y carne.",
-    image: "/img/arepa-ranchera.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Arepa pollo y champiñón",
-    note: "Nuevo · $18.000",
-    description: "Pollo desmechado con champiñones en salsa cremosa, dentro de una arepa recién asada.",
-    image: "/img/arepa-pollo-champinon.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Arepa huevos rancheros",
-    note: "Nuevo · $12.000",
-    description: "Huevos revueltos con salchicha y queso derretido, dentro de una arepa recién asada.",
-    image: "/img/arepa-huevos-rancheros.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Patacón ranchero",
-    note: "Nuevo · $20.000",
-    description: "Patacón crocante relleno de chorizo, maíz tierno y carne.",
-    image: "/img/patacon-ranchero.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Patacón pollo y champiñón",
-    note: "Nuevo · $19.000",
-    description: "Patacón crocante relleno de pollo desmechado con champiñones en salsa cremosa.",
-    image: "/img/patacon-pollo-champinon.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Aborrajados",
-    note: "Entrada · 2 por $10.000",
-    description: "Plátano maduro relleno de queso y bocadillo, apanado y frito hasta quedar dorado.",
-    image: "/img/aborrajados.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Canasta de hogao",
-    note: "Entrada · $3.500",
-    description: "Canastita crocante de plátano rellena de hogao, queso gratinado y orégano.",
-    image: "/img/canasta-hogao.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-  {
-    title: "Arepas preasadas x5",
-    note: "Para llevar · $18.000",
-    description:
-      "Cinco arepas de maíz peto preasadas, naturales y sin sal. Listas para terminar en casa.",
-    image: "/img/arepas-preasadas.jpg",
-    // Esta foto tiene sellos arriba y abajo (badges promocionales) — el
-    // zoom ayuda pero no los saca del todo, lo ideal sería reemplazarla.
-    position: "50% 50%",
-    baseTransform: "scale(1.7)",
-    hoverTransform: "scale(1.78)",
-  },
-  {
-    title: "Adiciones",
-    note: "11 opciones · desde $2.000",
-    description:
-      "Plátano maduro, queso, chicharrón, champiñones, chorizo, salchicha, maíz — para armar tu combinación.",
-    image: "/img/adiciones-maduro.jpg",
-    position: "50% 50%",
-    baseTransform: "scale(1)",
-    hoverTransform: "scale(1.06)",
-  },
-]
+function PedirContenido() {
+  const router = useRouter()
+  const [menu, setMenu] = useState<Menu | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [categoriaId, setCategoriaId] = useState<number | null>(null)
+  // Lectura perezosa de localStorage: el primer render (servidor y cliente)
+  // siempre muestra "Cargando" hasta que llega el menú, así que no hay
+  // desajuste de hidratación aunque el carrito ya venga lleno.
+  const [carrito, setCarrito] = useState<LineaCarrito[]>(() =>
+    typeof window === "undefined" ? [] : leerLocal<LineaCarrito[]>(CARRITO_KEY, [])
+  )
+  const [detalle, setDetalle] = useState<Producto | null>(null)
+  const [sugerir, setSugerir] = useState(false)
+  const [vista, setVista] = useState<"menu" | "carrito" | "datos">("menu")
+  const [aviso, setAviso] = useState<string | null>(null)
+  const { lanzar } = useVuelo()
 
-interface MenuItem {
-  name: string
-  price: string
-}
-
-// Precios de los productos nuevos. Los que están en 0 todavía no tienen precio
-// definido y se ocultan solos de la página hasta que se les ponga uno.
-const NEW_PRICES = {
-  arepaPolloChampinon: 18000,
-  arepaRanchera: 19000,
-  arepaSalami: 13500,
-  arepaHuevosRancheros: 12000,
-  pataconRanchero: 20000,
-  pataconPolloChampinon: 19000,
-  papaFrancesa: 6000,
-}
-const copLabel = (n: number) => `$${n.toLocaleString("es-CO")}`
-const PLACEHOLDER_IMG = "/img/hero-poster.jpg"
-
-const menuGroupsAll: { category: string; items: MenuItem[] }[] = [
-  {
-    category: "Arepas rellenas",
-    items: [
-      { name: "Carne desmechada", price: "$15.500" },
-      { name: "Pollo desmechado", price: "$15.500" },
-      { name: "Chicharrón", price: "$15.500" },
-      { name: "Hawaiana", price: "$12.500" },
-      { name: "Pepperoni", price: "$14.500" },
-      { name: "Huevos revueltos", price: "$8.000" },
-      { name: "Huevos pericos", price: "$8.500" },
-      { name: "Huevos con tocineta", price: "$10.000" },
-      { name: "Pollo y champiñón", price: copLabel(NEW_PRICES.arepaPolloChampinon) },
-      { name: "Ranchera (chorizo, maíz, carne)", price: copLabel(NEW_PRICES.arepaRanchera) },
-      { name: "Salami", price: copLabel(NEW_PRICES.arepaSalami) },
-      { name: "Huevos rancheros", price: copLabel(NEW_PRICES.arepaHuevosRancheros) },
-    ],
-  },
-  {
-    category: "Patacones rellenos",
-    items: [
-      { name: "Carne desmechada", price: "$18.000" },
-      { name: "Pollo desmechado", price: "$18.000" },
-      { name: "Chicharrón", price: "$18.000" },
-      { name: "Pollo y champiñón", price: copLabel(NEW_PRICES.pataconPolloChampinon) },
-      { name: "Ranchero", price: copLabel(NEW_PRICES.pataconRanchero) },
-    ],
-  },
-  {
-    category: "Adiciones",
-    items: [
-      { name: "Plátano maduro", price: "$4.000" },
-      { name: "Huevos de codorniz", price: "$4.000" },
-      { name: "Queso extra", price: "$2.000" },
-      { name: "Chicharrón", price: "$5.000" },
-      { name: "Jamón ahumado", price: "$4.000" },
-      { name: "Piña", price: "$4.000" },
-      { name: "Champiñones", price: "$5.000" },
-      { name: "Chorizo", price: "$5.000" },
-      { name: "Salchicha", price: "$5.000" },
-      { name: "Maíz", price: "$3.000" },
-      { name: "Porción de papa francesa", price: copLabel(NEW_PRICES.papaFrancesa) },
-    ],
-  },
-  {
-    category: "Entradas",
-    items: [
-      { name: "Aborrajados x2", price: "$10.000" },
-      { name: "Canasta de hogao (hogao, queso, orégano)", price: "$3.500" },
-    ],
-  },
-  {
-    category: "Para llevar",
-    items: [
-      { name: "Arepas preasadas x5", price: "$18.000" },
-    ],
-  },
-  {
-    category: "Bebidas",
-    items: [
-      { name: "Gaseosa Coca-Cola 400 ml", price: "$4.000" },
-    ],
-  },
-]
-
-const menuGroups = menuGroupsAll
-  .map((g) => ({ ...g, items: g.items.filter((it) => it.price !== "$0") }))
-  .filter((g) => g.items.length > 0)
-
-const testimonials = [
-  {
-    quote: "Las arepas más auténticas que he probado en Chía. El maíz peto se siente, no es harina cualquiera.",
-    name: "Daniela M.",
-    city: "Chía",
-  },
-  {
-    quote: "Llegaron calientitas en 30 minutos. El patacón con chicharrón es brutal, repito esta semana.",
-    name: "Andrés R.",
-    city: "Cajicá",
-  },
-  {
-    quote: "Pedí para toda la familia y todos quedaron felices. La hawaiana es mi nueva obsesión.",
-    name: "Camila T.",
-    city: "Chía",
-  },
-  {
-    quote: "Calidad de restaurante a domicilio. Empaque impecable y porciones generosas.",
-    name: "Juan P.",
-    city: "Cajicá",
-  },
-]
-
-const navLinks = [
-  { href: "#propuesta", label: "Propuesta" },
-  { href: "#build", label: "Arma tu pedido" },
-  { href: "#menu", label: "Menú" },
-  { href: "#cobertura", label: "Cobertura" },
-  { href: "#contacto", label: "Contacto" },
-]
-
-const sectionsList = [
-  { id: "top", label: "Inicio" },
-  { id: "propuesta", label: "Propuesta" },
-  { id: "build", label: "Arma tu pedido" },
-  { id: "menu", label: "Menú" },
-  { id: "cobertura", label: "Cobertura" },
-  { id: "clientes", label: "Clientes" },
-  { id: "acompanamos", label: "Acompañamiento" },
-  { id: "contacto", label: "Contacto" },
-]
-
-interface Filling {
-  id: string
-  label: string
-  price: number
-  image: string
-}
-
-type BaseId = "arepa" | "patacon" | "entrada"
-const BASE_LABEL: Record<BaseId, string> = { arepa: "Arepa rellena", patacon: "Patacón relleno", entrada: "Entradas" }
-
-const builderBases: { id: BaseId; label: string; note: string; image: string }[] = [
-  { id: "arepa", label: "Arepa rellena", note: "Maíz peto artesanal", image: "/img/Carne.png" },
-  { id: "patacon", label: "Patacón relleno", note: "Plátano verde crocante", image: "/img/patacon-carne.jpg" },
-  { id: "entrada", label: "Entradas", note: "Para abrir el apetito", image: "/img/aborrajados.jpg" },
-]
-
-const fillingsByBase: Record<BaseId, Filling[]> = {
-  arepa: [
-    { id: "carne", label: "Carne desmechada", price: 15500, image: "/img/Carne.png" },
-    { id: "pollo", label: "Pollo desmechado", price: 15500, image: "/img/Pollo.png" },
-    { id: "chicharron", label: "Chicharrón", price: 15500, image: "/img/Chicharron.png" },
-    { id: "hawaiana", label: "Hawaiana", price: 12500, image: "/img/Hawaiana.png" },
-    { id: "pepperoni", label: "Pepperoni", price: 14500, image: "/img/Pepperoni.png" },
-    { id: "huevos", label: "Huevos revueltos", price: 8000, image: "/img/Huevo.png" },
-    { id: "huevos-pericos", label: "Huevos pericos", price: 8500, image: "/img/Huevo.png" },
-    { id: "huevos-tocineta", label: "Huevos con tocineta", price: 10000, image: "/img/Huevo.png" },
-    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.arepaPolloChampinon, image: "/img/arepa-pollo-champinon.jpg" },
-    { id: "ranchera", label: "Ranchera (chorizo, maíz, carne)", price: NEW_PRICES.arepaRanchera, image: "/img/arepa-ranchera.jpg" },
-    { id: "salami", label: "Salami", price: NEW_PRICES.arepaSalami, image: PLACEHOLDER_IMG },
-    { id: "huevos-rancheros", label: "Huevos rancheros", price: NEW_PRICES.arepaHuevosRancheros, image: "/img/arepa-huevos-rancheros.jpg" },
-  ],
-  patacon: [
-    { id: "carne", label: "Carne desmechada", price: 18000, image: "/img/patacon-carne.jpg" },
-    { id: "pollo", label: "Pollo desmechado", price: 18000, image: "/img/patacon-pollo.jpg" },
-    { id: "chicharron", label: "Chicharrón", price: 18000, image: "/img/patacon-chicharron.jpg" },
-    { id: "pollo-champinon", label: "Pollo y champiñón", price: NEW_PRICES.pataconPolloChampinon, image: "/img/patacon-pollo-champinon.jpg" },
-    { id: "ranchero", label: "Ranchero", price: NEW_PRICES.pataconRanchero, image: "/img/patacon-ranchero.jpg" },
-  ],
-  entrada: [
-    { id: "aborrajados", label: "Aborrajados x2", price: 10000, image: "/img/aborrajados.jpg" },
-    { id: "canasta-hogao", label: "Canasta de hogao", price: 3500, image: "/img/canasta-hogao.jpg" },
-  ],
-}
-
-const extrasList = ([
-  { id: "platano", label: "Plátano maduro", price: 4000 },
-  { id: "codorniz", label: "Huevos de codorniz", price: 4000 },
-  { id: "queso", label: "Queso extra", price: 2000 },
-  { id: "carne-extra", label: "Carne adicional", price: 5000 },
-  { id: "pollo-extra", label: "Pollo adicional", price: 5000 },
-  { id: "chicharron-extra", label: "Chicharrón adicional", price: 5000 },
-  { id: "jamon", label: "Jamón ahumado", price: 4000 },
-  { id: "pina", label: "Piña", price: 4000 },
-  { id: "champinones", label: "Champiñones", price: 5000 },
-  { id: "chorizo", label: "Chorizo", price: 5000 },
-  { id: "salchicha", label: "Salchicha", price: 5000 },
-  { id: "maiz", label: "Maíz", price: 3000 },
-  { id: "papa-francesa", label: "Porción de papa francesa", price: NEW_PRICES.papaFrancesa },
-  { id: "coca-cola", label: "Gaseosa Coca-Cola 400 ml", price: 4000 },
-]).filter((e) => e.price > 0)
-
-const formatCOP = (n: number) => `$${n.toLocaleString("es-CO")}`
-
-
-// El menú de esta página se arma con lo que hay en el panel (Admin → Menú):
-// así un cambio de precio o de producto se ve aquí sin tocar el código.
-// Mientras carga (o si falla la conexión) se muestra la lista fija de arriba.
-function useMenuDelPanel() {
-  const [grupos, setGrupos] = useState(menuGroups)
-  useEffect(() => {
+  const cargar = useCallback(() => {
     rpc<Menu>("tienda_menu")
       .then((m) => {
-        const porCategoria = m.categorias
-          .map((c) => ({
-            category: c.nombre,
-            items: m.productos.filter((p) => p.categoria_id === c.id).map((p) => ({ name: p.nombre, price: copTienda(p.precio) })),
-          }))
-          .filter((g) => g.items.length > 0)
-        const adiciones = { category: "Adiciones", items: m.adiciones.map((a) => ({ name: a.nombre, price: copTienda(a.precio) })) }
-        const i = porCategoria.findIndex((g) => g.category.toLowerCase().startsWith("patac"))
-        if (adiciones.items.length) porCategoria.splice(i >= 0 ? i + 1 : porCategoria.length, 0, adiciones)
-        if (porCategoria.length) setGrupos(porCategoria)
+        setError(null)
+        setMenu(m)
+        setCategoriaId((c) => c ?? m.categorias[0]?.id ?? null)
       })
-      .catch(() => {})
-  }, [])
-  return grupos
-}
-
-export default function Home() {
-  const menuVivo = useMenuDelPanel()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState(0)
-  const [elapsed, setElapsed] = useState(0)
-  // El sonido arranca "encendido". Los navegadores no dejan reproducir audio
-  // hasta que la persona toca la página, así que se intenta al cargar y, si el
-  // navegador lo bloquea, se activa solo con el primer toque/clic en cualquier
-  // parte. La campanita solo sirve para silenciar (o volver a activar).
-  const [soundOn, setSoundOn] = useState(true)
-  const [audioUnlocked, setAudioUnlocked] = useState(false)
-  const justUnlocked = useRef(false)
-  const [heroInView, setHeroInView] = useState(true)
-  const heroRef = useRef<HTMLDivElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  const toggleSound = () => {
-    const v = videoRef.current
-    if (!v) return
-    // Si este mismo toque fue el que desbloqueó el audio, la persona quería
-    // escuchar (todavía no sonaba nada): no lo silenciamos.
-    if (justUnlocked.current) {
-      justUnlocked.current = false
-      setSoundOn(true)
-      return
-    }
-    const next = !soundOn
-    v.muted = !next
-    if (next) v.play().catch(() => {})
-    setSoundOn(next)
-  }
-
-  const { scrollYProgress: heroProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  })
-  const heroScale = useTransform(heroProgress, [0, 1], [1, 1.25])
-
-  // Silencia el video apenas la persona empieza a desplazarse por la página
-  // (progreso del hero > 12 %), para que la "música" del fogón no siga sonando
-  // mientras recorre el menú. Vuelve a sonar si el usuario sube de nuevo,
-  // siempre que el sonido ya estuviera activado.
-  useMotionValueEvent(heroProgress, "change", (v) => setHeroInView(v < 0.12))
-  useEffect(() => {
-    if (videoRef.current) videoRef.current.muted = !soundOn || !heroInView || !audioUnlocked
-  }, [soundOn, heroInView, audioUnlocked])
-
-  // Intento de sonido al abrir + desbloqueo con el primer toque/clic.
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    let done = false
-    const events = ["click", "touchend", "keydown"] as const
-    const remove = () => events.forEach((ev) => window.removeEventListener(ev, unlock, true))
-    const markUnlocked = (fromGesture: boolean) => {
-      if (done) return
-      done = true
-      if (fromGesture) {
-        justUnlocked.current = true
-        setTimeout(() => { justUnlocked.current = false }, 400)
-      }
-      setAudioUnlocked(true)
-      remove()
-    }
-    // Solo cuentan gestos que el navegador acepta como "activación" (un toque
-    // o clic, no un deslizamiento).
-    function unlock() {
-      if (done) return
-      v!.muted = false
-      v!.play().catch(() => {})
-      markUnlocked(true)
-    }
-    events.forEach((ev) => window.addEventListener(ev, unlock, { capture: true, passive: true }))
-    // ¿El navegador permite audio sin interacción? (pasa en visitas repetidas)
-    const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation
-    if (ua?.hasBeenActive) markUnlocked(false)
-    return remove
-  }, [])
-
-  const { scrollYProgress: pageProgress } = useScroll()
-  const progressWidth = useTransform(pageProgress, [0, 1], ["0%", "100%"])
-  const scrubLeft = useTransform(pageProgress, [0, 1], ["0%", "100%"])
-
-  // FRAME 0XX / 200 del scrubber inferior, ligado al scroll (estilo visor PRIME)
-  const [frame, setFrame] = useState(0)
-  useMotionValueEvent(pageProgress, "change", (v) => setFrame(Math.round(v * 200)))
-
-  useEffect(() => {
-    const timer = setInterval(() => setElapsed((e) => e + 1), 1000)
-    return () => clearInterval(timer)
+      .catch((e: Error) => setError(e.message))
   }, [])
 
   useEffect(() => {
-    const observers = sectionsList.map((s, i) => {
-      const el = document.getElementById(s.id)
-      if (!el) return null
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(i)
-        },
-        { rootMargin: "-45% 0px -45% 0px" }
+    cargar()
+  }, [cargar])
+
+  useEffect(() => {
+    guardarLocal(CARRITO_KEY, carrito)
+  }, [carrito])
+
+  const avisar = useCallback((t: string) => {
+    setAviso(t)
+    window.setTimeout(() => setAviso((a) => (a === t ? null : a)), 1800)
+  }, [])
+
+  const productoPorId = useMemo(() => new Map(menu?.productos.map((p) => [p.id, p]) ?? []), [menu])
+  const adicionPorId = useMemo(() => new Map(menu?.adiciones.map((a) => [a.id, a]) ?? []), [menu])
+
+  // Si el menú cambió (producto desactivado), la línea se descarta en silencio
+  // en vez de romper el total.
+  const lineas = useMemo(
+    () =>
+      carrito
+        .map((l) => {
+          const p = productoPorId.get(l.producto_id)
+          if (!p) return null
+          const ads = l.adiciones.map((id) => adicionPorId.get(id)).filter((a): a is Adicion => !!a)
+          const unit = p.precio + ads.reduce((s, a) => s + a.precio, 0)
+          return { ...l, producto: p, ads, unit, total: unit * l.cantidad }
+        })
+        .filter((l): l is NonNullable<typeof l> => !!l),
+    [carrito, productoPorId, adicionPorId]
+  )
+  const subtotal = lineas.reduce((s, l) => s + l.total, 0)
+  const unidades = lineas.reduce((s, l) => s + l.cantidad, 0)
+
+  const agregar = (linea: Omit<LineaCarrito, "key">, img: string, origen: Element | null, retraso = 0) => {
+    setCarrito((prev) => {
+      const igual = prev.find(
+        (l) =>
+          l.producto_id === linea.producto_id &&
+          l.nota === linea.nota &&
+          [...l.adiciones].sort().join() === [...linea.adiciones].sort().join()
       )
-      obs.observe(el)
-      return obs
+      if (igual) return prev.map((l) => (l === igual ? { ...l, cantidad: Math.min(l.cantidad + linea.cantidad, 50) } : l))
+      return [...prev, { ...linea, key: `${Date.now()}-${linea.producto_id}` }]
     })
-    return () => observers.forEach((o) => o?.disconnect())
-  }, [])
-
-  const mm = String(Math.floor(elapsed / 60)).padStart(2, "0")
-  const ss = String(elapsed % 60).padStart(2, "0")
-
-  const [base, setBase] = useState<BaseId>("arepa")
-  // Qué acordeón (arepas / patacones) está desplegado. Arranca cerrado: solo se
-  // ven los dos títulos y los sabores aparecen al tocar uno de ellos.
-  const [openBase, setOpenBase] = useState<BaseId | null>(null)
-  const [fillingId, setFillingId] = useState(fillingsByBase.arepa[0].id)
-  const [cart, setCart] = useState<
-    { id: string; baseLabel: string; fillingLabel: string; fillingPrice: number; fillingImage: string; extraIds: string[] }[]
-  >([])
-  // A qué producto del pedido se le suman las adiciones que toques en el Paso 3
-  // — sin esto, no había forma de saber a cuál arepa/patacón iba cada adición.
-  const [activeCartItemId, setActiveCartItemId] = useState<string | null>(null)
-  // Aviso de domicilio: aparece unos segundos la primera vez que el cliente
-  // agrega un producto, para que sepa el costo antes de pedir por WhatsApp.
-  const [deliveryNotice, setDeliveryNotice] = useState(false)
-  const deliveryNoticeShown = useRef(false)
-  const [flyPrice, setFlyPrice] = useState<{
-    id: number
-    image: string
-    startX: number
-    startY: number
-    endX: number
-    endY: number
-  } | null>(null)
-  const flyIdRef = useRef(0)
-  const totalRef = useRef<HTMLDivElement>(null)
-  const mobileTotalRef = useRef<HTMLDivElement>(null)
-
-  const fillings = fillingsByBase[base]
-  const selectedFilling = fillings.find((f) => f.id === fillingId) ?? fillings[0]
-  const baseLabel = BASE_LABEL[base]
-
-  const activeCartItem = cart.find((item) => item.id === activeCartItemId) ?? null
-  const itemPrice = (item: (typeof cart)[number]) =>
-    item.fillingPrice + item.extraIds.reduce((sum, id) => sum + (extrasList.find((e) => e.id === id)?.price ?? 0), 0)
-  const itemExtras = (item: (typeof cart)[number]) => extrasList.filter((e) => item.extraIds.includes(e.id))
-
-  const triggerFly = (image: string, el: HTMLElement) => {
-    const startRect = el.getBoundingClientRect()
-    const startX = startRect.left + startRect.width / 2
-    const startY = startRect.top + startRect.height / 2
-    // El total se desplaza hacia abajo cuando el pedido crece, así que medimos
-    // su posición DESPUÉS de que React repinta (doble rAF) para que la imagen
-    // siempre aterrice en el total y no en donde estaba antes.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // En móvil el total vive en una barra fija abajo (siempre visible); en
-        // desktop, en la tarjeta lateral. Apuntamos al que corresponde.
-        const isMobile = window.matchMedia("(max-width: 1023px)").matches
-        const targetEl = isMobile && mobileTotalRef.current ? mobileTotalRef.current : totalRef.current
-        const endRect = targetEl?.getBoundingClientRect()
-        const endX = endRect ? endRect.left + endRect.width / 2 : startX
-        const endY = endRect ? endRect.top + endRect.height / 2 : startY + 220
-        flyIdRef.current += 1
-        setFlyPrice({ id: flyIdRef.current, image, startX, startY, endX, endY })
-        setTimeout(() => setFlyPrice(null), 1550)
-      })
-    })
+    lanzar({ desde: origen, destino: "barra", img, retraso })
   }
 
-  // Las adiciones se suman siempre al producto activo (el último que tocaste,
-  // o el que hayas seleccionado a mano en "Tu pedido") — así siempre se sabe
-  // a qué arepa o patacón va cada adición, en vez de quedar sueltas.
-  const handleExtraClick = (extra: { id: string; label: string; price: number }, e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!activeCartItem) return
-    const wasActive = activeCartItem.extraIds.includes(extra.id)
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === activeCartItem.id
-          ? {
-              ...item,
-              extraIds: wasActive ? item.extraIds.filter((id) => id !== extra.id) : [...item.extraIds, extra.id],
-            }
-          : item
-      )
-    )
-    if (!wasActive) triggerFly(activeCartItem.fillingImage, e.currentTarget)
-  }
+  const cambiarCantidad = (key: string, cantidad: number) =>
+    setCarrito((prev) => (cantidad <= 0 ? prev.filter((l) => l.key !== key) : prev.map((l) => (l.key === key ? { ...l, cantidad } : l))))
 
-  const removeExtraFromActiveItem = (extraId: string) => {
-    if (!activeCartItem) return
-    setCart((prev) =>
-      prev.map((item) => (item.id === activeCartItem.id ? { ...item, extraIds: item.extraIds.filter((id) => id !== extraId) } : item))
+  if (error && !menu) {
+    return (
+      <Marco>
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-24 text-center">
+          <p className="font-display text-2xl">No pudimos cargar el menú</p>
+          <p className="text-sm text-paper/60">{error}</p>
+          <button type="button" onClick={cargar} className="border border-achiote px-6 py-3 font-mono text-[11px] uppercase tracking-[0.15em] hover:bg-achiote/15">
+            Reintentar
+          </button>
+        </div>
+      </Marco>
     )
   }
+  if (!menu) return <Marco><Cargando texto="Calentando el fogón" /></Marco>
 
-  const grandTotal = cart.length ? cart.reduce((sum, item) => sum + itemPrice(item), 0) : selectedFilling.price
-
-  const addFillingToBase = (b: BaseId, f: Filling, e: React.MouseEvent<HTMLButtonElement>) => {
-    const newItem = {
-      id: `${Date.now()}-${f.id}`,
-      baseLabel: BASE_LABEL[b],
-      fillingLabel: f.label,
-      fillingPrice: f.price,
-      fillingImage: f.image,
-      extraIds: [] as string[],
-    }
-    setCart((prev) => [...prev, newItem])
-    setActiveCartItemId(newItem.id)
-    setBase(b)
-    setOpenBase(b)
-    setFillingId(f.id)
-    triggerFly(f.image, e.currentTarget)
-  }
-
-  const addFilling = (f: Filling, e: React.MouseEvent<HTMLButtonElement>) => addFillingToBase(base, f, e)
-
-  // Al reactivar un producto del pedido hay que sincronizar Paso 1/2 con él —
-  // si no, la foto/nombre de arriba queda mostrando otro producto distinto
-  // del que en verdad estás editando en "Adiciones de X", y las adiciones
-  // parecen sueltas en vez de ir dentro de la arepa/patacón seleccionado.
-  const selectCartItem = (item: (typeof cart)[number]) => {
-    setActiveCartItemId(item.id)
-    const itemBase: BaseId = (Object.keys(BASE_LABEL) as BaseId[]).find((k) => BASE_LABEL[k] === item.baseLabel) ?? "arepa"
-    setBase(itemBase)
-    setOpenBase(itemBase)
-    const match = fillingsByBase[itemBase].find((f) => f.label === item.fillingLabel)
-    if (match) setFillingId(match.id)
-  }
-
-  const removeFromCart = (id: string) =>
-    setCart((prev) => {
-      const next = prev.filter((item) => item.id !== id)
-      if (activeCartItemId === id) {
-        const fallback = next.length ? next[next.length - 1] : null
-        if (fallback) selectCartItem(fallback)
-        else setActiveCartItemId(null)
-      }
-      return next
-    })
-
-  // WhatsApp renderiza *texto* en negrita — así el valor resalta apenas
-  // llega el mensaje, en vez de perderse en medio del resto del texto.
-  const cartItemLine = (item: (typeof cart)[number]) => {
-    const extras = itemExtras(item)
-    const extrasText = extras.length ? ` + ${extras.map((e) => e.label).join(", ")}` : ""
-    return `${item.baseLabel} · ${item.fillingLabel}${extrasText} — *${formatCOP(itemPrice(item))}*`
-  }
-
-  // Con un solo producto el precio ya queda claro en esa línea — agregar un
-  // "Total:" aparte solo lo repite. El total en su propia línea únicamente
-  // aporta cuando hay más de un producto que sumar.
-  useEffect(() => {
-    if (cart.length > 0 && !deliveryNoticeShown.current) {
-      deliveryNoticeShown.current = true
-      setDeliveryNotice(true)
-    }
-  }, [cart.length])
-
-  // Se oculta solo a los 5 s. Va en su propio efecto para que agregar más
-  // productos mientras está visible no cancele el temporizador.
-  useEffect(() => {
-    if (!deliveryNotice) return
-    const t = setTimeout(() => setDeliveryNotice(false), 5000)
-    return () => clearTimeout(t)
-  }, [deliveryNotice])
-
-  const orderMsg = cart.length === 0
-    ? `Hola, quiero pedir: 1 ${baseLabel} de ${selectedFilling.label}. Total: *${formatCOP(selectedFilling.price)}*`
-    : cart.length === 1
-      ? `Hola, quiero pedir: 1 ${cartItemLine(cart[0])}`
-      : `Hola, quiero pedir:\n${cart.map((item, i) => `${i + 1}. ${cartItemLine(item)}`).join("\n")}\nTotal: *${formatCOP(grandTotal)}*`
+  const categoria = menu.categorias.find((c) => c.id === categoriaId) ?? menu.categorias[0]
+  const productos = menu.productos.filter((p) => p.categoria_id === categoria?.id)
+  const sugeridos = menu.productos.filter((p) => p.sugerido)
+  const bebidas = menu.categorias.find((c) => c.icono === "bebida")
 
   return (
-    <div className="flex flex-1 flex-col bg-carbon font-sans text-paper">
-      {/* ================= HEADER ================= */}
-      {/* Fondo sólido con blur en vez de mix-blend-difference: ese truco se
-          rompía cada vez que había un <Reveal> (Framer Motion) detrás, porque
-          el transform inline que deja motion crea un nuevo stacking context
-          y corta el blending contra el fondo real de la sección. */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-paper/10 bg-carbon/80 backdrop-blur-md">
-        {/* Franja de anuncio: nuevos productos en camino */}
-        <a
-          href={WHATSAPP_MSG("Hola, quiero que me avisen cuando lleguen los nuevos productos de Origen")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center justify-center gap-2 bg-achiote px-4 py-1.5 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-carbon transition hover:brightness-110 sm:text-[11px]"
-        >
-          <motion.span
-            aria-hidden="true"
-            className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-carbon"
-            animate={{ opacity: [1, 0.25, 1] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <span>
-            Muy pronto: nuevos sabores de Colombia
-            <span className="hidden sm:inline"> — escríbenos y sé el primero en probarlos</span>
-          </span>
-          <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
-        </a>
-        <div className="flex items-center justify-between px-6 py-3 text-paper md:px-14">
-          <a href="#top" className="flex items-center gap-3">
-            <Image src="/img/logo-origen.png" alt="Origen" width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
-            <span className="font-display text-xl font-semibold uppercase tracking-tight">Origen</span>
-          </a>
-          <nav className="hidden items-center gap-10 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/85 md:flex">
-            {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="transition hover:text-tostado">
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <a
-              href="/pedir"
-              className="hidden border border-achiote bg-achiote/15 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.15em] transition hover:bg-achiote hover:text-carbon sm:inline-block"
-            >
-              Pedir ahora
-            </a>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
-              aria-expanded={menuOpen}
-              className="flex h-9 w-9 flex-col items-center justify-center gap-[5px] md:hidden"
-            >
-              <motion.span
-                animate={menuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-                className="h-[1.5px] w-6 bg-paper"
-              />
-              <motion.span
-                animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
-                className="h-[1.5px] w-6 bg-paper"
-              />
-              <motion.span
-                animate={menuOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-                className="h-[1.5px] w-6 bg-paper"
-              />
-            </button>
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.nav
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden border-t border-paper/10 md:hidden"
-            >
-              <div className="flex flex-col px-6 py-2 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/75">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="border-b border-paper/10 py-2.5 transition hover:text-tostado last:border-b-0"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-                <a
-                  href="/pedir"
-                  onClick={() => setMenuOpen(false)}
-                  className="mt-3 mb-2 inline-block border border-achiote bg-achiote/15 px-4 py-2 text-center text-[10px] transition hover:bg-achiote/30"
-                >
-                  Pedir ahora
-                </a>
-              </div>
-            </motion.nav>
-          )}
-        </AnimatePresence>
-      </header>
-
-      {/* ================= HERO ================= */}
-      {/* Hero "clavado" en pantalla: scrollea 130vh mientras el sticky interior
-          se queda fijo y la foto hace zoom lento según el progreso de scroll,
-          técnica inspirada en intros cinematográficas con scroll-pin. */}
-      <section id="top" ref={heroRef} className="relative h-[130vh]">
-        <div className="sticky top-0 flex h-[100svh] min-h-[600px] items-end overflow-hidden bg-carbon text-paper">
-          <motion.div className="absolute inset-0" style={{ scale: heroScale }}>
-            <video
-              ref={videoRef}
-              autoPlay
-              muted={!soundOn || !heroInView || !audioUnlocked}
-              loop
-              playsInline
-              poster="/img/hero-poster.jpg"
-              className="absolute inset-0 h-full w-full object-cover"
-            >
-              <source src="/video/hero.mp4" type="video/mp4" />
-            </video>
-          </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/55 to-carbon/20" />
-
-          {/* campanita de sonido: el audio queda activo por defecto; aquí solo se silencia */}
-          {soundOn && !audioUnlocked && (
-            <motion.span
-              aria-hidden="true"
-              className="pointer-events-none absolute right-[4.25rem] top-[6.6rem] z-20 whitespace-nowrap border border-achiote/60 bg-carbon/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-tostado backdrop-blur-sm md:right-[6.75rem] md:top-[7.6rem]"
-              animate={{ opacity: [0.55, 1, 0.55] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            >
-              Toca la pantalla para el sonido
-            </motion.span>
-          )}
-          <button
-            type="button"
-            onClick={toggleSound}
-            aria-label={soundOn && audioUnlocked ? "Silenciar" : "Activar sonido"}
-            className={`absolute right-6 top-24 z-20 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition md:right-14 md:top-28 ${
-              soundOn
-                ? "border border-achiote bg-achiote/20 text-tostado shadow-[0_0_16px_rgba(201,154,62,0.5)] hover:bg-achiote/30"
-                : "border border-paper/30 bg-carbon/40 text-paper/80 hover:border-paper/60 hover:text-paper"
-            }`}
-          >
-            {soundOn ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
-                <path d="M11 5 6 9H2v6h4l5 4V5z" />
-                <path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
-                <path d="M11 5 6 9H2v6h4l5 4V5z" />
-                <path d="M23 9l-6 6M17 9l6 6" />
-              </svg>
-            )}
-          </button>
-
-          {/* Humo saliendo de la arepa recién hecha — tenue, tipo vapor delgado */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            {[
-              { left: "50%", width: 14, height: 60, delay: 0, duration: 4.5 },
-              { left: "56%", width: 10, height: 48, delay: 1.6, duration: 4 },
-              { left: "45%", width: 11, height: 52, delay: 3, duration: 4.2 },
-            ].map((wisp, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full bg-paper/60 blur-md"
-                style={{
-                  left: wisp.left,
-                  bottom: "58%",
-                  width: wisp.width,
-                  height: wisp.height,
-                }}
-                initial={{ opacity: 0, y: 10, scaleX: 1 }}
-                animate={{ opacity: [0, 0.28, 0.18, 0], y: -90, scaleX: [1, 1.6, 2.2] }}
-                transition={{
-                  duration: wisp.duration,
-                  delay: wisp.delay,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="relative mx-auto w-full max-w-6xl px-6 pb-20 text-center md:pb-24"
-          >
-            <p className="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-tostado">
-              Cocina en Chía · Domicilio en Chía, Cajicá y Cota
-            </p>
-            {/* Titular: la marca "Origen" ya está en el header/logo, así que
-                acá solo va la línea "fantasma" en contorno — más grande y
-                clara para que se lea bien de lejos. */}
-            <h1 className="pt-2 font-sans font-bold uppercase tracking-[-0.03em]">
-              <span className="block whitespace-nowrap leading-[0.95] text-[clamp(1.6rem,6.6vw,3.6rem)] text-transparent [-webkit-text-stroke:1.4px_rgba(242,234,216,0.65)]">
-                <span className="text-tostado [-webkit-text-stroke:0]">// </span>Hecho a mano
-              </span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-paper md:text-xl">
-              Arepas rellenas y patacones artesanales, hechos con maíz peto
-              cocido y molido a mano, de martes a domingo.
-            </p>
-            <div className="mt-5 flex flex-col items-center gap-3">
-              <a
-                href="#menu"
-                className="inline-block font-mono text-sm font-semibold uppercase tracking-[0.15em] text-tostado underline underline-offset-4 transition hover:text-paper"
-              >
-                Ver menú completo
-              </a>
-            </div>
-            <div className="mt-8 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:gap-5">
-              <BorderBeamButton
-                asChild
-                beamSize="md"
-                colorVariant="sunset"
-                theme="dark"
-                size="lg"
-                className="w-full rounded-none border border-achiote bg-achiote px-8 text-center font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon hover:bg-tostado sm:w-auto"
-              >
-                <a href="/pedir">Pedir en línea</a>
-              </BorderBeamButton>
-              <Button
-                asChild
-                size="lg"
-                className="w-full rounded-none border border-tostado/70 bg-transparent px-8 text-center font-mono text-xs uppercase tracking-[0.15em] text-paper hover:bg-tostado/15 sm:w-auto"
-              >
-                <a href={WHATSAPP_MSG("Hola, quiero hacer un pedido en Origen 🌽")} target="_blank" rel="noopener noreferrer">
-                  Pedir por WhatsApp
-                </a>
-              </Button>
-            </div>
-            <p className="mt-5 font-mono text-xs uppercase tracking-[0.1em] text-paper/70">
-              ¿Prefieres hablar primero?{" "}
-              <a href="tel:+573143195593" className="text-tostado underline underline-offset-4 transition hover:text-paper">
-                Llámanos al 314 319 5593
-              </a>
-            </p>
-
-            {/* prompt de scroll, como el "SCROLL NOW" de PRIME */}
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              className="mt-12 flex flex-col items-center gap-1 font-mono text-[10px] uppercase tracking-[0.3em] text-paper/45"
-            >
-              <span>Baja para empezar</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4 text-tostado">
-                <path d="M12 5v14M6 13l6 6 6-6" />
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          <DistortedGlass className="absolute inset-x-0 bottom-0 xl:w-full" />
-        </div>
-      </section>
-
-      {/* ================= NUESTRA PROPUESTA ================= */}
-      <section id="propuesta" className="border-t border-paper/10 px-6 py-16 md:px-14">
-        <Reveal className="mx-auto mb-14 max-w-2xl text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-achiote">01 — Nuestra propuesta</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Lo que sale del fogón</h2>
-        </Reveal>
-
-        {/* cinta horizontal continua — las tarjetas se desplazan solas hacia la izquierda */}
-        <Reveal>
-          <div className="relative overflow-hidden">
-            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden bg-gradient-to-r from-carbon to-transparent md:block md:w-32" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden bg-gradient-to-l from-carbon to-transparent md:block md:w-32" />
-            <motion.div
-              className="flex w-max gap-8"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
-            >
-              {[...proposal, ...proposal].map((item, i) => (
-                <a key={`${item.title}-${i}`} href="#menu" className="group block w-64 shrink-0 sm:w-72">
-                  <div className="relative aspect-[3/4] overflow-hidden transition-transform duration-500 ease-out group-hover:scale-[1.02]">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      sizes="(min-width: 640px) 18rem, 16rem"
-                      style={{
-                        objectPosition: item.position,
-                        ["--base-transform" as string]: item.baseTransform,
-                        ["--hover-transform" as string]: item.hoverTransform,
-                        transform: "var(--base-transform)",
-                      }}
-                      className="object-cover transition duration-700 group-hover:[transform:var(--hover-transform)]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-carbon/80 via-carbon/10 to-transparent" />
-                    {/* borde dorado siempre visible (da relevancia a la tarjeta) y un
-                        segundo borde que titila encima, sin sombra/resplandor. */}
-                    <div className="pointer-events-none absolute inset-0 border-2 border-achiote/60 transition duration-500 group-hover:border-achiote" />
-                    <motion.div
-                      className="pointer-events-none absolute inset-0 border-2 border-achiote"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 1, 0] }}
-                      transition={{
-                        duration: 1.8,
-                        repeat: Infinity,
-                        repeatDelay: 1.2,
-                        delay: (i % proposal.length) * 0.7,
-                        ease: "easeInOut",
-                      }}
-                    />
-                    <div className="absolute inset-x-0 bottom-0 p-6 text-paper">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-tostado">{item.note}</p>
-                      <h3 className="mt-2 font-display text-2xl font-semibold uppercase tracking-tight">{item.title}</h3>
-                    </div>
-                  </div>
-                  <p className="mt-5 text-sm leading-relaxed text-paper/80">{item.description}</p>
-                  <span className="mt-3 inline-block font-mono text-[11px] uppercase tracking-[0.15em] text-achiote group-hover:underline">
-                    Ver en el menú →
-                  </span>
-                </a>
-              ))}
-            </motion.div>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ================= ARMA TU PEDIDO (build configurator) ================= */}
-      {/* Inspirado en el configurador "Build Your Brace" — pasos con anillo de
-          selección animado (layoutId compartido que se desliza entre opciones),
-          vista previa que cruza en fade según la selección y total en vivo. */}
-      <section id="build" className="border-t border-paper/10 px-6 py-16 md:px-14">
-        <Reveal className="mx-auto mb-16 max-w-3xl">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-achiote">Interactivo // Personalizado</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">
-            <span className="text-tostado">// 02.</span> Pide en 3 pasos
-          </h2>
-        </Reveal>
-
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1fr]">
-          {/* -------- pasos -------- */}
-          <div>
-            <p className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-tostado">Elige tu arepa, patacón o entradas</p>
-            {builderBases.map((b, bi) => {
-              const isOpen = openBase === b.id
-              const catFillings = fillingsByBase[b.id]
-              return (
-                <Reveal key={b.id} delay={bi * 0.1}>
-                  <div className="mb-4 border border-paper/15">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isOpen) {
-                          setOpenBase(null)
-                        } else {
-                          setOpenBase(b.id)
-                          // Si ya hay un producto de esta categoría en el pedido,
-                          // lo reactivamos para seguir editando sus adiciones en
-                          // vez de mostrar "agrega un producto primero" de nuevo.
-                          const existing = [...cart].reverse().find((item) => item.baseLabel === b.label)
-                          if (existing) {
-                            selectCartItem(existing)
-                          } else {
-                            setBase(b.id)
-                            setFillingId(fillingsByBase[b.id][0].id)
-                          }
-                        }
-                      }}
-                      className="group relative flex w-full items-center gap-4 p-4 text-left transition hover:border-paper/40"
-                    >
-                      {isOpen && (
-                        <motion.div
-                          layoutId="base-glow"
-                          className="absolute inset-0 border border-achiote shadow-[0_0_24px_rgba(201,154,62,0.35)]"
-                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                        />
-                      )}
-                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-paper/20">
-                        <Image src={b.image} alt={b.label} fill sizes="64px" className="object-cover" />
-                      </div>
-                      <div className="relative min-w-0 flex-1">
-                        <p className="font-mono text-sm uppercase tracking-[0.1em] text-paper">{b.label}</p>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-paper/60">{b.note}</p>
-                      </div>
-                      <svg
-                        className={`relative h-5 w-5 shrink-0 text-tostado transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                      >
-                        <path d="M6 9l6 6 6-6" />
-                      </svg>
-                    </button>
-                    {/* Mostrar/ocultar directo, sin animar la entrada/salida del panel:
-                        con dos acordeones independientes (arepa/patacón) compartiendo el
-                        layoutId del resplandor del encabezado, animar cada panel por
-                        separado terminaba desincronizándose — uno se quedaba abierto y
-                        el otro cerrado aunque el estado real ya había cambiado. */}
-                    {isOpen && (
-                        <div className="border-t border-paper/15">
-                          <div className="p-4">
-                            <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60">
-                              {b.id === "entrada" ? "Elige tu entrada (toca para añadir)" : "Elige el relleno (toca para añadir)"}
-                            </p>
-                            <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
-                              {catFillings.map((f) => (
-                                <button
-                                  key={f.id}
-                                  type="button"
-                                  onClick={(e) => addFilling(f, e)}
-                                  className="group relative flex min-h-[8.25rem] flex-col items-center justify-start gap-2 border border-paper/15 px-2 py-3 text-center transition hover:border-paper/40"
-                                >
-                                  {fillingId === f.id && (
-                                    <motion.div
-                                      layoutId="filling-glow"
-                                      className="absolute inset-0 border border-achiote shadow-[0_0_16px_rgba(201,154,62,0.3)]"
-                                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                                    />
-                                  )}
-                                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-paper/15">
-                                    <Image src={f.image} alt={f.label} fill sizes="56px" className="object-cover" />
-                                  </div>
-                                  <div className="relative w-full">
-                                    <p className="text-sm font-medium leading-snug text-paper [overflow-wrap:normal] [word-break:normal]">{f.label}</p>
-                                    <p className="mt-1 font-mono text-xs text-tostado">{formatCOP(f.price)}</p>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-
-                            {/* Adiciones + bebidas de esta categoría — aparecen apenas
-                                agregas un relleno de arepa o de patacón, sin salir del
-                                acordeón que tienes abierto. Solo cuentan si el producto
-                                activo es en verdad de esta categoría (arepa vs. patacón) —
-                                si no, se verían las adiciones de otro producto sin serlo. */}
-                            {(() => {
-                              const itemHere = activeCartItem && activeCartItem.baseLabel === b.label ? activeCartItem : null
-                              return (
-                            <div className="mt-6 border-t border-paper/15 pt-4">
-                              <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-tostado">
-                                {b.id === "entrada" ? "Bebidas" : "Adiciones y bebidas"}{" "}
-                                {itemHere ? (
-                                  <>
-                                    para <span className="text-tostado">{itemHere.fillingLabel}</span>
-                                  </>
-                                ) : (
-                                  "(agrega un producto primero)"
-                                )}
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {(b.id === "entrada" ? extrasList.filter((x) => x.id === "coca-cola") : extrasList).map((e) => {
-                                  const active = itemHere?.extraIds.includes(e.id) ?? false
-                                  return (
-                                    <motion.button
-                                      key={e.id}
-                                      type="button"
-                                      disabled={!itemHere}
-                                      whileTap={{ scale: 0.94 }}
-                                      onClick={(ev) => handleExtraClick(e, ev)}
-                                      className={`border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.05em] transition disabled:cursor-not-allowed disabled:opacity-30 ${
-                                        active
-                                          ? "border-achiote bg-achiote/15 text-paper"
-                                          : "border-paper/15 text-paper/60 hover:border-paper/40"
-                                      }`}
-                                    >
-                                      {e.label} <span className="text-tostado">+{formatCOP(e.price)}</span>
-                                    </motion.button>
-                                  )
-                                })}
-                              </div>
-                              <div className="mt-4 flex flex-wrap gap-2 font-mono text-[11px] uppercase tracking-[0.15em]">
-                                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
-                                  Domicilio Chía · $5.000
-                                </span>
-                                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
-                                  Domicilio Cajicá · $10.000
-                                </span>
-                                <span className="border border-tostado/40 px-3 py-1.5 text-tostado/90">
-                                  Domicilio Cota · $10.000
-                                </span>
-                              </div>
-                            </div>
-                              )
-                            })()}
-                          </div>
-                        </div>
-                    )}
-                  </div>
-                </Reveal>
-              )
-            })}
-          </div>
-
-          {/* -------- vista previa en vivo -------- */}
-          {/* En móvil va ARRIBA y sticky, para que el total quede siempre visible
-              y la imagen voladora aterrice en el precio. En desktop vuelve a la
-              columna derecha. */}
-          <Reveal delay={0.15}>
-            <div className="sticky top-24 border border-paper/15">
-              <div className="relative h-[clamp(170px,26vh,260px)] overflow-hidden lg:h-[clamp(190px,32vh,320px)]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedFilling.image}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.97 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0"
-                  >
-                    <Image src={selectedFilling.image} alt={selectedFilling.label} fill sizes="(min-width: 1024px) 40vw, 90vw" className="object-cover" />
-                  </motion.div>
-                </AnimatePresence>
-                <div className="absolute inset-0 bg-gradient-to-t from-carbon/90 via-transparent to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-tostado">{baseLabel}</p>
-                  <p className="font-display text-2xl">{selectedFilling.label}</p>
-                </div>
-              </div>
-              {activeCartItem && (
-                <div className="space-y-2 border-t border-paper/15 p-5 font-mono text-xs uppercase tracking-[0.05em]">
-                  <p className="mb-1 text-[10px] tracking-[0.2em] text-paper/65">
-                    Adiciones de <span className="text-tostado">{activeCartItem.fillingLabel}</span>
-                  </p>
-                  {itemExtras(activeCartItem).length ? (
-                    itemExtras(activeCartItem).map((e) => (
-                      <div key={e.id} className="flex items-center justify-between gap-2 text-paper/80">
-                        <span>+ {e.label}</span>
-                        <span className="flex shrink-0 items-center gap-2">
-                          {formatCOP(e.price)}
-                          <button
-                            type="button"
-                            onClick={() => removeExtraFromActiveItem(e.id)}
-                            aria-label={`Quitar ${e.label}`}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-achiote/70 bg-achiote/15 text-lg leading-none text-paper transition hover:bg-achiote hover:text-carbon lg:h-7 lg:w-7 lg:text-base"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="normal-case tracking-normal text-paper/55">Ninguna — toca una adición arriba para sumarla a este producto</p>
-                  )}
-                </div>
-              )}
-
-              {cart.length > 0 && (
-                <div className="max-h-[22vh] space-y-2 overflow-y-auto border-t border-paper/15 p-5 font-mono text-xs uppercase tracking-[0.05em]">
-                  <p className="mb-1 text-[10px] tracking-[0.2em] text-paper/65">Tu pedido — toca uno para editar sus adiciones</p>
-                  {cart.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`flex w-full items-center justify-between gap-3 border-l-2 py-1.5 pl-2 transition ${
-                        item.id === activeCartItemId ? "border-achiote text-paper" : "border-transparent text-paper/70"
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => selectCartItem(item)}
-                        className="min-w-0 flex-1 text-left normal-case tracking-normal transition hover:text-paper"
-                      >
-                        <span className="block truncate">{item.baseLabel} · {item.fillingLabel}</span>
-                        {itemExtras(item).length > 0 && (
-                          <span className="block truncate text-paper/65">+ {itemExtras(item).map((e) => e.label).join(", ")}</span>
-                        )}
-                      </button>
-                      <span className="flex shrink-0 items-center gap-2">
-                        {formatCOP(itemPrice(item))}
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.id)}
-                          aria-label="Quitar del pedido"
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-achiote/70 bg-achiote/15 text-lg leading-none text-paper transition hover:bg-achiote hover:text-carbon lg:h-7 lg:w-7 lg:text-base"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {cart.length === 1 && (
-                <p className="border-t border-paper/15 bg-achiote/10 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.1em] text-tostado">
-                  Pedido mínimo para domicilio: 2 productos — agrega uno más
-                </p>
-              )}
-
-              {cart.length > 0 && (
-                <div className="border-t border-paper/15 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.1em]">
-                  <p className="mb-2 text-[10px] tracking-[0.2em] text-paper/65">Domicilio — se suma al total</p>
-                  <div className="flex flex-wrap gap-2 text-tostado">
-                    <span className="border border-tostado/40 px-2.5 py-1">Chía · $5.000</span>
-                    <span className="border border-tostado/40 px-2.5 py-1">Cajicá · $10.000</span>
-                    <span className="border border-tostado/40 px-2.5 py-1">Cota · $10.000</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between border-t border-paper/15 p-5">
-                <div ref={totalRef}>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-paper/65">
-                    {cart.length ? "Total del pedido (sin domicilio)" : "Total"}
-                  </p>
-                  <p className="font-display text-3xl text-achiote">{formatCOP(grandTotal)}</p>
-                </div>
-                <a
-                  href={WHATSAPP_MSG(orderMsg)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border border-achiote bg-achiote px-5 py-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper transition hover:bg-achiote/85"
-                >
-                  Pedir por WhatsApp
-                </a>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* imagen "volando" desde el producto tocado hasta el total — igual que en
-          PRIME el foco es el producto, no la cifra: se ancla con left/top
-          estáticos en el punto de origen y anima solo x/y (transform nativo de
-          Framer, el único que garantiza interpolación fluida). */}
-      <AnimatePresence>
-        {flyPrice && (
-          <motion.div
-            key={flyPrice.id}
-            initial={{ x: 0, y: 0, opacity: 1, scale: 1.15, rotate: -6 }}
-            animate={{
-              x: flyPrice.endX - flyPrice.startX,
-              y: flyPrice.endY - flyPrice.startY,
-              opacity: [1, 1, 0],
-              scale: [1.15, 1, 0.5],
-              rotate: 8,
-            }}
-            transition={{
-              duration: 1.5,
-              ease: [0.4, 0, 0.3, 1],
-              opacity: { duration: 1.5, times: [0, 0.85, 1], ease: "linear" },
-              scale: { duration: 1.5, times: [0, 0.75, 1], ease: [0.4, 0, 0.3, 1] },
-            }}
-            style={{ position: "fixed", left: flyPrice.startX, top: flyPrice.startY }}
-            className="pointer-events-none z-[60] -ml-9 -mt-9 h-[72px] w-[72px] overflow-hidden rounded-full border-2 border-achiote shadow-[0_0_28px_rgba(201,154,62,0.7)]"
-          >
-            <Image src={flyPrice.image} alt="" fill sizes="72px" className="object-cover" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ================= MENU ================= */}
-      <section id="menu" className="border-t border-paper/10 bg-carbon px-6 py-16 text-paper md:px-14">
-        <Reveal className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-tostado">03 — El menú</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Origen</h2>
-        </Reveal>
-
-        <div className="mx-auto grid max-w-5xl gap-16 sm:grid-cols-2 lg:grid-cols-4">
-          {menuVivo.map((group, gi) => (
-            <Reveal key={group.category} delay={gi * 0.1}>
-              <h3 className="mb-6 font-display text-2xl font-semibold uppercase tracking-tight text-tostado">{group.category}</h3>
-              <ul className="space-y-4">
-                {group.items.map((item) => (
-                  <li key={item.name} className="flex items-baseline gap-2">
-                    <span className="text-sm text-paper/85">{item.name}</span>
-                    <span className="flex-1 border-b border-dotted border-paper/25 translate-y-[-4px]" />
-                    <span className="font-mono text-sm text-tostado">{item.price}</span>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal className="mx-auto mt-16 max-w-2xl text-center">
-          <p className="font-mono text-xs text-paper/70">Pedido mínimo: 2 productos · Entrega en 25–40 min</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-5">
-            <BorderBeamButton
-              asChild
-              beamSize="md"
-              colorVariant="sunset"
-              theme="dark"
-              size="lg"
-              className="rounded-none border border-tostado/60 bg-transparent px-8 font-mono text-xs uppercase tracking-[0.15em] text-paper hover:bg-paper/10"
-            >
-              <a href={WHATSAPP_MSG("Hola, quiero hacer un pedido en Origen 🌽")} target="_blank" rel="noopener noreferrer">
-                Pedir por WhatsApp
-              </a>
-            </BorderBeamButton>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ================= COBERTURA ================= */}
-      <section id="cobertura" className="relative flex min-h-[70vh] items-center overflow-hidden bg-carbon text-paper">
-        <Image
-          src="/img/Pollo.png"
-          alt="Domicilio Origen en Chía, Cajicá y Cota"
-          fill
-          sizes="100vw"
-          style={{ objectPosition: "50% 42%" }}
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-carbon/70" />
-        <Reveal className="relative mx-auto max-w-2xl px-6 py-14 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-tostado">04 — Cobertura</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Chía, Cajicá y Cota</h2>
-          <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-paper">
-            Sin sede física — todo el esfuerzo va en el maíz y en que tu
-            pedido llegue caliente. Pedido mínimo para domicilio: 2 productos. Entrega en 25 a 40
-            minutos, de martes a domingo de 9:00 a.m. a 11:00 p.m. (lunes cerrado).
-          </p>
-          <div className="mx-auto mt-6 flex flex-wrap justify-center gap-3 font-mono text-xs uppercase tracking-[0.15em]">
-            <span className="border border-tostado/50 px-4 py-2 text-tostado">
-              Domicilio Chía · $5.000
-            </span>
-            <span className="border border-tostado/50 px-4 py-2 text-tostado">
-              Domicilio Cajicá · $10.000
-            </span>
-            <span className="border border-tostado/50 px-4 py-2 text-tostado">
-              Domicilio Cota · $10.000
-            </span>
-          </div>
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <a
-              href={WHATSAPP_MSG("Hola, quiero hacer un pedido en Origen 🌽")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block border border-paper/50 px-8 py-3 font-mono text-xs uppercase tracking-[0.15em] transition hover:border-paper hover:bg-paper/10"
-            >
-              Pedir por WhatsApp
-            </a>
-            <a href="tel:+573143195593" className="font-mono text-xs uppercase tracking-[0.1em] text-paper/80 transition hover:text-tostado">
-              📞 Llámanos: 314 319 5593
-            </a>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ================= TESTIMONIOS ================= */}
-      <section id="clientes" className="border-t border-paper/10 px-6 py-16 md:px-14">
-        <Reveal className="mx-auto mb-14 max-w-2xl text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-achiote">05 — Clientes</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">Lo que dicen de nosotros</h2>
-        </Reveal>
-        <div className="mx-auto grid max-w-5xl gap-x-12 gap-y-14 md:grid-cols-2">
-          {testimonials.map((t, i) => (
-            <Reveal key={t.name} delay={(i % 2) * 0.15}>
-              <p className="mb-3 text-tostado">★★★★★</p>
-              <p className="font-display text-xl italic leading-snug text-paper/90">
-                “{t.quote}”
-              </p>
-              <p className="mt-4 font-mono text-xs uppercase tracking-[0.15em] text-paper/75">{t.name}</p>
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-achiote">{t.city}</p>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* ================= ACOMPAÑAMIENTO (capturas de WhatsApp) ================= */}
-      <section id="acompanamos" className="border-t border-paper/10 px-6 py-16 md:px-14">
-        <Reveal className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-achiote">06 — Acompañamiento</p>
-          <h2 className="mt-4 font-sans text-4xl font-bold uppercase leading-[0.9] tracking-[-0.02em] md:text-6xl">
-            Así te acompañamos, de principio a fin
-          </h2>
-        </Reveal>
-        <div className="mx-auto grid max-w-3xl gap-6">
-          {["/img/whatsapp/whatsapp-1.png", "/img/whatsapp/whatsapp-2.png", "/img/whatsapp/whatsapp-3.png"].map((src, i) => (
-            <Reveal key={src} delay={i * 0.1}>
-              <div className="relative aspect-[5/3] overflow-hidden border border-paper/15 bg-paper/[0.03]">
-                <Image src={src} alt={`Conversación real por WhatsApp con un cliente de Origen ${i + 1}`} fill sizes="(min-width: 640px) 48rem, 90vw" className="object-contain" />
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* ================= FOOTER / CONTACTO ================= */}
-      <footer id="contacto" className="border-t border-paper/10 px-6 py-16 md:px-14">
-        <p className="mx-auto mb-10 max-w-5xl font-mono text-xs uppercase tracking-[0.3em] text-achiote">07 — Contacto</p>
-        <div className="mx-auto flex max-w-5xl flex-col gap-10 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="font-display text-2xl font-semibold uppercase tracking-tight text-paper">Origen</p>
-            <p className="mt-1 text-sm text-paper/70">Sabor con Origen</p>
-          </div>
-          <div className="grid grid-cols-2 gap-10 font-mono text-xs">
-            <div>
-              <p className="mb-3 uppercase tracking-[0.15em] text-achiote">Contacto</p>
-              <ul className="space-y-2 text-paper/85">
-                <li><a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="hover:text-achiote">WhatsApp: +57 314 319 5593</a></li>
-                <li><a href="tel:+573143195593" className="hover:text-achiote">📞 Llámanos: 314 319 5593</a></li>
-                <li><a href="https://www.instagram.com/origen5752/" target="_blank" rel="noopener noreferrer" className="hover:text-achiote">Instagram @origen5752</a></li>
-                <li><a href="https://www.facebook.com/Origen1948/" target="_blank" rel="noopener noreferrer" className="hover:text-achiote">Facebook</a></li>
-              </ul>
-            </div>
-            <div>
-              <p className="mb-3 uppercase tracking-[0.15em] text-achiote">Horario</p>
-              <ul className="space-y-2 text-paper/85">
-                <li>Martes a domingo</li>
-                <li>9:00 a.m. – 11:00 p.m.</li>
-                <li>Lunes cerrado</li>
-                <li>Chía, Cajicá y Cota</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <p className="mx-auto mt-14 max-w-5xl font-mono text-[11px] text-paper/35">
-          © 2026 Origen — hecho con maíz y paciencia.
-        </p>
-      </footer>
-
-      {/* ================= HUD DE CÁMARA (marco film, toda la página) ================= */}
-      {/* Marco tipo visor de cámara que persiste sobre todas las secciones, igual
-          que en PRIME: esquinas, REC + timecode, specs de cámara y texto vertical.
-          pointer-events-none para no bloquear clics del contenido. */}
-      <div className="pointer-events-none fixed inset-0 z-40 hidden md:block">
-        <span className="absolute left-6 top-20 h-6 w-6 border-l border-t border-paper/25" />
-        <span className="absolute right-6 top-20 h-6 w-6 border-r border-t border-paper/25" />
-        <span className="absolute bottom-[76px] left-6 h-6 w-6 border-b border-l border-paper/25" />
-        <span className="absolute bottom-[76px] right-6 h-6 w-6 border-b border-r border-paper/25" />
-
-        <div className="absolute left-10 top-[84px] flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/60">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-achiote opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-achiote" />
-          </span>
-          REC 00:00:{mm}:{ss}
-        </div>
-
-        <div className="absolute right-10 top-[84px] font-mono text-[11px] uppercase tracking-[0.18em] text-paper/45">
-          4K · 24FPS · F2.8 · 1/50
-        </div>
-
-        <div
-          className="absolute right-8 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-[0.3em] text-paper/30"
-          style={{ writingMode: "vertical-rl" }}
-        >
-          Origen corte No.01 — maíz peto
-        </div>
-      </div>
-
-      {/* espacio para que el scrubber fijo no tape el pie de página */}
-      <div className="hidden h-20 md:block" />
-
-      {/* ================= SCRUBBER INFERIOR (regla + lecturas) ================= */}
-      <div className="fixed inset-x-0 bottom-0 z-40 hidden flex-col border-t border-paper/10 bg-carbon/90 backdrop-blur-md md:flex">
-        {/* regla de marcas con indicador de diamante que avanza con el scroll */}
-        <div className="relative h-6 overflow-hidden border-b border-paper/10">
-          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between px-1">
-            {Array.from({ length: 80 }).map((_, i) => (
-              <span key={i} className={`w-px bg-paper/20 ${i % 10 === 0 ? "h-4 bg-paper/35" : "h-2"}`} />
-            ))}
-          </div>
-          <motion.div
-            className="absolute inset-y-0 flex w-4 -translate-x-1/2 items-center justify-center"
-            style={{ left: scrubLeft }}
-          >
-            <span className="h-3 w-3 rotate-45 bg-achiote shadow-[0_0_10px_rgba(201,154,62,0.8)]" />
-          </motion.div>
-        </div>
-        {/* lecturas tipo visor */}
-        <div className="flex items-center gap-6 px-6 py-2.5 md:px-14">
-          <span className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.15em] text-paper/75">
-            {String(activeSection + 1).padStart(2, "0")} · {sectionsList[activeSection].label}
-          </span>
-          <div className="relative h-[2px] flex-1 overflow-hidden rounded-full bg-paper/10">
-            <motion.div className="absolute inset-y-0 left-0 bg-achiote" style={{ width: progressWidth }} />
-          </div>
-          <div className="hidden items-center gap-5 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.15em] text-paper/40 lg:flex">
-            <span>ISO <span className="text-paper/70">800</span></span>
-            <span>WB <span className="text-paper/70">5600K</span></span>
-            <span>SECCIÓN <span className="text-paper/70">{String(activeSection + 1).padStart(2, "0")}</span> / 08</span>
-            <span>FRAME <span className="text-paper/70">{String(frame).padStart(3, "0")}</span> / 200</span>
-            <span className="text-tostado">◢ SCRUB ACTIVO</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Aviso de costo de domicilio al agregar el primer producto */}
-      <AnimatePresence>
-        {deliveryNotice && (
-          <motion.div
-            role="status"
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-4 top-28 z-[60] mx-auto max-w-md border border-achiote bg-carbon/95 p-4 shadow-[0_0_30px_rgba(201,154,62,0.35)] backdrop-blur-md"
-          >
-            <div className="flex items-start gap-3">
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="mt-0.5 h-6 w-6 shrink-0 text-achiote" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" />
-                <circle cx="7" cy="17.5" r="1.8" />
-                <circle cx="17" cy="17.5" r="1.8" />
-              </svg>
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-tostado">Costo de domicilio</p>
-                <p className="mt-1 text-sm leading-snug text-paper">
-                  Chía <b className="text-achiote">$5.000</b> · Cajicá y Cota <b className="text-achiote">$10.000</b>. Se suma al total de tu pedido.
-                </p>
-              </div>
+    <Marco abierto={menu.abierto} ajustes={menu.ajustes} zonas={menu.zonas}>
+      {/* ============ MENÚ: barra lateral de categorías + grilla ============ */}
+      <div className="mx-auto flex w-full max-w-5xl flex-1">
+        <nav aria-label="Categorías" className="sticky top-[65px] flex h-[calc(100svh-65px)] w-[84px] shrink-0 flex-col gap-1 overflow-y-auto border-r border-paper/10 py-3 sm:w-28">
+          {menu.categorias.map((c) => {
+            const activa = c.id === categoria?.id
+            return (
               <button
+                key={c.id}
                 type="button"
-                onClick={() => setDeliveryNotice(false)}
-                aria-label="Cerrar aviso"
-                className="-m-1 p-1 text-paper/60 transition hover:text-paper"
+                onClick={() => setCategoriaId(c.id)}
+                className="relative flex flex-col items-center gap-1.5 px-1 py-3 text-center"
               >
-                ×
+                {activa && (
+                  <motion.span
+                    layoutId="categoria-activa"
+                    className="absolute inset-y-0 left-0 w-[3px] bg-achiote shadow-[0_0_12px_rgba(201,154,62,0.8)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <span
+                  className={cn(
+                    "flex h-11 w-11 items-center justify-center border transition-colors duration-300",
+                    activa ? "border-achiote bg-achiote text-carbon" : "border-paper/15 text-paper/60"
+                  )}
+                >
+                  <CategoriaIcono icono={c.icono} className="h-5 w-5" />
+                </span>
+                <span className={cn("font-mono text-[9px] uppercase leading-tight tracking-[0.1em]", activa ? "text-tostado" : "text-paper/55")}>
+                  {c.nombre}
+                </span>
               </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Barra de total fija en móvil — aparece al agregar algo al pedido. Mantiene
-          el precio siempre visible y sirve de destino a la imagen voladora. */}
-      {cart.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-3 border-t border-paper/15 bg-carbon/95 px-4 py-3 backdrop-blur-md lg:hidden">
-          <div ref={mobileTotalRef}>
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-paper/40">Total del pedido</p>
-            <p className="font-display text-xl leading-none text-achiote">{formatCOP(grandTotal)}</p>
-            <p className="mt-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.08em] text-tostado/90">
-              + Domicilio desde $5.000
-            </p>
-          </div>
+            )
+          })}
           <a
-            href={WHATSAPP_MSG(orderMsg)}
+            href={waLink(menu.ajustes.whatsapp, "Hola Origen, tengo una pregunta sobre mi pedido 🌽")}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 border border-achiote bg-achiote px-6 py-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper"
+            className="mt-auto flex flex-col items-center gap-1.5 px-1 py-3 text-center"
           >
-            Pedir por WhatsApp
+            <span className="flex h-11 w-11 items-center justify-center border border-paper/15 text-paper/60">
+              <MessageCircle className="h-5 w-5" strokeWidth={1.5} />
+            </span>
+            <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-paper/55">WhatsApp</span>
           </a>
+        </nav>
+
+        <section className="min-w-0 flex-1 px-3 pb-32 pt-4 sm:px-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={categoria?.id}
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.35, ease: EASE }}
+            >
+              <h1 className="mb-4 font-display text-3xl font-semibold uppercase tracking-tight text-paper sm:text-4xl">
+                {categoria?.nombre}
+              </h1>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+                {productos.map((p, i) => (
+                  <motion.button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setDetalle(p)}
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: i * 0.05, ease: EASE }}
+                    whileTap={{ scale: 0.97 }}
+                    className="group relative flex flex-col border border-paper/12 text-left transition hover:border-achiote/70"
+                  >
+                    <div className="relative aspect-square overflow-hidden">
+                      <Image src={p.imagen} alt={p.nombre} fill sizes="(min-width: 1024px) 18rem, 45vw" className="object-cover transition duration-700 group-hover:scale-[1.06]" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-carbon/70 via-transparent to-transparent" />
+                      <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_30px_6px_rgba(201,154,62,0.45)] transition duration-500 group-hover:opacity-100" />
+                    </div>
+                    <div className="flex flex-1 flex-col gap-1 p-3">
+                      <p className="line-clamp-2 text-[13px] font-medium leading-snug text-paper">{p.nombre}</p>
+                      <p className="mt-auto font-mono text-sm text-tostado">{formatCOP(p.precio)}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+              {productos.length === 0 && <p className="py-16 text-center text-sm text-paper/50">Pronto habrá productos aquí.</p>}
+            </motion.div>
+          </AnimatePresence>
+        </section>
+      </div>
+
+      {/* ============ barra flotante "Ver pedido" ============ */}
+      <AnimatePresence>
+        {unidades > 0 && vista === "menu" && (
+          <motion.div
+            initial={{ y: 120 }}
+            animate={{ y: 0 }}
+            exit={{ y: 120 }}
+            transition={{ duration: 0.45, ease: EASE }}
+            className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 sm:px-6"
+          >
+            <button
+              type="button"
+              onClick={() => setVista("carrito")}
+              className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 border border-achiote bg-carbon/95 px-4 py-3.5 shadow-[0_0_32px_rgba(201,154,62,0.35)] backdrop-blur-md"
+            >
+              <span className="flex items-center gap-3">
+                <Destino nombre="barra" as="span">
+                  <span className="flex h-8 w-8 items-center justify-center bg-achiote font-mono text-sm font-bold text-carbon">{unidades}</span>
+                </Destino>
+                <span className="font-mono text-[11px] uppercase tracking-[0.15em]">Ver pedido</span>
+              </span>
+              <Monto valor={subtotal} className="font-display text-2xl text-tostado" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ============ detalle del producto ============ */}
+      <DetalleProducto
+        producto={detalle}
+        adiciones={detalle ? adicionesPara(detalle, menu.adiciones) : []}
+        onCerrar={() => setDetalle(null)}
+        onAgregar={(linea, origen) => {
+          const p = detalle!
+          agregar(linea, p.imagen, origen)
+          setDetalle(null)
+          avisar("Agregado al pedido")
+          if (sugeridos.some((s) => s.id !== p.id)) window.setTimeout(() => setSugerir(true), 450)
+        }}
+      />
+
+      {/* ============ ¿le agregas algo más? ============ */}
+      <AgregarMas
+        abierta={sugerir}
+        productos={sugeridos}
+        onCerrar={() => setSugerir(false)}
+        onAgregar={(sel) => {
+          sel.forEach(({ producto, cantidad }, i) =>
+            agregar(
+              { producto_id: producto.id, cantidad, adiciones: [], nota: "" },
+              producto.imagen,
+              document.querySelector(`[data-sugerido="${producto.id}"]`),
+              i * 140
+            )
+          )
+          setSugerir(false)
+          avisar("Agregado al pedido")
+        }}
+      />
+
+      {/* ============ carrito ============ */}
+      <Carrito
+        abierto={vista === "carrito"}
+        lineas={lineas}
+        subtotal={subtotal}
+        hayBebidas={!!bebidas && !lineas.some((l) => l.producto.categoria_id === bebidas.id)}
+        onVerBebidas={() => {
+          if (bebidas) setCategoriaId(bebidas.id)
+          setVista("menu")
+        }}
+        onCantidad={cambiarCantidad}
+        onCerrar={() => setVista("menu")}
+        onContinuar={() => setVista("datos")}
+      />
+
+      {/* ============ tus datos + pago ============ */}
+      <TusDatos
+        abierto={vista === "datos"}
+        menu={menu}
+        subtotal={subtotal}
+        unidades={unidades}
+        onVolver={() => setVista("carrito")}
+        onConfirmar={async (datos, cupon) => {
+          const res = await rpc<{ id: string; token: string; numero: number }>("tienda_crear_pedido", {
+            p: {
+              ...datos,
+              cupon,
+              items: lineas.map((l) => ({ producto_id: l.producto_id, cantidad: l.cantidad, adiciones: l.adiciones, nota: l.nota })),
+            },
+          })
+          const mios = leerLocal<{ id: string; token: string; numero: number; creado: string }[]>(MIS_PEDIDOS_KEY, [])
+          guardarLocal(MIS_PEDIDOS_KEY, [{ ...res, creado: new Date().toISOString() }, ...mios].slice(0, 20))
+          setCarrito([])
+          router.push(`/pedido/${res.id}?t=${res.token}`)
+        }}
+      />
+
+      <Aviso texto={aviso} />
+    </Marco>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+const DIAS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+const hora12 = (h: string) => {
+  const [hh, mm] = h.split(":").map(Number)
+  const ampm = hh >= 12 ? "p.m." : "a.m."
+  return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, "0")} ${ampm}`
+}
+
+function Marco({
+  children,
+  abierto = true,
+  ajustes,
+  zonas = [],
+}: {
+  children: React.ReactNode
+  abierto?: boolean
+  ajustes?: Menu["ajustes"]
+  zonas?: Menu["zonas"]
+}) {
+  const [info, setInfo] = useState(false)
+  const hoy = ajustes?.horario?.[new Date().getDay()]
+  const frases = [
+    zonas.length ? `Domicilio a ${zonas.map((z) => z.nombre).join(" · ")}` : "Domicilio a Chía · Cajicá · Cota",
+    "Hecho a mano con maíz peto",
+    hoy ? (hoy.abierto ? `Hoy de ${hora12(hoy.abre)} a ${hora12(hoy.cierra)}` : "Hoy cerrado") : "",
+    ajustes?.pedido_minimo_domicilio ? `Domicilio desde ${ajustes.pedido_minimo_domicilio} productos` : "",
+    ajustes?.tiempo_entrega ? `Entrega en ${ajustes.tiempo_entrega}` : "",
+  ].filter(Boolean)
+  return (
+    <div className="flex min-h-svh flex-1 flex-col bg-carbon font-sans text-paper">
+      <header className="sticky top-0 z-40 border-b border-paper/10 bg-carbon/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5">
+            <motion.span
+              initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              transition={{ duration: 0.9, ease: EASE }}
+              className="block rounded-full shadow-[0_0_18px_rgba(201,154,62,0.35)]"
+            >
+              <Image src="/img/logo-origen-2026.png" alt="Origen" width={44} height={44} priority className="h-11 w-11 rounded-full object-cover" />
+            </motion.span>
+            <span className="font-display text-xl font-semibold uppercase tracking-tight">Origen</span>
+          </Link>
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em]">
+            <span className="relative flex h-2 w-2">
+              {abierto && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-achiote opacity-75" />}
+              <span className={cn("relative inline-flex h-2 w-2 rounded-full", abierto ? "bg-achiote" : "bg-paper/30")} />
+            </span>
+            <span className={abierto ? "text-tostado" : "text-paper/50"}>
+              {abierto ? `Abierto · ${ajustes?.tiempo_entrega ?? ""}` : "Cerrado"}
+            </span>
+            {ajustes && (
+              <button
+                type="button"
+                onClick={() => setInfo(true)}
+                aria-label="Información de Origen"
+                className="ml-2 flex h-8 items-center gap-1.5 border border-paper/20 px-2.5 text-paper/80 transition hover:border-achiote hover:text-tostado"
+              >
+                <Info className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Info</span>
+              </button>
+            )}
+          </div>
+        </div>
+        {!abierto && ajustes && (
+          <p className="border-t border-paper/10 bg-achiote/10 px-4 py-2 text-center font-mono text-[10px] uppercase tracking-[0.15em] text-tostado">
+            Ahora estamos cerrados{hoy?.abierto ? ` · hoy atendemos de ${hoy.abre} a ${hoy.cierra}` : ""} — puedes ver el menú
+          </p>
+        )}
+      </header>
+      {ajustes && (
+        <div className="relative overflow-hidden border-b border-paper/10 bg-achiote/[0.07] py-2">
+          <motion.div
+            className="flex w-max gap-8 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.18em] text-tostado"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+          >
+            {[...frases, ...frases, ...frases, ...frases].map((t, i) => (
+              <span key={i} className="flex items-center gap-8">
+                {t} <span className="text-achiote/60">✦</span>
+              </span>
+            ))}
+          </motion.div>
         </div>
       )}
+      {children}
+      {ajustes && <InfoOrigen abierta={info} onCerrar={() => setInfo(false)} ajustes={ajustes} zonas={zonas} />}
+    </div>
+  )
+}
 
-      <a
-        href={WHATSAPP_MSG("Hola, quiero hacer un pedido en Origen 🌽")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`fixed bottom-5 right-5 z-50 ${cart.length ? "hidden" : "flex"} h-14 w-14 items-center justify-center rounded-full bg-achiote text-paper shadow-xl transition hover:scale-105 md:hidden`}
-        aria-label="Pedir por WhatsApp"
+function InfoOrigen({ abierta, onCerrar, ajustes, zonas }: { abierta: boolean; onCerrar: () => void; ajustes: Menu["ajustes"]; zonas: Menu["zonas"] }) {
+  const tel = ajustes.whatsapp.replace(/^57/, "")
+  const hoyIdx = new Date().getDay()
+  const orden = [1, 2, 3, 4, 5, 6, 0] // lunes primero
+  return (
+    <Hoja abierta={abierta} onCerrar={onCerrar} titulo="Sobre Origen">
+      <div className="flex items-center justify-between px-5 pb-2 pt-4">
+        <div className="flex items-center gap-3">
+          <Image src="/img/logo-origen-2026.png" alt="" width={44} height={44} className="h-11 w-11 rounded-full" />
+          <div>
+            <h2 className="font-display text-2xl font-semibold leading-none">Origen</h2>
+            <Etiqueta className="mt-1">Arepas y patacones artesanales</Etiqueta>
+          </div>
+        </div>
+        <BotonCerrar onClick={onCerrar} />
+      </div>
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-6">
+        <p className="text-sm leading-relaxed text-paper/75">
+          Arepas de maíz peto cocido y molido a mano, tostadas en el fogón y rellenas al momento. Patacones crocantes con hogao casero. Sin harinas precocidas.
+        </p>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, ease: EASE }}>
+          <Etiqueta className="mb-2 text-tostado">Domicilios</Etiqueta>
+          <div className="grid grid-cols-3 gap-2">
+            {zonas.map((z) => (
+              <div key={z.id} className="border border-paper/12 px-2 py-3 text-center">
+                <p className="text-sm font-medium">{z.nombre}</p>
+                <p className="font-mono text-xs text-tostado">{z.tarifa ? formatCOP(z.tarifa) : "Gratis"}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-paper/55">
+            Pedido mínimo para domicilio: {ajustes.pedido_minimo_domicilio} productos · Entrega en {ajustes.tiempo_entrega}
+          </p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, ease: EASE }}>
+          <Etiqueta className="mb-2 text-tostado">Horario</Etiqueta>
+          <ul className="divide-y divide-paper/8 border-y border-paper/8 text-sm">
+            {orden.map((i) => {
+              const d = ajustes.horario?.[i]
+              return (
+                <li key={i} className={cn("flex justify-between py-2", i === hoyIdx && "text-tostado")}>
+                  <span>
+                    {DIAS[i]}
+                    {i === hoyIdx ? " · hoy" : ""}
+                  </span>
+                  <span className="font-mono text-xs">{d?.abierto ? `${hora12(d.abre)} – ${hora12(d.cierra)}` : "Cerrado"}</span>
+                </li>
+              )
+            })}
+          </ul>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26, ease: EASE }} className="grid grid-cols-2 gap-2">
+          <a href={waLink(ajustes.whatsapp, "Hola Origen 🌽")} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-achiote py-3 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-carbon hover:bg-tostado">
+            <MessageCircle className="h-4 w-4" /> WhatsApp
+          </a>
+          <a href={`tel:+57${tel}`} className="flex items-center justify-center gap-2 border border-paper/20 py-3 font-mono text-[11px] uppercase tracking-[0.12em] hover:border-achiote">
+            <Phone className="h-4 w-4" /> Llamar
+          </a>
+          <a href="https://www.instagram.com/origen5752/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center border border-paper/20 py-3 font-mono text-[11px] uppercase tracking-[0.12em] hover:border-achiote">
+            Instagram
+          </a>
+          <a href="https://www.facebook.com/Origen1948/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center border border-paper/20 py-3 font-mono text-[11px] uppercase tracking-[0.12em] hover:border-achiote">
+            Facebook
+          </a>
+        </motion.div>
+      </div>
+    </Hoja>
+  )
+}
+
+function DetalleProducto({
+  producto,
+  adiciones,
+  onCerrar,
+  onAgregar,
+}: {
+  producto: Producto | null
+  adiciones: Adicion[]
+  onCerrar: () => void
+  onAgregar: (linea: Omit<LineaCarrito, "key">, origen: Element | null) => void
+}) {
+  return (
+    <Hoja abierta={!!producto} onCerrar={onCerrar} titulo={producto?.nombre}>
+      {producto && <DetalleContenido key={producto.id} producto={producto} adiciones={adiciones} onCerrar={onCerrar} onAgregar={onAgregar} />}
+    </Hoja>
+  )
+}
+
+// Se monta de cero cada vez que se abre la hoja → la selección arranca limpia.
+function DetalleContenido({
+  producto,
+  adiciones,
+  onCerrar,
+  onAgregar,
+}: {
+  producto: Producto
+  adiciones: Adicion[]
+  onCerrar: () => void
+  onAgregar: (linea: Omit<LineaCarrito, "key">, origen: Element | null) => void
+}) {
+  const { lanzar } = useVuelo()
+  const [sel, setSel] = useState<number[]>([])
+  const [nota, setNota] = useState("")
+  const [cantidad, setCantidad] = useState(1)
+  const imgRef = useRef<HTMLDivElement>(null)
+
+  const unit = producto.precio + adiciones.filter((a) => sel.includes(a.id)).reduce((s, a) => s + a.precio, 0)
+
+  return (
+        <>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div ref={imgRef} className="relative aspect-[16/11] w-full overflow-hidden">
+              <motion.div className="absolute inset-0" initial={{ scale: 1.12 }} animate={{ scale: 1 }} transition={{ duration: 1.1, ease: EASE }}>
+                <Image src={producto.imagen} alt={producto.nombre} fill sizes="(min-width: 640px) 32rem, 100vw" className="object-cover" />
+              </motion.div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#120E0B] via-transparent to-transparent" />
+              <BotonCerrar onClick={onCerrar} className="absolute right-3 top-3" />
+            </div>
+            <div className="space-y-6 px-5 pb-6">
+              <div>
+                <h2 className="font-display text-3xl font-semibold leading-tight">{producto.nombre}</h2>
+                {producto.descripcion && <p className="mt-2 text-sm leading-relaxed text-paper/70">{producto.descripcion}</p>}
+                <p className="mt-3 font-display text-3xl text-achiote">{formatCOP(producto.precio)}</p>
+              </div>
+
+              {adiciones.length > 0 && (
+                <div>
+                  <Etiqueta className="mb-2 text-tostado">Agrega más</Etiqueta>
+                  <div className="divide-y divide-paper/10 border-y border-paper/10">
+                    {adiciones.map((a) => {
+                      const on = sel.includes(a.id)
+                      return (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={(e) => {
+                            if (!on)
+                              lanzar(
+                                a.imagen
+                                  ? { desde: e.currentTarget.querySelector("[data-foto]"), destino: "boton-detalle", img: a.imagen }
+                                  : { desde: e.currentTarget.querySelector("[data-check]"), destino: "boton-detalle", texto: `+${formatCOP(a.precio)}` }
+                              )
+                            setSel((s) => (on ? s.filter((x) => x !== a.id) : [...s, a.id]))
+                          }}
+                          className="flex w-full items-center justify-between gap-3 py-2.5 text-left"
+                          aria-pressed={on}
+                        >
+                          <span className="flex min-w-0 items-center gap-3">
+                            <span
+                              data-foto
+                              className={cn(
+                                "relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border transition-colors",
+                                on ? "border-achiote shadow-[0_0_14px_rgba(201,154,62,0.5)]" : "border-paper/15"
+                              )}
+                            >
+                              {a.imagen ? (
+                                <Image src={a.imagen} alt="" fill sizes="40px" className="object-cover" />
+                              ) : (
+                                <span className="font-display text-lg text-tostado">{a.nombre.charAt(0)}</span>
+                              )}
+                            </span>
+                            <span className="text-sm text-paper/85">
+                              {a.nombre} <span className="font-mono text-xs text-tostado">· {formatCOP(a.precio)}</span>
+                            </span>
+                          </span>
+                          <span data-check className={cn("flex h-5 w-5 items-center justify-center border transition", on ? "border-achiote bg-achiote text-carbon" : "border-paper/30")}>
+                            {on && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <Etiqueta className="mb-2">Nota (opcional)</Etiqueta>
+                <textarea
+                  value={nota}
+                  onChange={(e) => setNota(e.target.value.slice(0, 200))}
+                  rows={2}
+                  placeholder="Ej: sin cebolla"
+                  className={cn(inputCls, "resize-none")}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Etiqueta>Cantidad</Etiqueta>
+                <Contador valor={cantidad} onCambiar={setCantidad} min={1} />
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-paper/10 p-4">
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.97 }}
+              onClick={() =>
+                onAgregar({ producto_id: producto.id, cantidad, adiciones: sel, nota: nota.trim() }, imgRef.current)
+              }
+              className="w-full bg-achiote py-4 font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon transition hover:bg-tostado"
+            >
+              Agregar — <Destino nombre="boton-detalle" as="span"><Monto valor={unit * cantidad} /></Destino>
+            </motion.button>
+          </div>
+        </>
+  )
+}
+
+function AgregarMas({
+  abierta,
+  productos,
+  onCerrar,
+  onAgregar,
+}: {
+  abierta: boolean
+  productos: Producto[]
+  onCerrar: () => void
+  onAgregar: (sel: { producto: Producto; cantidad: number }[]) => void
+}) {
+  return (
+    <Hoja abierta={abierta} onCerrar={onCerrar} titulo="¿Le agregas algo más?">
+      <AgregarMasContenido productos={productos} onCerrar={onCerrar} onAgregar={onAgregar} />
+    </Hoja>
+  )
+}
+
+// La hoja solo monta a sus hijos mientras está abierta → los contadores arrancan en 0.
+function AgregarMasContenido({
+  productos,
+  onCerrar,
+  onAgregar,
+}: {
+  productos: Producto[]
+  onCerrar: () => void
+  onAgregar: (sel: { producto: Producto; cantidad: number }[]) => void
+}) {
+  const { lanzar } = useVuelo()
+  const [cant, setCant] = useState<Record<number, number>>({})
+  const sel = productos.filter((p) => (cant[p.id] ?? 0) > 0).map((p) => ({ producto: p, cantidad: cant[p.id] }))
+  const total = sel.reduce((s, x) => s + x.producto.precio * x.cantidad, 0)
+
+  return (
+    <>
+      <div className="px-5 pb-3 pt-5 text-center">
+        <h2 className="font-display text-3xl font-semibold">¿Le agregas algo más?</h2>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/55">Opcional — puedes elegir varios</p>
+      </div>
+      <div className="min-h-0 flex-1 divide-y divide-paper/10 overflow-y-auto border-y border-paper/10 px-5">
+        {productos.map((p, i) => (
+          <motion.div
+            key={p.id}
+            initial={{ opacity: 0, x: -14 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 + i * 0.05, duration: 0.4, ease: EASE }}
+            className="flex items-center gap-3 py-3"
+          >
+            <div data-sugerido={p.id} className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-paper/15">
+              <Image src={p.imagen} alt="" fill sizes="48px" className="object-cover" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm text-paper">{p.nombre}</p>
+              <p className="font-mono text-xs text-tostado">+ {formatCOP(p.precio)}</p>
+            </div>
+            <Contador compacto valor={cant[p.id] ?? 0} onCambiar={(v) => {
+                if (v > (cant[p.id] ?? 0)) lanzar({ desde: document.querySelector(`[data-sugerido="${p.id}"]`), destino: "boton-sugeridos", img: p.imagen })
+                setCant((c) => ({ ...c, [p.id]: v }))
+              }} />
+          </motion.div>
+        ))}
+      </div>
+      <div className="space-y-2 p-4">
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.97 }}
+          disabled={sel.length === 0}
+          onClick={() => onAgregar(sel)}
+          className="w-full bg-achiote py-4 font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon transition hover:bg-tostado disabled:opacity-40"
+        >
+          Agregar — <Destino nombre="boton-sugeridos" as="span"><Monto valor={total} /></Destino>
+        </motion.button>
+        <button type="button" onClick={onCerrar} className="w-full py-2 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60 hover:text-paper">
+          No gracias
+        </button>
+      </div>
+    </>
+  )
+}
+
+function Carrito({
+  abierto,
+  lineas,
+  subtotal,
+  hayBebidas,
+  onVerBebidas,
+  onCantidad,
+  onCerrar,
+  onContinuar,
+}: {
+  abierto: boolean
+  lineas: (LineaCarrito & { producto: Producto; ads: Adicion[]; total: number })[]
+  subtotal: number
+  hayBebidas: boolean
+  onVerBebidas: () => void
+  onCantidad: (key: string, v: number) => void
+  onCerrar: () => void
+  onContinuar: () => void
+}) {
+  return (
+    <Hoja abierta={abierto} onCerrar={onCerrar} titulo="Tu pedido">
+      <div className="flex items-center justify-between px-5 pb-2 pt-4">
+        <h2 className="font-display text-3xl font-semibold">Tu pedido</h2>
+        <BotonCerrar onClick={onCerrar} />
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-5">
+        <AnimatePresence initial={false}>
+          {lineas.map((l) => (
+            <motion.div
+              key={l.key}
+              layout
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0, x: 40 }}
+              transition={{ duration: 0.3, ease: EASE }}
+              className="overflow-hidden border-b border-paper/10"
+            >
+              <div className="flex gap-3 py-4">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-paper/15">
+                  <Image src={l.producto.imagen} alt="" fill sizes="56px" className="object-cover" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium leading-snug">{l.producto.nombre}</p>
+                    <button type="button" onClick={() => onCantidad(l.key, 0)} aria-label="Quitar" className="text-paper/40 transition hover:text-achiote">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {l.ads.length > 0 && <p className="mt-0.5 text-xs text-paper/55">+ {l.ads.map((a) => a.nombre).join(", ")}</p>}
+                  {l.nota && <p className="mt-0.5 text-xs italic text-paper/55">“{l.nota}”</p>}
+                  <div className="mt-2 flex items-center justify-between">
+                    <Contador compacto valor={l.cantidad} min={1} onCambiar={(v) => onCantidad(l.key, v)} />
+                    <span className="font-mono text-sm text-tostado">{formatCOP(l.total)}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        {lineas.length === 0 && <p className="py-16 text-center text-sm text-paper/50">Tu pedido está vacío.</p>}
+
+        {hayBebidas && lineas.length > 0 && (
+          <div className="my-4 flex items-center justify-between gap-3 border border-achiote/40 bg-achiote/10 p-4">
+            <span className="flex items-center gap-3 text-sm text-tostado">
+              <CupSoda className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+              ¿Le agregamos una bebida a tu pedido?
+            </span>
+            <button type="button" onClick={onVerBebidas} className="shrink-0 border border-achiote px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] hover:bg-achiote/20">
+              Ver bebidas
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="border-t border-paper/10 p-4">
+        <div className="mb-3 flex items-baseline justify-between">
+          <Etiqueta>Subtotal</Etiqueta>
+          <Monto valor={subtotal} className="font-display text-3xl text-achiote" />
+        </div>
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.97 }}
+          disabled={lineas.length === 0}
+          onClick={onContinuar}
+          className="w-full bg-achiote py-4 font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon transition hover:bg-tostado disabled:opacity-40"
+        >
+          Continuar
+        </motion.button>
+      </div>
+    </Hoja>
+  )
+}
+
+function TusDatos({
+  abierto,
+  menu,
+  subtotal,
+  unidades,
+  onVolver,
+  onConfirmar,
+}: {
+  abierto: boolean
+  menu: Menu
+  subtotal: number
+  unidades: number
+  onVolver: () => void
+  onConfirmar: (datos: DatosCliente, cupon: string) => Promise<void>
+}) {
+  // Solo se monta en el cliente después de cargar el menú, así que leer
+  // localStorage aquí no causa desajuste de hidratación.
+  const { lanzar } = useVuelo()
+  const [d, setD] = useState<DatosCliente>(() => ({
+    ...DATOS_VACIOS,
+    ...(typeof window === "undefined" ? {} : leerLocal<Partial<DatosCliente>>(DATOS_KEY, {})),
+    metodo_pago: null,
+    mesa_id: null,
+    lat: null,
+    lng: null,
+  }))
+  const [buscarZona, setBuscarZona] = useState("")
+  const [zonasAbiertas, setZonasAbiertas] = useState(false)
+  const [cuponTxt, setCuponTxt] = useState("")
+  const [cuponAplicado, setCuponAplicado] = useState<{ codigo: string; descuento: number; subtotal: number; msg: string } | null>(null)
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // El descuento solo vale para el subtotal con el que se validó: si volvió al
+  // carrito y cambió algo, hay que aplicarlo de nuevo.
+  const vigente = cuponAplicado?.subtotal === subtotal ? cuponAplicado : null
+  const cupon = vigente && vigente.descuento > 0 ? vigente : null
+  const cuponMsg = vigente?.msg ?? null
+
+  const set = <K extends keyof DatosCliente>(k: K, v: DatosCliente[K]) => setD((x) => ({ ...x, [k]: v }))
+  const zona = menu.zonas.find((z) => z.id === d.zona_id) ?? null
+  const domicilio = d.tipo === "domicilio" ? zona?.tarifa ?? 0 : 0
+  const descuento = cupon?.descuento ?? 0
+  const total = Math.max(subtotal - descuento, 0) + domicilio
+  const minimo = menu.ajustes.pedido_minimo_domicilio ?? 1
+  const faltan = d.tipo === "domicilio" ? Math.max(minimo - unidades, 0) : 0
+  const zonasFiltradas = menu.zonas.filter((z) => z.nombre.toLowerCase().includes(buscarZona.trim().toLowerCase()))
+
+  const tipos: { id: TipoPedido; label: string }[] = [
+    { id: "domicilio", label: "Domicilio" },
+    { id: "recoger", label: "Para recoger" },
+    ...(menu.ajustes.mesas_activas ? [{ id: "mesa" as const, label: "Mesa" }] : []),
+  ]
+
+  const aplicarCupon = async () => {
+    if (!cuponTxt.trim()) return
+    const r = await rpc<{ ok: boolean; codigo?: string; descuento?: number; mensaje: string }>("tienda_validar_cupon", {
+      p_codigo: cuponTxt,
+      p_subtotal: subtotal,
+    }).catch((e: Error) => ({ ok: false, mensaje: e.message }))
+    const ok = r.ok && "codigo" in r
+    setCuponAplicado({ codigo: ok ? r.codigo! : "", descuento: ok ? r.descuento! : 0, subtotal, msg: r.mensaje })
+  }
+
+  const confirmar = async () => {
+    setError(null)
+    setEnviando(true)
+    guardarLocal(DATOS_KEY, { nombre: d.nombre, celular: d.celular, tipo: d.tipo, direccion: d.direccion, zona_id: d.zona_id, nota_domiciliario: d.nota_domiciliario })
+    try {
+      await onConfirmar(d, cupon?.codigo ?? "")
+    } catch (e) {
+      setError((e as Error).message)
+      setEnviando(false)
+    }
+  }
+
+  const completo =
+    d.nombre.trim().length >= 2 &&
+    d.celular.replace(/\D/g, "").length >= 7 &&
+    (d.tipo !== "domicilio" || (d.direccion.trim().length >= 4 && !!zona && faltan === 0)) &&
+    (d.tipo !== "mesa" || !!d.mesa_id) &&
+    (d.tipo === "mesa" || !!d.metodo_pago)
+
+  return (
+    <AnimatePresence>
+      {abierto && (
+        <motion.div
+          initial={{ x: "100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "100%" }}
+          transition={{ duration: 0.45, ease: EASE }}
+          className="fixed inset-0 z-[75] flex flex-col bg-carbon text-paper"
+        >
+          <header className="border-b border-paper/10">
+            <div className="mx-auto flex h-16 max-w-lg items-center gap-3 px-4">
+              <button type="button" onClick={onVolver} aria-label="Volver" className="flex h-9 w-9 items-center justify-center border border-paper/20 hover:border-achiote">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <h2 className="font-display text-2xl font-semibold">Tus datos</h2>
+            </div>
+          </header>
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="mx-auto max-w-lg space-y-6 px-4 py-6">
+              <label className="block">
+                <Etiqueta className="mb-2">Nombre</Etiqueta>
+                <input className={inputCls} value={d.nombre} onChange={(e) => set("nombre", e.target.value)} placeholder="Tu nombre" autoComplete="name" />
+              </label>
+              <label className="block">
+                <Etiqueta className="mb-2">Celular</Etiqueta>
+                <input
+                  className={inputCls}
+                  value={d.celular}
+                  onChange={(e) => set("celular", e.target.value.replace(/[^\d +]/g, ""))}
+                  placeholder="300 000 0000"
+                  inputMode="tel"
+                  autoComplete="tel"
+                />
+              </label>
+
+              <div>
+                <Etiqueta className="mb-2 text-tostado">¿Cómo vas a recibir tu pedido?</Etiqueta>
+                <div className={cn("grid gap-2", tipos.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+                  {tipos.map((t) => (
+                    <Opcion key={t.id} grupo="tipo" activa={d.tipo === t.id} onClick={() => set("tipo", t.id)}>
+                      {t.label}
+                    </Opcion>
+                  ))}
+                </div>
+              </div>
+
+              <AnimatePresence initial={false}>
+                {d.tipo === "domicilio" && (
+                  <motion.div
+                    key="dom"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.35, ease: EASE }}
+                    className="space-y-5 overflow-hidden"
+                  >
+                    <UbicacionActual lat={d.lat} lng={d.lng} onUbicacion={(lat, lng) => setD((x) => ({ ...x, lat, lng }))} />
+                    <label className="block">
+                      <Etiqueta className="mb-2">Dirección</Etiqueta>
+                      <input className={inputCls} value={d.direccion} onChange={(e) => set("direccion", e.target.value)} placeholder="Calle, carrera, número" autoComplete="street-address" />
+                    </label>
+                    {menu.zonas.length <= 6 ? (
+                      <div>
+                        <Etiqueta className="mb-2">¿A dónde lo enviamos?</Etiqueta>
+                        <div className={cn("grid gap-2", menu.zonas.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
+                          {menu.zonas.map((z) => (
+                            <Opcion
+                              key={z.id}
+                              grupo="zona"
+                              activa={d.zona_id === z.id}
+                              onClick={() => {
+                                if (d.zona_id !== z.id && z.tarifa)
+                                  lanzar({ desde: document.querySelector(`[data-zona="${z.id}"]`), destino: "total-datos", texto: `+${formatCOP(z.tarifa)}` })
+                                set("zona_id", z.id)
+                              }}
+                            >
+                              <span data-zona={z.id} className="block text-[12px] font-bold">{z.nombre}</span>
+                              <span className="mt-0.5 block text-tostado">+ {z.tarifa ? formatCOP(z.tarifa) : "Gratis"}</span>
+                            </Opcion>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                    <div className="relative">
+                      <Etiqueta className="mb-2">Barrio / zona</Etiqueta>
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-paper/35" />
+                        <input
+                          className={cn(inputCls, "pl-10")}
+                          value={zonasAbiertas ? buscarZona : zona ? `${zona.nombre} · ${zona.tarifa ? formatCOP(zona.tarifa) : "Gratis"}` : buscarZona}
+                          onFocus={() => {
+                            setZonasAbiertas(true)
+                            setBuscarZona("")
+                          }}
+                          onBlur={() => window.setTimeout(() => setZonasAbiertas(false), 150)}
+                          onChange={(e) => setBuscarZona(e.target.value)}
+                          placeholder="Escribe tu barrio o municipio"
+                        />
+                      </div>
+                      <AnimatePresence>
+                        {zonasAbiertas && (
+                          <motion.ul
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            className="absolute inset-x-0 top-full z-10 mt-1 max-h-56 overflow-y-auto border border-paper/15 bg-[#17120E] shadow-2xl"
+                          >
+                            {zonasFiltradas.map((z) => (
+                              <li key={z.id}>
+                                <button
+                                  type="button"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => {
+                                    set("zona_id", z.id)
+                                    setZonasAbiertas(false)
+                                  }}
+                                  className="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-achiote/10"
+                                >
+                                  {z.nombre}
+                                  <span className="font-mono text-xs text-tostado">{z.tarifa ? formatCOP(z.tarifa) : "Gratis"}</span>
+                                </button>
+                              </li>
+                            ))}
+                            {zonasFiltradas.length === 0 && <li className="px-4 py-3 text-sm text-paper/50">No llegamos a esa zona todavía</li>}
+                          </motion.ul>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    )}
+                    <label className="block">
+                      <Etiqueta className="mb-2">Nota para el domiciliario (opcional)</Etiqueta>
+                      <input className={inputCls} value={d.nota_domiciliario} onChange={(e) => set("nota_domiciliario", e.target.value)} placeholder="Ej: casa azul, portón negro" />
+                    </label>
+                    {faltan > 0 && (
+                      <p className="border border-achiote/40 bg-achiote/10 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.12em] text-tostado">
+                        Pedido mínimo para domicilio: {minimo} productos — agrega {faltan} más
+                      </p>
+                    )}
+                  </motion.div>
+                )}
+                {d.tipo === "mesa" && (
+                  <motion.div key="mesa" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                    <Etiqueta className="mb-2">¿En qué mesa estás?</Etiqueta>
+                    <div className="grid grid-cols-3 gap-2">
+                      {menu.mesas.map((m) => (
+                        <Opcion key={m.id} grupo="mesa" activa={d.mesa_id === m.id} onClick={() => set("mesa_id", m.id)}>
+                          {m.nombre}
+                        </Opcion>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {d.tipo !== "mesa" && (
+                <div>
+                  <Etiqueta className="mb-2 text-tostado">Método de pago</Etiqueta>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Opcion grupo="pago" activa={d.metodo_pago === "efectivo"} onClick={() => set("metodo_pago", "efectivo")}>
+                      Efectivo
+                    </Opcion>
+                    <Opcion grupo="pago" activa={d.metodo_pago === "transferencia"} onClick={() => set("metodo_pago", "transferencia")}>
+                      Transferencia
+                    </Opcion>
+                  </div>
+                  <AnimatePresence>
+                    {d.metodo_pago === "transferencia" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-3 whitespace-pre-line border border-paper/15 bg-paper/[0.04] p-4 text-sm leading-relaxed text-paper/85">
+                          <Etiqueta className="mb-1 text-tostado">Datos para transferir</Etiqueta>
+                          {menu.ajustes.transferencia}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              <div>
+                <Etiqueta className="mb-2">Cupón</Etiqueta>
+                <div className="flex gap-2">
+                  <input className={inputCls} value={cuponTxt} onChange={(e) => setCuponTxt(e.target.value.toUpperCase())} placeholder="Código de cupón" />
+                  <button type="button" onClick={aplicarCupon} className="shrink-0 border border-paper/25 px-4 font-mono text-[10px] uppercase tracking-[0.12em] hover:border-achiote">
+                    Aplicar
+                  </button>
+                </div>
+                {cuponMsg && <p className={cn("mt-2 text-xs", cupon ? "text-tostado" : "text-paper/55")}>{cuponMsg}</p>}
+              </div>
+
+              <div className="space-y-2 border-t border-paper/10 pt-4 font-mono text-xs">
+                <Fila k="Productos" v={formatCOP(subtotal)} />
+                {descuento > 0 && <Fila k={`Descuento ${cupon?.codigo}`} v={`−${formatCOP(descuento)}`} />}
+                {d.tipo === "domicilio" && <Fila k={zona ? `Domicilio ${zona.nombre}` : "Domicilio (elige zona)"} v={zona ? (domicilio ? formatCOP(domicilio) : "Gratis") : "—"} />}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-paper/10">
+            <div className="mx-auto max-w-lg p-4">
+              {error && <p className="mb-3 border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm text-red-200">{error}</p>}
+              <div className="mb-3 flex items-baseline justify-between">
+                <Etiqueta>Total</Etiqueta>
+                <Destino nombre="total-datos" as="span">
+                  <Monto valor={total} className="font-display text-3xl text-achiote" />
+                </Destino>
+              </div>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.97 }}
+                disabled={!completo || enviando || !menu.abierto}
+                onClick={confirmar}
+                className="flex w-full items-center justify-center gap-2 bg-achiote py-4 font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon transition hover:bg-tostado disabled:opacity-40"
+              >
+                {enviando ? "Enviando…" : menu.abierto ? (
+                  <>
+                    <ShoppingBag className="h-4 w-4" /> Confirmar pedido
+                  </>
+                ) : (
+                  "Estamos cerrados"
+                )}
+              </motion.button>
+              <button type="button" onClick={onVolver} className="mt-3 flex w-full items-center justify-center gap-1 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/45 hover:text-paper">
+                <ArrowLeft className="h-3 w-3" /> Volver a mi pedido
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+function Fila({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between uppercase tracking-[0.08em]">
+      <span className="text-paper/55">{k}</span>
+      <span className="text-paper">{v}</span>
+    </div>
+  )
+}
+
+/** Pide la ubicación GPS del celular para que el domiciliario llegue directo.
+ *  El navegador solo la permite en https (o localhost). */
+function UbicacionActual({ lat, lng, onUbicacion }: { lat: number | null; lng: number | null; onUbicacion: (lat: number, lng: number) => void }) {
+  const [estado, setEstado] = useState<"idle" | "buscando" | "error">("idle")
+  const [mensaje, setMensaje] = useState<string | null>(null)
+  const [precision, setPrecision] = useState<number | null>(null)
+
+  const pedir = () => {
+    if (!("geolocation" in navigator)) {
+      setEstado("error")
+      setMensaje("Tu navegador no permite compartir la ubicación. Escribe la dirección abajo.")
+      return
+    }
+    setEstado("buscando")
+    setMensaje(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        onUbicacion(pos.coords.latitude, pos.coords.longitude)
+        setPrecision(Math.round(pos.coords.accuracy))
+        setEstado("idle")
+      },
+      (err) => {
+        setEstado("error")
+        setMensaje(
+          err.code === err.PERMISSION_DENIED
+            ? "No diste permiso de ubicación. Actívalo en tu navegador o escribe la dirección."
+            : "No pudimos obtener tu ubicación. Intenta de nuevo o escribe la dirección."
+        )
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    )
+  }
+
+  const lista = lat !== null && lng !== null
+  return (
+    <div>
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.97 }}
+        onClick={pedir}
+        disabled={estado === "buscando"}
+        className={cn(
+          "relative flex w-full items-center justify-center gap-2 overflow-hidden border py-3.5 font-mono text-[11px] uppercase tracking-[0.12em] transition",
+          lista ? "border-achiote bg-achiote/15 text-paper" : "border-achiote/60 text-tostado hover:bg-achiote/10"
+        )}
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="h-7 w-7"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.45 1.32 4.95L2 22l5.24-1.37a9.9 9.9 0 0 0 4.8 1.22h.01c5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2zm0 18.2h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.11.82.83-3.03-.2-.31a8.23 8.23 0 0 1-1.26-4.4c0-4.55 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.4-.12-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.99-1.22-.73-.66-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.22.89 2.41 1.02 2.58.12.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29z"/></svg>
-      </a>
+        {estado === "buscando" && (
+          <motion.span
+            className="absolute inset-0 bg-achiote/15"
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
+            transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
+        {lista ? <Check className="relative h-4 w-4" /> : <LocateFixed className="relative h-4 w-4" />}
+        <span className="relative">
+          {estado === "buscando" ? "Buscando tu ubicación…" : lista ? "Ubicación guardada · actualizar" : "Usar mi ubicación actual"}
+        </span>
+      </motion.button>
+      {lista && (
+        <p className="mt-2 flex items-center justify-between gap-2 text-xs text-paper/60">
+          <span>El domiciliario llegará con tu GPS{precision ? ` (±${precision} m)` : ""}.</span>
+          <a href={`https://www.google.com/maps?q=${lat},${lng}`} target="_blank" rel="noopener noreferrer" className="shrink-0 text-tostado underline">
+            Ver en el mapa
+          </a>
+        </p>
+      )}
+      {mensaje && <p className="mt-2 text-xs text-paper/60">{mensaje}</p>}
     </div>
   )
 }

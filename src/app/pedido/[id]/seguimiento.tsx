@@ -42,7 +42,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
           <p className="font-display text-3xl">No encontramos este pedido</p>
           <p className="text-sm text-paper/60">Revisa que el enlace esté completo.</p>
-          <Link href="/pedir" className="border border-achiote px-6 py-3 font-mono text-[11px] uppercase tracking-[0.15em] hover:bg-achiote/15">
+          <Link href="/" className="border border-achiote px-6 py-3 font-mono text-[11px] uppercase tracking-[0.15em] hover:bg-achiote/15">
             Hacer un pedido
           </Link>
         </div>
@@ -185,7 +185,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
             <MessageCircle className="h-4 w-4" /> Escribirnos por WhatsApp
           </a>
           <Link
-            href="/pedir"
+            href="/"
             className="flex items-center justify-center gap-2 py-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60 transition hover:text-paper"
           >
             <RotateCcw className="h-3.5 w-3.5" /> Hacer otro pedido
@@ -202,7 +202,7 @@ function Fondo({ children }: { children: React.ReactNode }) {
       <header className="border-b border-paper/10">
         <div className="mx-auto flex h-16 max-w-lg items-center px-4">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/img/logo-origen.png" alt="Origen" width={36} height={36} className="h-9 w-9 rounded-full object-cover" />
+            <Image src="/img/logo-origen-2026.png" alt="Origen" width={36} height={36} className="h-9 w-9 rounded-full object-cover" />
             <span className="font-display text-lg font-semibold uppercase tracking-tight">Origen</span>
           </Link>
         </div>

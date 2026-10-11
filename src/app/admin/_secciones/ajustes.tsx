@@ -22,7 +22,7 @@ function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Part
   const [pinMsg, setPinMsg] = useState<string | null>(null)
   const { texto, mostrar } = useToast()
 
-  const enlace = typeof window !== "undefined" ? `${window.location.origin}/pedir` : "/pedir"
+  const enlace = typeof window !== "undefined" ? `${window.location.origin}` : "/"
 
   return (
     <div className="grid gap-6 xl:grid-cols-2">

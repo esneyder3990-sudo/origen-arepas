@@ -82,7 +82,7 @@ export default function AdminPage() {
   const barra = (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center gap-3 border-b border-paper/10 px-5">
-        <Image src="/img/logo-origen.png" alt="Origen" width={34} height={34} className="h-[34px] w-[34px] rounded-full object-cover" />
+        <Image src="/img/logo-origen-2026.png" alt="Origen" width={34} height={34} className="h-[34px] w-[34px] rounded-full object-cover" />
         <span className="font-display text-lg font-semibold uppercase tracking-tight">Origen</span>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4">

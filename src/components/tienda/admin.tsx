@@ -112,7 +112,7 @@ function PantallaPin({ crear, onListo }: { crear: boolean; onListo: (pin: string
         className="w-full max-w-sm border border-paper/15 p-8"
       >
         <div className="mb-8 flex items-center gap-3">
-          <Image src="/img/logo-origen.png" alt="Origen" width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
+          <Image src="/img/logo-origen-2026.png" alt="Origen" width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
           <div>
             <p className="font-display text-xl font-semibold uppercase tracking-tight">Origen</p>
             <Etiqueta>Panel de administración</Etiqueta>
