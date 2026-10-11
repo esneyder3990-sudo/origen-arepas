@@ -110,15 +110,21 @@ export function SeccionMenu() {
           campos={[
             { k: "nombre", label: "Nombre", tipo: "texto" },
             { k: "precio", label: "Precio (COP)", tipo: "numero" },
+            { k: "imagen", label: "Foto", tipo: "imagen" },
             { k: "aplica", label: "Aplica a", tipo: "select", opciones: [{ valor: "todos", label: "Arepas y patacones" }, { valor: "arepa", label: "Solo arepas" }, { valor: "patacon", label: "Solo patacones" }] },
             { k: "orden", label: "Orden", tipo: "numero" },
             { k: "activo", label: "Disponible", tipo: "bool" },
           ]}
-          nueva={{ nombre: "", precio: 0, aplica: "todos", orden: 0, activo: true }}
+          nueva={{ nombre: "", precio: 0, imagen: "", aplica: "todos", orden: 0, activo: true }}
           render={(a) => (
-            <p className="text-sm">
-              {a.nombre} <span className="font-mono text-xs text-tostado">+ {formatCOP(a.precio)}</span>
-            </p>
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-paper/15 font-display text-tostado">
+                {a.imagen ? <Image src={a.imagen} alt="" fill sizes="40px" className="object-cover" /> : a.nombre.charAt(0)}
+              </div>
+              <p className="text-sm">
+                {a.nombre} <span className="font-mono text-xs text-tostado">+ {formatCOP(a.precio)}</span>
+              </p>
+            </div>
           )}
         />
       )}

@@ -55,6 +55,12 @@ export const IMAGENES = [
   "/img/canasta-hogao.jpg",
   "/img/adiciones-maduro.jpg",
   "/img/arepas-preasadas.jpg",
+  "/img/adiciones/maduro.jpg",
+  "/img/adiciones/codorniz.jpg",
+  "/img/adiciones/queso.jpg",
+  "/img/adiciones/chicharron.jpg",
+  "/img/adiciones/jamon.jpg",
+  "/img/adiciones/pina.jpg",
   "/img/hero-poster.jpg",
   "/img/arepa-hero.png",
 ]

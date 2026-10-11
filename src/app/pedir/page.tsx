@@ -389,8 +389,15 @@ function Marco({
       <header className="sticky top-0 z-40 border-b border-paper/10 bg-carbon/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/img/logo-origen.png" alt="Origen" width={36} height={36} className="h-9 w-9 rounded-full object-cover" />
-            <span className="font-display text-lg font-semibold uppercase tracking-tight">Origen</span>
+            <motion.span
+              initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              transition={{ duration: 0.9, ease: EASE }}
+              className="block rounded-full shadow-[0_0_18px_rgba(201,154,62,0.35)]"
+            >
+              <Image src="/img/logo-origen.png" alt="Origen" width={44} height={44} priority className="h-11 w-11 rounded-full object-cover" />
+            </motion.span>
+            <span className="font-display text-xl font-semibold uppercase tracking-tight">Origen</span>
           </Link>
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em]">
             <span className="relative flex h-2 w-2">
@@ -479,14 +486,34 @@ function DetalleContenido({
                           key={a.id}
                           type="button"
                           onClick={(e) => {
-                            if (!on) lanzar({ desde: e.currentTarget.querySelector("[data-check]"), destino: "boton-detalle", texto: `+${formatCOP(a.precio)}` })
+                            if (!on)
+                              lanzar(
+                                a.imagen
+                                  ? { desde: e.currentTarget.querySelector("[data-foto]"), destino: "boton-detalle", img: a.imagen }
+                                  : { desde: e.currentTarget.querySelector("[data-check]"), destino: "boton-detalle", texto: `+${formatCOP(a.precio)}` }
+                              )
                             setSel((s) => (on ? s.filter((x) => x !== a.id) : [...s, a.id]))
                           }}
-                          className="flex w-full items-center justify-between gap-3 py-3 text-left"
+                          className="flex w-full items-center justify-between gap-3 py-2.5 text-left"
                           aria-pressed={on}
                         >
-                          <span className="text-sm text-paper/85">
-                            {a.nombre} <span className="font-mono text-xs text-tostado">· {formatCOP(a.precio)}</span>
+                          <span className="flex min-w-0 items-center gap-3">
+                            <span
+                              data-foto
+                              className={cn(
+                                "relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border transition-colors",
+                                on ? "border-achiote shadow-[0_0_14px_rgba(201,154,62,0.5)]" : "border-paper/15"
+                              )}
+                            >
+                              {a.imagen ? (
+                                <Image src={a.imagen} alt="" fill sizes="40px" className="object-cover" />
+                              ) : (
+                                <span className="font-display text-lg text-tostado">{a.nombre.charAt(0)}</span>
+                              )}
+                            </span>
+                            <span className="text-sm text-paper/85">
+                              {a.nombre} <span className="font-mono text-xs text-tostado">· {formatCOP(a.precio)}</span>
+                            </span>
                           </span>
                           <span data-check className={cn("flex h-5 w-5 items-center justify-center border transition", on ? "border-achiote bg-achiote text-carbon" : "border-paper/30")}>
                             {on && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
