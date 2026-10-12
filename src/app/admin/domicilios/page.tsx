@@ -5,7 +5,7 @@ import { Bike, MapPin, Phone } from "lucide-react"
 
 import { PanelBarra, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
-import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroPedido, visibleEnCocina } from "@/lib/tienda"
+import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroPedido, textoAdiciones, visibleEnCocina } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 
 export default function DomiciliosPage() {
@@ -80,7 +80,14 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
           {gps ? "📍 Ubicación GPS del cliente" : "Sin GPS — guíate por la dirección"}
         </p>
         {p.nota_domiciliario && <p className="text-xs italic text-paper/60">“{p.nota_domiciliario}”</p>}
-        <p className="pt-1 text-xs text-paper/55">{p.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}</p>
+        <ul className="space-y-0.5 pt-1 text-xs text-paper/70">
+          {p.items.map((i, k) => (
+            <li key={k}>
+              <b className="text-tostado">{i.cantidad}x</b> {i.nombre}
+              {i.adiciones.length > 0 && <span className="block pl-5 text-paper/55">+ {textoAdiciones(i.adiciones)}</span>}
+            </li>
+          ))}
+        </ul>
       </div>
       <div className="mt-4 grid grid-cols-[auto_auto_1fr] gap-2">
         <a href={`tel:${cel}`} aria-label="Llamar al cliente" className="flex h-11 w-11 items-center justify-center border border-paper/20 hover:border-achiote">

@@ -8,7 +8,7 @@ import { PanelBarra, Toast, usePedidos, useToast } from "@/components/tienda/adm
 import { MesasGrid, useMenu } from "@/components/tienda/mesas"
 import { TomarPedido } from "@/components/tienda/tomar-pedido"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
-import { type Mesa, ESTADO_LABEL, formatCOP, mesaOcupada, numeroPedido } from "@/lib/tienda"
+import { type Mesa, ESTADO_LABEL, formatCOP, mesaOcupada, numeroPedido, textoAdiciones } from "@/lib/tienda"
 
 export default function MeseroPage() {
   const menu = useMenu()
@@ -72,7 +72,14 @@ function Cuenta({ mesa, pedidos, onAgregar }: { mesa: Mesa; pedidos: ReturnType<
             <span className="font-bold">{numeroPedido(p.numero)} · {formatCOP(p.total)}</span>
             <span className="text-tostado">{ESTADO_LABEL[p.estado]}</span>
           </div>
-          <p className="mt-1 text-sm text-paper/75">{p.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}</p>
+          <ul className="mt-1 space-y-0.5 text-sm text-paper/75">
+            {p.items.map((i, k) => (
+              <li key={k}>
+                <b className="text-tostado">{i.cantidad}x</b> {i.nombre}
+                {i.adiciones.length > 0 && <span className="block pl-6 text-xs text-paper/55">+ {textoAdiciones(i.adiciones)}</span>}
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
       <div className="flex items-baseline justify-between border-t border-paper/10 pt-3">

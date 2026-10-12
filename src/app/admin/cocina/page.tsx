@@ -91,7 +91,7 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.94 }}
       transition={{ duration: 0.4, ease: EASE }}
-      className={cn("relative overflow-hidden border bg-paper/[0.02]", p.estado === "recibido" ? "border-achiote/70" : "border-paper/12")}
+      className={cn("relative border bg-paper/[0.02]", p.estado === "recibido" ? "border-achiote/70" : "border-paper/12")}
     >
       {p.estado === "recibido" && (
         <motion.span
