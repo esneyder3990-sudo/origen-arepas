@@ -161,14 +161,14 @@ export function TomarPedido({
         <p className="border-b border-paper/10 px-4 py-3 font-display text-xl">{titulo}</p>
         <div className="divide-y divide-paper/8">
           <AnimatePresence initial={false}>
-            {lineas.map((l) => {
+            {lineas.map((l, idx) => {
               const p = prod.get(l.producto_id)!
               const opciones = p.aplica_adiciones === "ninguna" ? [] : menu.adiciones.filter((a) => a.aplica === "todos" || a.aplica === p.aplica_adiciones)
               return (
-                <motion.div key={l.key} layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ ease: EASE }} className="overflow-hidden px-4 py-2.5">
+                <motion.div key={l.key} layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ ease: EASE }} className={cn("overflow-hidden border-l-2 px-4 py-2.5 transition-colors", abierta === l.key ? "border-achiote bg-achiote/[0.06]" : "border-transparent")}>
                   <div className="flex items-center gap-2">
                     <button type="button" onClick={() => setAbierta(abierta === l.key ? null : l.key)} className="min-w-0 flex-1 text-left text-sm">
-                      {p.nombre}
+                      <span className="mr-1.5 font-mono text-[11px] text-tostado">#{idx + 1}</span>{p.nombre}
                       {l.adiciones.length > 0 && <span className="block text-xs text-paper/55">+ {textoAdiciones(l.adiciones.map((id) => ({ nombre: ad.get(id)?.nombre ?? "" })))}</span>}
                       {opciones.length > 0 && <span className="block font-mono text-[9px] uppercase tracking-[0.1em] text-tostado/80">{abierta === l.key ? "Cerrar adiciones" : "+ adiciones"}</span>}
                     </button>
@@ -180,7 +180,7 @@ export function TomarPedido({
                   </div>
                   {abierta === l.key && opciones.length > 0 && (
                     <>
-                    <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-tostado">Adiciones para {l.cantidad}× {p.nombre}</p>
+                    <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-tostado">Adiciones para #{idx + 1} · {l.cantidad}× {p.nombre}</p>
                     <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
                       {opciones.map((a) => {
                         const n = l.adiciones.filter((y) => y === a.id).length
