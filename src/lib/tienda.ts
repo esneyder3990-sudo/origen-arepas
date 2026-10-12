@@ -53,6 +53,8 @@ export interface ItemPedido {
 }
 export interface Pedido {
   id: string; numero: number; fecha: string; creado: string; actualizado: string
+  /** Número corrido desde el 27 de septiembre (001, 002…); lo calcula el panel, no viene del servidor. */
+  consecutivo?: number
   tipo: TipoPedido; estado: EstadoPedido
   cliente_nombre: string; cliente_celular: string; direccion: string
   zona_id: number | null; zona_nombre: string; nota_domiciliario: string
@@ -73,6 +75,8 @@ export function avisarEquipo(id: string, token: string) {
 
 export const formatCOP = (n: number) => `${n < 0 ? "−" : ""}$${Math.abs(Math.round(n)).toLocaleString("es-CO")}`
 export const numeroPedido = (n: number) => `#${String(n).padStart(3, "0")}`
+/** Número que ve el equipo: el consecutivo corrido si ya se calculó, si no el del día. */
+export const numeroInterno = (p: Pick<Pedido, "numero" | "consecutivo">) => numeroPedido(p.consecutivo ?? p.numero)
 
 export const TIPO_LABEL: Record<TipoPedido, string> = { domicilio: "Domicilio", recoger: "Recoger", mesa: "Mesa" }
 export const ESTADO_LABEL: Record<EstadoPedido, string> = {

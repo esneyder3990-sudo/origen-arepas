@@ -6,7 +6,7 @@ import { Bell, BellOff, ChefHat, Printer } from "lucide-react"
 
 import { PanelBarra, sonidoOrigen, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
-import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroPedido, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
+import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroInterno, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
 import { cn } from "@/lib/utils"
 
@@ -102,7 +102,7 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
       )}
       <div className="relative flex items-start justify-between gap-2 border-b border-paper/10 px-4 py-3">
         <div>
-          <p className="font-sans text-3xl font-bold leading-none">{numeroPedido(p.numero)}</p>
+          <p className="font-sans text-3xl font-bold leading-none">{numeroInterno(p)}</p>
           <span className="mt-2 inline-block border border-achiote/50 bg-achiote/10 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-tostado">
             {p.tipo === "mesa" ? p.mesa_nombre : p.tipo === "recoger" ? "Para recoger" : `Domicilio · ${p.zona_nombre}`}
           </span>

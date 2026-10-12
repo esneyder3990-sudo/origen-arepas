@@ -8,7 +8,7 @@ import { Boton, PanelBarra, Tarjeta, Toast, useAdmin, usePedidos, useToast, Sele
 import { MesasGrid, useMenu } from "@/components/tienda/mesas"
 import { TomarPedido } from "@/components/tienda/tomar-pedido"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, Opcion } from "@/components/tienda/ui"
-import { type Mesa, TIPO_LABEL, formatCOP, mesaOcupada, numeroPedido } from "@/lib/tienda"
+import { type Mesa, TIPO_LABEL, formatCOP, mesaOcupada, numeroInterno } from "@/lib/tienda"
 import { DetallePedido, EstadoInsignia, Insignia } from "../_secciones/pedidos"
 
 const hoyBogota = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" })
@@ -88,7 +88,7 @@ export default function CajaPage() {
                     <tbody>
                       {entrantes.map((p) => (
                         <tr key={p.id} onClick={() => setSel(p.id)} className="cursor-pointer border-t border-paper/8 hover:bg-achiote/[0.06]">
-                          <td className="px-4 py-3 font-mono font-bold">{numeroPedido(p.numero)}</td>
+                          <td className="px-4 py-3 font-mono font-bold">{numeroInterno(p)}</td>
                           <td className="px-4 py-3">{p.tipo === "mesa" ? p.mesa_nombre : TIPO_LABEL[p.tipo]}</td>
                           <td className="px-4 py-3 capitalize">
                             {p.metodo_pago ?? "—"}
@@ -124,11 +124,11 @@ export default function CajaPage() {
                 onEnviado={(n, fecha) => {
                   if (modo === "pasada") {
                     const dia = fecha ? new Date(`${fecha}T12:00:00Z`).toLocaleDateString("es-CO", { day: "numeric", month: "long", timeZone: "UTC" }) : ""
-                    mostrar(`Venta ${numeroPedido(n)} guardada el ${dia}`)
+                    mostrar(`Venta guardada el ${dia}`)
                     recargar()
                     return // se queda en el formulario para registrar la siguiente
                   }
-                  mostrar(`Pedido ${numeroPedido(n)} enviado a cocina`)
+                  mostrar(`Pedido enviado a cocina`)
                   recargar()
                   setModo("inicio")
                 }}
@@ -149,7 +149,7 @@ export default function CajaPage() {
             <ul className="space-y-1 text-sm text-paper/75">
               {cuenta.map((p) => (
                 <li key={p.id}>
-                  <b className="font-mono text-paper">{numeroPedido(p.numero)}</b> · {p.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}
+                  <b className="font-mono text-paper">{numeroInterno(p)}</b> · {p.items.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ")}
                 </li>
               ))}
             </ul>
@@ -191,7 +191,7 @@ export default function CajaPage() {
           <ul className="max-h-60 space-y-1 overflow-y-auto font-mono text-xs">
             {domiciliosHoy.map((p) => (
               <li key={p.id} className="flex justify-between border-b border-paper/8 py-1.5">
-                <span>{numeroPedido(p.numero)} · {p.zona_nombre} · <span className="capitalize">{p.metodo_pago}</span></span>
+                <span>{numeroInterno(p)} · {p.zona_nombre} · <span className="capitalize">{p.metodo_pago}</span></span>
                 <span className="text-tostado">{formatCOP(p.domicilio)}</span>
               </li>
             ))}

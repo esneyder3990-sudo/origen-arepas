@@ -6,7 +6,7 @@ import { Check, ChevronLeft, ChevronRight, MessageCircle, Printer, Trash2, X } f
 
 import { Boton, SelectorCuenta, Tarjeta, Toast, useAdmin, usePedidos, useToast } from "@/components/tienda/admin"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
-import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, mapaPedido, numeroPedido, resumenPedido, waLink, textoAdiciones } from "@/lib/tienda"
+import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, mapaPedido, numeroInterno, resumenPedido, waLink, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
 import { cn } from "@/lib/utils"
 import { useAjustes } from "./horario"
@@ -140,7 +140,7 @@ export function SeccionPedidos() {
                   onClick={() => setSel(p.id)}
                   className="cursor-pointer border-t border-paper/8 transition hover:bg-achiote/[0.06]"
                 >
-                  <td className="px-4 py-3 font-mono font-bold">{numeroPedido(p.numero)}</td>
+                  <td className="px-4 py-3 font-mono font-bold">{numeroInterno(p)}</td>
                   <td className="px-4 py-3 font-mono text-xs text-paper/80">
                     {new Date(p.creado).toLocaleString("es-CO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </td>
@@ -201,7 +201,7 @@ export function DetallePedido({
         <>
           <div className="flex items-center justify-between px-5 pb-2 pt-4">
             <div>
-              <p className="font-sans text-3xl font-bold">{numeroPedido(p.numero)}</p>
+              <p className="font-sans text-3xl font-bold">{numeroInterno(p)}</p>
               <Etiqueta>{TIPO_LABEL[p.tipo]}{p.mesa_nombre ? ` · ${p.mesa_nombre}` : ""} · {new Date(p.creado).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}</Etiqueta>
             </div>
             <BotonCerrar onClick={onCerrar} />

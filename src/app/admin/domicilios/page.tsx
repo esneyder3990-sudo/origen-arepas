@@ -6,7 +6,7 @@ import { Bike, MapPin, Phone } from "lucide-react"
 
 import { PanelBarra, sonidoOrigen, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
-import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroPedido, textoAdiciones, visibleEnCocina } from "@/lib/tienda"
+import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroInterno, textoAdiciones, visibleEnCocina } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 
 export default function DomiciliosPage() {
@@ -75,7 +75,7 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-sans text-2xl font-bold leading-none">{numeroPedido(p.numero)}</p>
+          <p className="font-sans text-2xl font-bold leading-none">{numeroInterno(p)}</p>
           <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/75">{ESTADO_LABEL[p.estado]} · {hace(p.creado)}</p>
         </div>
         <div className="text-right">

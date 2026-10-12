@@ -143,14 +143,32 @@ function PantallaPin({ crear, onListo }: { crear: boolean; onListo: (pin: string
 
 /** Pedidos recientes con refresco automático — así cocina, caja y el panel
  *  ven entrar pedidos nuevos sin recargar. */
+// Desde esta fecha se lleva el consecutivo 001, 002… de todos los pedidos.
+const CONSECUTIVO_DESDE = "2026-09-27"
+const fechaBogota = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" })
+const restarDias = (f: string, n: number) => {
+  const d = new Date(`${f}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - n)
+  return d.toISOString().slice(0, 10)
+}
+
 export function usePedidos(intervaloMs = 6000, dias = 2) {
   const { llamar } = useAdmin()
   const [pedidos, setPedidos] = useState<Pedido[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const recargar = useCallback(
     () =>
-      llamar<Pedido[]>("tienda_admin_pedidos", { p_dias: dias })
-        .then((p) => {
+      // Se pide siempre desde el 27 de septiembre para poder contar el consecutivo, y luego se recorta a lo que pide cada pantalla.
+      llamar<Pedido[]>("tienda_admin_pedidos", {
+        p_dias: Math.max(dias, Math.round((+new Date(`${fechaBogota()}T12:00:00Z`) - +new Date(`${CONSECUTIVO_DESDE}T12:00:00Z`)) / 86400000) + 1),
+      })
+        .then((todos) => {
+          const orden = todos
+            .filter((x) => x.fecha >= CONSECUTIVO_DESDE)
+            .sort((a, b) => (a.fecha + a.creado + String(a.numero).padStart(6, "0")).localeCompare(b.fecha + b.creado + String(b.numero).padStart(6, "0")))
+          const corrido = new Map(orden.map((x, i) => [x.id, i + 1]))
+          const limite = restarDias(fechaBogota(), dias - 1)
+          const p = todos.filter((x) => x.fecha >= limite).map((x) => ({ ...x, consecutivo: corrido.get(x.id) }))
           setPedidos(p)
           setError(null)
         })

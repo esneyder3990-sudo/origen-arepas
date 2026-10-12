@@ -8,7 +8,7 @@ import { PanelBarra, Toast, usePedidos, useToast } from "@/components/tienda/adm
 import { MesasGrid, useMenu } from "@/components/tienda/mesas"
 import { TomarPedido } from "@/components/tienda/tomar-pedido"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
-import { type Mesa, ESTADO_LABEL, formatCOP, mesaOcupada, numeroPedido, textoAdiciones } from "@/lib/tienda"
+import { type Mesa, ESTADO_LABEL, formatCOP, mesaOcupada, numeroInterno, textoAdiciones } from "@/lib/tienda"
 
 export default function MeseroPage() {
   const menu = useMenu()
@@ -43,7 +43,7 @@ export default function MeseroPage() {
                     mesaId={mesa.m.id}
                     titulo={mesa.m.nombre}
                     onEnviado={(n) => {
-                      mostrar(`Pedido ${numeroPedido(n)} enviado a cocina`)
+                      mostrar(`Pedido enviado a cocina`)
                       recargar()
                       setMesa(null)
                     }}
@@ -69,7 +69,7 @@ function Cuenta({ mesa, pedidos, onAgregar }: { mesa: Mesa; pedidos: ReturnType<
       {pedidos.map((p) => (
         <div key={p.id} className="border border-paper/12 p-4">
           <div className="flex justify-between font-mono text-xs">
-            <span className="font-bold">{numeroPedido(p.numero)} · {formatCOP(p.total)}</span>
+            <span className="font-bold">{numeroInterno(p)} · {formatCOP(p.total)}</span>
             <span className="text-tostado">{ESTADO_LABEL[p.estado]}</span>
           </div>
           <ul className="mt-1 space-y-0.5 text-sm text-paper/75">

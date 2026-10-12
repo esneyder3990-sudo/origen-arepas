@@ -1,4 +1,4 @@
-import { type Pedido, TIPO_LABEL, formatCOP, numeroPedido, textoAdiciones } from "@/lib/tienda"
+import { type Pedido, TIPO_LABEL, formatCOP, numeroInterno, textoAdiciones } from "@/lib/tienda"
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!)
 
@@ -14,7 +14,7 @@ export function imprimirTicket(p: Pedido) {
         }</td><td class="r">${formatCOP(i.total)}</td></tr>`
     )
     .join("")
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${numeroPedido(p.numero)}</title>
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${numeroInterno(p)}</title>
 <style>
   @page { size: 80mm auto; margin: 4mm }
   body { font: 12px/1.35 ui-monospace, Menlo, Consolas, monospace; color: #000; margin: 0; width: 72mm }
@@ -25,7 +25,7 @@ export function imprimirTicket(p: Pedido) {
   .t { font-size: 15px; font-weight: bold }
 </style></head><body>
 <h1>ORIGEN</h1><div class="c">Arepas y patacones artesanales</div><hr>
-<div class="t">Pedido ${numeroPedido(p.numero)} · ${TIPO_LABEL[p.tipo]}${p.mesa_nombre ? ` · ${esc(p.mesa_nombre)}` : ""}</div>
+<div class="t">Pedido ${numeroInterno(p)} · ${TIPO_LABEL[p.tipo]}${p.mesa_nombre ? ` · ${esc(p.mesa_nombre)}` : ""}</div>
 <div>${new Date(p.creado).toLocaleString("es-CO")}</div>
 ${p.cliente_nombre ? `<div>${esc(p.cliente_nombre)} · ${esc(p.cliente_celular)}</div>` : ""}
 ${p.tipo === "domicilio" ? `<div>${esc(p.direccion)} — ${esc(p.zona_nombre)}</div>${p.nota_domiciliario ? `<div><i>${esc(p.nota_domiciliario)}</i></div>` : ""}` : ""}
