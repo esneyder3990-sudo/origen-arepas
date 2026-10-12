@@ -67,14 +67,16 @@ export function TomarPedido({
   const valorDomicilio = tipo === "domicilio" ? (domicilio !== "" ? Number(domicilio) : zona?.tarifa ?? 0) : 0
   const total = productos + valorDomicilio
   const listo =
-    lineas.length > 0 && (metodo !== "transferencia" || !!cuenta) && (!ventaPasada || (!!metodo && !!fecha && (tipo !== "domicilio" || !!zona)))
+    lineas.length > 0 && (metodo !== "transferencia" || !!cuenta) && (tipo !== "domicilio" || !!zona) && (!ventaPasada || (!!metodo && !!fecha))
 
-  const sumar = (id: number) =>
-    setLineas((ls) => {
-      const sin = ls.find((l) => l.producto_id === id && l.adiciones.length === 0)
-      if (sin) return ls.map((l) => (l === sin ? { ...l, cantidad: l.cantidad + 1 } : l))
-      return [...ls, { key: `${Date.now()}-${id}`, producto_id: id, cantidad: 1, adiciones: [] }]
-    })
+  // Cada toque crea su propia línea: así cada producto lleva SUS adiciones y no
+  // se mezclan con las de otro producto igual. Si quedan iguales, la cocina las
+  // agrupa sola ("2× …"). Se abre el panel de adiciones de la línea nueva.
+  const sumar = (id: number) => {
+    const key = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${id}`
+    setLineas((ls) => [...ls, { key, producto_id: id, cantidad: 1, adiciones: [] }])
+    setAbierta(prod.get(id)?.aplica_adiciones === "ninguna" ? null : key)
+  }
 
   const enviar = async () => {
     setEnviando(true)
@@ -210,12 +212,14 @@ export function TomarPedido({
           {lineas.length === 0 && <p className="px-4 py-6 text-center text-sm text-paper/45">Toca productos para agregarlos.</p>}
         </div>
         <div className="space-y-3 border-t border-paper/10 p-4">
-          {ventaPasada && (
+          {(ventaPasada || tipoInicial === "recoger") && (
             <div className="space-y-3 border border-achiote/40 bg-achiote/[0.06] p-3">
-              <label className="block">
-                <Etiqueta className="mb-2 text-tostado">Fecha de la venta</Etiqueta>
-                <input type="date" max={hoyISO()} className={inputCls} value={fecha} onChange={(e) => setFecha(e.target.value)} />
-              </label>
+              {ventaPasada && (
+                <label className="block">
+                  <Etiqueta className="mb-2 text-tostado">Fecha de la venta</Etiqueta>
+                  <input type="date" max={hoyISO()} className={inputCls} value={fecha} onChange={(e) => setFecha(e.target.value)} />
+                </label>
+              )}
               <div>
                 <Etiqueta className="mb-2">¿Cómo se entregó?</Etiqueta>
                 <div className="grid grid-cols-2 gap-2">
