@@ -195,7 +195,7 @@ export function PanelBarra({ rol, icono: Icono, children }: { rol: string; icono
         <div className="flex items-center gap-2">
           <ActivarAvisos rol={(["cocina", "caja", "domicilios", "mesero"] as const).find((r) => r === rol.toLowerCase()) ?? "panel"} />
           {children}
-          <Link href="/admin" className="hidden border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/70 hover:border-achiote sm:block">
+          <Link href="/admin" className="border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/70 hover:border-achiote">
             Panel
           </Link>
           <button type="button" onClick={salir} className="flex items-center gap-1.5 border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/70 hover:border-achiote">

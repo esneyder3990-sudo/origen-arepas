@@ -1,0 +1,23 @@
+{
+  "id": "/admin",
+  "name": "Origen · Panel",
+  "short_name": "Panel",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#0C0907",
+  "theme_color": "#0C0907",
+  "icons": [
+    {
+      "src": "/img/logo-origen-2026.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
