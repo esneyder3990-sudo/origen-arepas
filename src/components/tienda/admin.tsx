@@ -314,25 +314,33 @@ export function SelectorCuenta({ valor, onCambio, grupo, titulo = "¿A qué cuen
 
 // ---------- sonido de Origen + avisos push ----------
 
-/** Campanita de Origen: tres notas que suben (Do–Mi–Sol), dos veces. Se reconoce como "del negocio". */
+/** Campanita de Origen: tres notas que suben (Do–Mi–Sol), tres veces y a buen volumen para oírse en la cocina. */
 export function sonidoOrigen() {
   try {
     const ctx = new AudioContext()
+    void ctx.resume()
+    // El compresor sube el volumen percibido sin que el sonido se corte ni distorsione.
+    const comp = ctx.createDynamicsCompressor()
+    comp.threshold.value = -18
+    comp.ratio.value = 6
+    const master = ctx.createGain()
+    master.gain.value = 1.6
+    comp.connect(master).connect(ctx.destination)
     const notas = [1046.5, 1318.5, 1568]
-    for (let vuelta = 0; vuelta < 2; vuelta++) {
+    for (let vuelta = 0; vuelta < 3; vuelta++) {
       notas.forEach((f, i) => {
-        const t = ctx.currentTime + vuelta * 0.75 + i * 0.16
-        for (const [mult, vol] of [[1, 0.28], [2, 0.06]] as const) {
+        const t = ctx.currentTime + vuelta * 0.85 + i * 0.18
+        for (const [mult, vol] of [[1, 0.7], [2, 0.28], [3, 0.12]] as const) {
           const o = ctx.createOscillator()
           const g = ctx.createGain()
-          o.type = "sine"
+          o.type = "triangle"
           o.frequency.value = f * mult
           g.gain.setValueAtTime(0.0001, t)
           g.gain.exponentialRampToValueAtTime(vol, t + 0.015)
-          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55)
-          o.connect(g).connect(ctx.destination)
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6)
+          o.connect(g).connect(comp)
           o.start(t)
-          o.stop(t + 0.6)
+          o.stop(t + 0.65)
         }
       })
     }
