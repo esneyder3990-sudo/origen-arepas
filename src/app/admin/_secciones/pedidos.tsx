@@ -1,25 +1,60 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { motion } from "motion/react"
-import { Check, MessageCircle, Printer, Trash2, X } from "lucide-react"
+import { Check, ChevronLeft, ChevronRight, MessageCircle, Printer, Trash2, X } from "lucide-react"
 
 import { Boton, SelectorCuenta, Tarjeta, Toast, useAdmin, usePedidos, useToast } from "@/components/tienda/admin"
-import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja } from "@/components/tienda/ui"
+import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
 import { type EstadoPedido, type Pedido, ESTADO_LABEL, TIPO_LABEL, formatCOP, mapaPedido, numeroPedido, resumenPedido, waLink, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
 import { cn } from "@/lib/utils"
+import { useAjustes } from "./horario"
 
 const hoyBogota = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" })
+const aFecha = (s: string) => new Date(`${s}T12:00:00Z`)
+const sumarDias = (s: string, n: number) => {
+  const d = aFecha(s)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+const sumarMeses = (s: string, n: number) => {
+  const d = aFecha(s)
+  d.setUTCMonth(d.getUTCMonth() + n)
+  return d.toISOString().slice(0, 10)
+}
+const diasEntre = (a: string, b: string) => Math.round((+aFecha(b) - +aFecha(a)) / 86400000)
+const corta = (s: string) => aFecha(s).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
+
+type Modo = "rapido" | "ciclo" | "fechas"
 
 export function SeccionPedidos() {
+  const { ajustes } = useAjustes()
+  const [modo, setModo] = useState<Modo>("rapido")
   const [dias, setDias] = useState(7)
-  const { pedidos, actualizar, recargar } = usePedidos(6000, dias)
+  const [desplazar, setDesplazar] = useState(0)
+  const [propio, setPropio] = useState(() => ({ desde: sumarDias(hoyBogota(), -6), hasta: hoyBogota() }))
+
+  // Ciclo de cuentas (por defecto del 27 al 26, igual que Finanzas): del día de corte hasta el día antes del mes siguiente.
+  const corte = Math.min(Math.max(ajustes?.ciclo_dia ?? 27, 1), 28)
+  const rango = useMemo(() => {
+    if (modo === "rapido") return null
+    if (modo === "fechas") return propio
+    const hoy = hoyBogota()
+    const base = `${hoy.slice(0, 7)}-${String(corte).padStart(2, "0")}`
+    const ini = sumarMeses(Number(hoy.slice(8, 10)) >= corte ? base : sumarMeses(base, -1), desplazar)
+    return { desde: ini, hasta: sumarDias(sumarMeses(ini, 1), -1) }
+  }, [modo, propio, corte, desplazar])
+  // Cuántos días hacia atrás hay que pedir al servidor para cubrir el período elegido.
+  const diasPedir = rango ? Math.max(diasEntre(rango.desde, hoyBogota()) + 1, 1) : dias
+  const { pedidos: todos, actualizar, recargar } = usePedidos(6000, diasPedir)
+  const pedidos = todos && (rango ? todos.filter((p) => p.fecha >= rango.desde && p.fecha <= rango.hasta) : todos)
   const [sel, setSel] = useState<string | null>(null)
   const { texto, mostrar } = useToast()
 
   if (!pedidos) return <Cargando />
   const hoy = pedidos.filter((p) => p.fecha === hoyBogota() && p.estado !== "cancelado")
+  const vendido = pedidos.filter((p) => p.estado !== "cancelado").reduce((s, p) => s + p.total, 0)
   const pendientes = pedidos.filter((p) => p.metodo_pago === "transferencia" && !p.pago_confirmado && p.estado !== "cancelado").length
   const pedido = pedidos.find((p) => p.id === sel) ?? null
 
@@ -36,18 +71,55 @@ export function SeccionPedidos() {
           <p className="font-display text-xl">Todos los pedidos</p>
           <Etiqueta>Toca un pedido para ver el detalle</Etiqueta>
         </div>
-        <div className="flex flex-wrap items-center gap-2 border-b border-paper/10 px-4 py-3">
-          {([[7, "7 días"], [30, "30 días"], [90, "90 días"], [3650, "Todo"]] as const).map(([d, nombre]) => (
+        <div className="space-y-3 border-b border-paper/10 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {([[7, "7 días"], [30, "30 días"], [90, "90 días"], [3650, "Todo"]] as const).map(([d, nombre]) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => { setModo("rapido"); setDias(d) }}
+                className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition", modo === "rapido" && dias === d ? "border-achiote bg-achiote/15 text-paper" : "border-paper/15 text-paper/60 hover:border-paper/40")}
+              >
+                {nombre}
+              </button>
+            ))}
             <button
-              key={d}
               type="button"
-              onClick={() => setDias(d)}
-              className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition", dias === d ? "border-achiote bg-achiote/15 text-paper" : "border-paper/15 text-paper/60 hover:border-paper/40")}
+              onClick={() => { setModo("ciclo"); setDesplazar(0) }}
+              className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition", modo === "ciclo" ? "border-achiote bg-achiote/15 text-paper" : "border-paper/15 text-paper/60 hover:border-paper/40")}
             >
-              {nombre}
+              Ciclo {corte}→{corte === 1 ? "fin de mes" : corte - 1}
             </button>
-          ))}
-          <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.12em] text-paper/50">{pedidos.length} pedidos</span>
+            <button
+              type="button"
+              onClick={() => setModo("fechas")}
+              className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition", modo === "fechas" ? "border-achiote bg-achiote/15 text-paper" : "border-paper/15 text-paper/60 hover:border-paper/40")}
+            >
+              Elegir fechas
+            </button>
+          </div>
+          {modo === "ciclo" && rango && (
+            <div className="flex items-center justify-between gap-2 border border-paper/12 px-3 py-2">
+              <button type="button" aria-label="Ciclo anterior" onClick={() => setDesplazar((x) => x - 1)} className="p-1 text-paper/60 hover:text-tostado"><ChevronLeft className="h-4 w-4" /></button>
+              <span className="font-mono text-xs">{corta(rango.desde)} → {corta(rango.hasta)}{desplazar === 0 ? " · ciclo actual" : ""}</span>
+              <button type="button" aria-label="Ciclo siguiente" disabled={desplazar >= 0} onClick={() => setDesplazar((x) => Math.min(x + 1, 0))} className="p-1 text-paper/60 hover:text-tostado disabled:opacity-30"><ChevronRight className="h-4 w-4" /></button>
+            </div>
+          )}
+          {modo === "fechas" && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <Etiqueta className="mb-1.5">Desde</Etiqueta>
+                <input type="date" className={inputCls} max={propio.hasta} value={propio.desde} onChange={(e) => e.target.value && setPropio((r) => ({ ...r, desde: e.target.value }))} />
+              </label>
+              <label className="block">
+                <Etiqueta className="mb-1.5">Hasta</Etiqueta>
+                <input type="date" className={inputCls} min={propio.desde} max={hoyBogota()} value={propio.hasta} onChange={(e) => e.target.value && setPropio((r) => ({ ...r, hasta: e.target.value }))} />
+              </label>
+            </div>
+          )}
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper/60">
+            {pedidos.length} pedidos · vendido {formatCOP(vendido)}
+          </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
