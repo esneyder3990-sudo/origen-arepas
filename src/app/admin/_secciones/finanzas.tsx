@@ -129,7 +129,7 @@ export function SeccionFinanzas() {
                 setModo(m.id)
                 setDesplazar(0)
               }}
-              className={cn("relative px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em]", modo === m.id ? "text-carbon" : "border border-paper/15 text-paper/65 hover:border-paper/40")}
+              className={cn("relative px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em]", modo === m.id ? "text-carbon" : "border border-paper/15 text-paper/80 hover:border-paper/40")}
             >
               {modo === m.id && <motion.span layoutId="modo-finanzas" className="absolute inset-0 bg-achiote" transition={{ type: "spring", stiffness: 380, damping: 32 }} />}
               <span className="relative">{m.label}</span>
@@ -139,7 +139,7 @@ export function SeccionFinanzas() {
         {modo === "rango" ? (
           <div className="flex items-center gap-2">
             <input type="date" className={cn(inputCls, "w-40 py-2")} value={propio.desde} onChange={(e) => setPropio((p) => ({ ...p, desde: e.target.value }))} />
-            <span className="text-paper/40">→</span>
+            <span className="text-paper/65">→</span>
             <input type="date" className={cn(inputCls, "w-40 py-2")} value={propio.hasta} onChange={(e) => setPropio((p) => ({ ...p, hasta: e.target.value }))} />
           </div>
         ) : (
@@ -176,7 +176,7 @@ export function SeccionFinanzas() {
       {/* ---------- cómo se llega al balance ---------- */}
       <Tarjeta className="p-5 sm:p-6">
         <Titulo icono={Landmark}>Cómo se llega al balance {nombrePeriodo}</Titulo>
-        <p className="mb-4 mt-1 text-sm text-paper/55">
+        <p className="mb-4 mt-1 text-sm text-paper/75">
           La plata real del negocio: ventas cobradas (solo productos) menos todo lo que compraste, menos la parte de tus gastos fijos que le toca a {per.dias === 1 ? "este día" : `estos ${per.dias} días`}. El domicilio va aparte.
         </p>
         <Linea k={`Ventas (${per.pedidos} ${per.pedidos === 1 ? "pedido" : "pedidos"}, solo productos)`} v={per.ventas} />
@@ -219,7 +219,7 @@ export function SeccionFinanzas() {
       <section className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <div>
           <Titulo icono={Clock}>Gastos fijos mensuales</Titulo>
-          <p className="mb-4 mt-1 text-sm text-paper/55">Gas, agua, luz, arriendo, personal… Se reparten por día (÷ 30) en cada período.</p>
+          <p className="mb-4 mt-1 text-sm text-paper/75">Gas, agua, luz, arriendo, personal… Se reparten por día (÷ 30) en cada período.</p>
           <ListaEditable<Gasto & Record<string, unknown>>
             tabla="gastos"
             nombre="gasto"
@@ -234,7 +234,7 @@ export function SeccionFinanzas() {
               <div className="flex items-center justify-between gap-3 pr-2">
                 <p className="text-sm">{x.nombre}</p>
                 <p className="font-mono text-sm text-tostado">
-                  {formatCOP(x.valor_mensual)}/mes <span className="text-paper/40">· {formatCOP(Math.round(x.valor_mensual / 30))}/día</span>
+                  {formatCOP(x.valor_mensual)}/mes <span className="text-paper/65">· {formatCOP(Math.round(x.valor_mensual / 30))}/día</span>
                 </p>
               </div>
             )}
@@ -242,7 +242,7 @@ export function SeccionFinanzas() {
         </div>
         <Tarjeta className="h-fit p-4">
           <Etiqueta className="mb-2">Día de corte del ciclo</Etiqueta>
-          <p className="mb-3 text-xs text-paper/55">El ciclo va de este día de un mes al día anterior del mes siguiente (ej. 20 → del 20 al 19).</p>
+          <p className="mb-3 text-xs text-paper/75">El ciclo va de este día de un mes al día anterior del mes siguiente (ej. 20 → del 20 al 19).</p>
           <select
             className={inputCls}
             value={cicloDia}
@@ -294,14 +294,14 @@ function FilaResumen({ titulo, f }: { titulo: string; f: Finanzas }) {
             transition={{ delay: i * 0.06, duration: 0.45, ease: EASE }}
             className={cn("border bg-paper/[0.02] p-4", t.destacada ? "border-achiote/40" : "border-paper/12")}
           >
-            <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/55">
+            <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/75">
               {t.icono && <t.icono className="h-3.5 w-3.5 text-[#d0654a]" />} {t.label}
             </p>
             <p className={cn("mt-2 font-display text-2xl sm:text-3xl", t.tono)}>
               {t.signo && t.valor > 0 ? "+" : ""}
               <Monto valor={t.valor} />
             </p>
-            <p className="mt-1 text-[11px] text-paper/40">{t.nota}</p>
+            <p className="mt-1 text-[11px] text-paper/65">{t.nota}</p>
           </motion.div>
         ))}
       </div>
@@ -352,7 +352,7 @@ function DondeEstaLaPlata({ f, nombre }: { f: Finanzas; nombre: string }) {
   return (
     <section>
       <Titulo icono={Banknote}>¿Dónde está la plata {nombre}?</Titulo>
-      <p className="mb-4 mt-1 text-sm text-paper/55">Para cuadrar caja: lo que entró por cada medio de pago (incluye domicilios) menos lo que pagaste de ahí.</p>
+      <p className="mb-4 mt-1 text-sm text-paper/75">Para cuadrar caja: lo que entró por cada medio de pago (incluye domicilios) menos lo que pagaste de ahí.</p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cajas.map((c, i) => (
           <motion.div
@@ -362,11 +362,11 @@ function DondeEstaLaPlata({ f, nombre }: { f: Finanzas; nombre: string }) {
             transition={{ delay: 0.1 + i * 0.07, duration: 0.45, ease: EASE }}
             className={cn("flex flex-col border p-4", "destacada" in c && c.destacada ? "border-achiote/50 bg-achiote/[0.06]" : "border-paper/12")}
           >
-            <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/65">
+            <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/80">
               <c.icono className="h-4 w-4 text-tostado" /> {c.label}
             </p>
             <Monto valor={c.valor} className={cn("mt-2 block font-display text-3xl", c.valor < 0 ? "text-[#d0654a]" : "text-paper")} />
-            <div className="mt-3 space-y-1 border-t border-paper/10 pt-2 text-[11px] text-paper/55">
+            <div className="mt-3 space-y-1 border-t border-paper/10 pt-2 text-[11px] text-paper/75">
               {c.detalle.map(([k, v]) => (
                 <p key={k} className="flex justify-between gap-2">
                   <span>{k}</span>
@@ -407,10 +407,10 @@ function PorCuenta({ f }: { f: Finanzas }) {
                 <Smartphone className="h-3.5 w-3.5 text-tostado" /> {n}
               </p>
               <Monto valor={entro - salio} className={cn("mt-1 block font-display text-2xl", entro - salio < 0 ? "text-[#d0654a]" : "text-paper")} />
-              <p className="mt-1 font-mono text-[10px] text-paper/50">
+              <p className="mt-1 font-mono text-[10px] text-paper/75">
                 Entró {formatCOP(entro)} · salió {formatCOP(salio)}
               </p>
-              {n === "Sin especificar" && <p className="mt-1 text-[10px] text-paper/40">Transferencias anteriores, sin cuenta registrada.</p>}
+              {n === "Sin especificar" && <p className="mt-1 text-[10px] text-paper/65">Transferencias anteriores, sin cuenta registrada.</p>}
             </motion.div>
           )
         })}
@@ -453,12 +453,12 @@ function Desplegable({ titulo, total, children, abierto = false }: { titulo: str
 }
 
 function Tabla({ cabecera, filas }: { cabecera: string[]; filas: string[][] }) {
-  if (filas.length === 0) return <p className="px-4 py-6 text-center text-sm text-paper/45">Nada en este período.</p>
+  if (filas.length === 0) return <p className="px-4 py-6 text-center text-sm text-paper/65">Nada en este período.</p>
   return (
     <div className="max-h-96 overflow-auto">
       <table className="w-full min-w-[520px] text-sm">
         <thead className="sticky top-0 bg-[#120E0B]">
-          <tr className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper/45">
+          <tr className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper/65">
             {cabecera.map((h, i) => (
               <th key={i} className={cn("px-4 py-2 font-normal", i === cabecera.length - 1 ? "text-right" : "text-left")}>
                 {h}
@@ -470,7 +470,7 @@ function Tabla({ cabecera, filas }: { cabecera: string[]; filas: string[][] }) {
           {filas.map((f, i) => (
             <tr key={i} className="border-t border-paper/8">
               {f.map((c, j) => (
-                <td key={j} className={cn("px-4 py-2", j === f.length - 1 ? "text-right font-mono" : "", j === 0 && "whitespace-nowrap text-paper/60")}>
+                <td key={j} className={cn("px-4 py-2", j === f.length - 1 ? "text-right font-mono" : "", j === 0 && "whitespace-nowrap text-paper/80")}>
                   {c}
                 </td>
               ))}

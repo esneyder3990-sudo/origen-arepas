@@ -64,7 +64,7 @@ export function SeccionReportes() {
               </Tarjeta>
               <Tarjeta className="p-4">
                 <Etiqueta className="mb-3">Productos más vendidos</Etiqueta>
-                {p.top.length === 0 && <p className="text-sm text-paper/50">Sin ventas en este periodo.</p>}
+                {p.top.length === 0 && <p className="text-sm text-paper/75">Sin ventas en este periodo.</p>}
                 <ul className="space-y-2.5">
                   {p.top.map((t, j) => (
                     <li key={t.nombre} className="text-sm">

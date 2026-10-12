@@ -168,11 +168,11 @@ export function Aviso({ texto }: { texto: string | null }) {
 }
 
 export function Etiqueta({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <p className={cn("font-mono text-[10px] uppercase tracking-[0.2em] text-paper/60", className)}>{children}</p>
+  return <p className={cn("font-mono text-[10px] uppercase tracking-[0.2em] text-paper/80", className)}>{children}</p>
 }
 
 export const inputCls =
-  "w-full border border-paper/15 bg-paper/[0.03] px-3.5 py-3 text-sm text-paper placeholder:text-paper/35 outline-none transition focus:border-achiote focus:shadow-[0_0_0_3px_rgba(201,154,62,0.15)]"
+  "w-full border border-paper/15 bg-paper/[0.03] px-3.5 py-3 text-sm text-paper placeholder:text-paper/65 outline-none transition focus:border-achiote focus:shadow-[0_0_0_3px_rgba(201,154,62,0.15)]"
 
 export function Opcion({
   activa,
@@ -192,7 +192,7 @@ export function Opcion({
       aria-pressed={activa}
       className={cn(
         "relative border px-3 py-3 font-mono text-[11px] uppercase tracking-[0.12em] transition",
-        activa ? "border-transparent text-paper" : "border-paper/15 text-paper/70 hover:border-paper/40"
+        activa ? "border-transparent text-paper" : "border-paper/15 text-paper/85 hover:border-paper/40"
       )}
     >
       {activa && (

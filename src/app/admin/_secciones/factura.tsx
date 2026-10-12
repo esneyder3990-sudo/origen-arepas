@@ -169,7 +169,7 @@ function Revision({
           <h2 className="flex items-center gap-2 font-display text-2xl">
             <Sparkles className="h-5 w-5 text-tostado" /> Revisa la factura
           </h2>
-          <p className="text-xs text-paper/55">La IA la leyó; corrige lo que haga falta antes de guardar.</p>
+          <p className="text-xs text-paper/75">La IA la leyó; corrige lo que haga falta antes de guardar.</p>
         </div>
         <BotonCerrar onClick={onCerrar} />
       </div>
@@ -219,7 +219,7 @@ function Revision({
                   <input className={cn(inputCls, "py-2")} aria-label="Unidad" value={x.unidad} onChange={(e) => setLinea(i, { unidad: e.target.value })} />
                   <input className={cn(inputCls, "py-2 text-tostado")} inputMode="numeric" aria-label="Precio" value={x.precio_total} onChange={(e) => setLinea(i, { precio_total: Number(e.target.value.replace(/\D/g, "")) || 0 })} />
                   <select
-                    className={cn(inputCls, "py-2 sm:col-span-4", x.insumo_id ? "border-achiote/50 text-tostado" : "text-paper/55")}
+                    className={cn(inputCls, "py-2 sm:col-span-4", x.insumo_id ? "border-achiote/50 text-tostado" : "text-paper/75")}
                     value={x.insumo_id ?? ""}
                     onChange={(e) => setLinea(i, { insumo_id: e.target.value ? Number(e.target.value) : null })}
                   >
@@ -237,7 +237,7 @@ function Revision({
         </div>
 
         <div className={cn("flex items-baseline justify-between border p-3", cuadra ? "border-achiote/40 bg-achiote/10" : "border-paper/15")}>
-          <span className="text-xs text-paper/65">
+          <span className="text-xs text-paper/80">
             Suma de líneas {l.total > 0 && <>· total de la factura {formatCOP(l.total)}</>}
             {l.total > 0 && !cuadra && <span className="block text-tostado">No cuadra con el total: revisa precios o líneas.</span>}
           </span>

@@ -16,7 +16,7 @@ export function useMenu() {
 }
 
 export function MesasGrid({ mesas, pedidos, onElegir }: { mesas: Mesa[]; pedidos: Pedido[]; onElegir: (m: Mesa, ocupada: boolean) => void }) {
-  if (mesas.length === 0) return <p className="text-sm text-paper/50">No hay mesas activas. Créalas en Panel → Mesas.</p>
+  if (mesas.length === 0) return <p className="text-sm text-paper/75">No hay mesas activas. Créalas en Panel → Mesas.</p>
   return (
     <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
       {mesas.map((m, i) => {
@@ -38,7 +38,7 @@ export function MesasGrid({ mesas, pedidos, onElegir }: { mesas: Mesa[]; pedidos
             )}
           >
             <span className="text-sm font-bold">{m.nombre}</span>
-            <span className={cn("font-mono text-[9px] uppercase tracking-[0.15em]", ocupada ? "text-carbon/75" : "text-paper/50")}>
+            <span className={cn("font-mono text-[9px] uppercase tracking-[0.15em]", ocupada ? "text-carbon/75" : "text-paper/75")}>
               {ocupada ? `Ocupada · ${formatCOP(total)}` : "Libre"}
             </span>
           </motion.button>

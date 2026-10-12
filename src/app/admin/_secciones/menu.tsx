@@ -50,7 +50,7 @@ export function SeccionMenu() {
                 key={c.id}
                 type="button"
                 onClick={() => setFiltro(c.id)}
-                className={`border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] ${filtro === c.id ? "border-achiote text-tostado" : "border-paper/15 text-paper/55"}`}
+                className={`border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] ${filtro === c.id ? "border-achiote text-tostado" : "border-paper/15 text-paper/75"}`}
               >
                 {c.nombre}
               </button>
@@ -71,7 +71,7 @@ export function SeccionMenu() {
                   <p className="truncate text-sm font-medium">{p.nombre}</p>
                   <p className="font-mono text-xs text-tostado">
                     {formatCOP(p.precio)}
-                    {!p.activo && <span className="ml-2 text-paper/50">· agotado</span>}
+                    {!p.activo && <span className="ml-2 text-paper/75">· agotado</span>}
                   </p>
                 </div>
               </div>

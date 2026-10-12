@@ -43,7 +43,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
       <Fondo>
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
           <p className="font-display text-3xl">No encontramos este pedido</p>
-          <p className="text-sm text-paper/60">Revisa que el enlace esté completo.</p>
+          <p className="text-sm text-paper/80">Revisa que el enlace esté completo.</p>
           <Link href="/" className="border border-achiote px-6 py-3 font-mono text-[11px] uppercase tracking-[0.15em] hover:bg-achiote/15">
             Hacer un pedido
           </Link>
@@ -92,10 +92,10 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
             {!enviado ? (
               <>
                 <p className="font-display text-2xl">Último paso</p>
-                <p className="mt-1 text-sm text-paper/70">Envíanos tu pedido por WhatsApp para confirmarlo y empezar a prepararlo.</p>
+                <p className="mt-1 text-sm text-paper/85">Envíanos tu pedido por WhatsApp para confirmarlo y empezar a prepararlo.</p>
               </>
             ) : (
-              <p className="flex items-center justify-center gap-2 text-sm text-paper/70">
+              <p className="flex items-center justify-center gap-2 text-sm text-paper/85">
                 <Check className="h-4 w-4 text-[#25D366]" /> Pedido enviado por WhatsApp. Puedes reenviarlo si lo necesitas.
               </p>
             )}
@@ -121,7 +121,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-8 border border-achiote/50 bg-achiote/10 p-5">
             <Etiqueta className="text-tostado">Datos para transferir</Etiqueta>
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-paper/85">{pedido.transferencia}</p>
-            <p className="mt-3 text-xs text-paper/60">Tu pedido entra a cocina apenas confirmemos el pago.</p>
+            <p className="mt-3 text-xs text-paper/80">Tu pedido entra a cocina apenas confirmemos el pago.</p>
             <a
               href={waLink(pedido.whatsapp ?? "", `Hola Origen, envío el comprobante de pago 🌽\n\n${resumenPedido(pedido)}`)}
               target="_blank"
@@ -162,15 +162,15 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
                       "relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-mono text-xs transition-colors",
                       hecho && "border-achiote bg-achiote text-carbon",
                       enCurso && "border-achiote text-tostado shadow-[0_0_18px_rgba(201,154,62,0.6)]",
-                      !hecho && !enCurso && "border-paper/20 text-paper/40"
+                      !hecho && !enCurso && "border-paper/20 text-paper/65"
                     )}
                   >
                     {enCurso && <span className="absolute inset-0 animate-ping rounded-full border border-achiote opacity-60" />}
                     {hecho ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : i + 1}
                   </span>
                   <div>
-                    <p className={cn("text-sm font-medium", hecho || enCurso ? "text-paper" : "text-paper/45")}>{ESTADO_LABEL[paso]}</p>
-                    <p className="text-xs text-paper/50">{DESCRIPCION[paso]}</p>
+                    <p className={cn("text-sm font-medium", hecho || enCurso ? "text-paper" : "text-paper/65")}>{ESTADO_LABEL[paso]}</p>
+                    <p className="text-xs text-paper/75">{DESCRIPCION[paso]}</p>
                   </div>
                 </motion.li>
               )
@@ -186,7 +186,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
               <li key={i} className="flex justify-between gap-3">
                 <span className="text-paper/85">
                   {it.cantidad}x {it.nombre}
-                  {it.adiciones.length > 0 && <span className="block text-xs text-paper/50">+ {textoAdiciones(it.adiciones)}</span>}
+                  {it.adiciones.length > 0 && <span className="block text-xs text-paper/75">+ {textoAdiciones(it.adiciones)}</span>}
                 </span>
                 <span className="font-mono text-paper">{formatCOP(it.total)}</span>
               </li>
@@ -194,19 +194,19 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
           </ul>
           <div className="mt-4 space-y-1.5 border-t border-paper/10 pt-4 font-mono text-xs uppercase tracking-[0.08em]">
             {pedido.descuento > 0 && (
-              <p className="flex justify-between text-paper/60">
+              <p className="flex justify-between text-paper/80">
                 <span>Descuento {pedido.cupon}</span>
                 <span>−{formatCOP(pedido.descuento)}</span>
               </p>
             )}
             {pedido.tipo === "domicilio" && (
-              <p className="flex justify-between text-paper/60">
+              <p className="flex justify-between text-paper/80">
                 <span>Domicilio {pedido.zona_nombre}</span>
                 <span>{pedido.domicilio ? formatCOP(pedido.domicilio) : "Gratis"}</span>
               </p>
             )}
             <p className="flex items-baseline justify-between pt-1">
-              <span className="text-paper/60">Total</span>
+              <span className="text-paper/80">Total</span>
               <span className="font-display text-3xl normal-case text-achiote">{formatCOP(pedido.total)}</span>
             </p>
           </div>
@@ -223,7 +223,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
           </a>
           <Link
             href="/"
-            className="flex items-center justify-center gap-2 py-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60 transition hover:text-paper"
+            className="flex items-center justify-center gap-2 py-3 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/80 transition hover:text-paper"
           >
             <RotateCcw className="h-3.5 w-3.5" /> Hacer otro pedido
           </Link>

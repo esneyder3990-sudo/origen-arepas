@@ -167,7 +167,7 @@ function PedirContenido() {
       <Marco>
         <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-24 text-center">
           <p className="font-display text-2xl">No pudimos cargar el menú</p>
-          <p className="text-sm text-paper/60">{error}</p>
+          <p className="text-sm text-paper/80">{error}</p>
           <button type="button" onClick={cargar} className="border border-achiote px-6 py-3 font-mono text-[11px] uppercase tracking-[0.15em] hover:bg-achiote/15">
             Reintentar
           </button>
@@ -205,12 +205,12 @@ function PedirContenido() {
                 <span
                   className={cn(
                     "flex h-11 w-11 items-center justify-center border transition-colors duration-300",
-                    activa ? "border-achiote bg-achiote text-carbon" : "border-paper/15 text-paper/60"
+                    activa ? "border-achiote bg-achiote text-carbon" : "border-paper/15 text-paper/80"
                   )}
                 >
                   <CategoriaIcono icono={c.icono} className="h-5 w-5" />
                 </span>
-                <span className={cn("font-mono text-[9px] uppercase leading-tight tracking-[0.1em]", activa ? "text-tostado" : "text-paper/55")}>
+                <span className={cn("font-mono text-[9px] uppercase leading-tight tracking-[0.1em]", activa ? "text-tostado" : "text-paper/75")}>
                   {c.nombre}
                 </span>
               </button>
@@ -271,7 +271,7 @@ function PedirContenido() {
                   </motion.button>
                 ))}
               </div>
-              {productos.length === 0 && <p className="py-16 text-center text-sm text-paper/50">Pronto habrá productos aquí.</p>}
+              {productos.length === 0 && <p className="py-16 text-center text-sm text-paper/75">Pronto habrá productos aquí.</p>}
             </motion.div>
           </AnimatePresence>
         </section>
@@ -433,7 +433,7 @@ function Marco({
                   {abierto && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-achiote opacity-75" />}
                   <span className={cn("relative inline-flex h-2.5 w-2.5 rounded-full", abierto ? "bg-achiote" : "bg-paper/30")} />
                 </span>
-                <span className={cn("font-mono text-sm font-bold uppercase tracking-[0.15em] sm:text-base", abierto ? "text-tostado" : "text-paper/55")}>
+                <span className={cn("font-mono text-sm font-bold uppercase tracking-[0.15em] sm:text-base", abierto ? "text-tostado" : "text-paper/75")}>
                   {abierto ? "Abierto" : "Cerrado"}
                 </span>
               </span>
@@ -514,7 +514,7 @@ function InfoOrigen({ abierta, onCerrar, ajustes, zonas }: { abierta: boolean; o
               </div>
             ))}
           </div>
-          <p className="mt-2 text-xs text-paper/55">
+          <p className="mt-2 text-xs text-paper/75">
             Pedido mínimo para domicilio: {ajustes.pedido_minimo_domicilio} productos · Entrega en {ajustes.tiempo_entrega}
           </p>
         </motion.div>
@@ -607,7 +607,7 @@ function DetalleContenido({
             <div className="space-y-6 px-5 pb-6">
               <div>
                 <h2 className="font-display text-3xl font-semibold leading-tight">{producto.nombre}</h2>
-                {producto.descripcion && <p className="mt-2 text-sm leading-relaxed text-paper/70">{producto.descripcion}</p>}
+                {producto.descripcion && <p className="mt-2 text-sm leading-relaxed text-paper/85">{producto.descripcion}</p>}
                 <p className="mt-3 font-display text-3xl text-achiote">{formatCOP(producto.precio)}</p>
               </div>
 
@@ -738,12 +738,12 @@ function Carrito({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium leading-snug">{l.producto.nombre}</p>
-                    <button type="button" onClick={() => onCantidad(l.key, 0)} aria-label="Quitar" className="text-paper/40 transition hover:text-achiote">
+                    <button type="button" onClick={() => onCantidad(l.key, 0)} aria-label="Quitar" className="text-paper/65 transition hover:text-achiote">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                  {l.ads.length > 0 && <p className="mt-0.5 text-xs text-paper/55">+ {l.ads.map((a) => a.nombre).join(", ")}</p>}
-                  {l.nota && <p className="mt-0.5 text-xs italic text-paper/55">“{l.nota}”</p>}
+                  {l.ads.length > 0 && <p className="mt-0.5 text-xs text-paper/75">+ {l.ads.map((a) => a.nombre).join(", ")}</p>}
+                  {l.nota && <p className="mt-0.5 text-xs italic text-paper/75">“{l.nota}”</p>}
                   <div className="mt-2 flex items-center justify-between">
                     <Contador compacto valor={l.cantidad} min={1} onCambiar={(v) => onCantidad(l.key, v)} />
                     <span className="font-mono text-sm text-tostado">{formatCOP(l.total)}</span>
@@ -753,7 +753,7 @@ function Carrito({
             </motion.div>
           ))}
         </AnimatePresence>
-        {lineas.length === 0 && <p className="py-16 text-center text-sm text-paper/50">Tu pedido está vacío.</p>}
+        {lineas.length === 0 && <p className="py-16 text-center text-sm text-paper/75">Tu pedido está vacío.</p>}
 
         {hayBebidas && lineas.length > 0 && (
           <div className="my-4 flex items-center justify-between gap-3 border border-achiote/40 bg-achiote/10 p-4">
@@ -957,7 +957,7 @@ function TusDatos({
                     <div className="relative">
                       <Etiqueta className="mb-2">Barrio / zona</Etiqueta>
                       <div className="relative">
-                        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-paper/35" />
+                        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-paper/65" />
                         <input
                           className={cn(inputCls, "pl-10")}
                           value={zonasAbiertas ? buscarZona : zona ? `${zona.nombre} · ${zona.tarifa ? formatCOP(zona.tarifa) : "Gratis"}` : buscarZona}
@@ -994,7 +994,7 @@ function TusDatos({
                                 </button>
                               </li>
                             ))}
-                            {zonasFiltradas.length === 0 && <li className="px-4 py-3 text-sm text-paper/50">No llegamos a esa zona todavía</li>}
+                            {zonasFiltradas.length === 0 && <li className="px-4 py-3 text-sm text-paper/75">No llegamos a esa zona todavía</li>}
                           </motion.ul>
                         )}
                       </AnimatePresence>
@@ -1062,7 +1062,7 @@ function TusDatos({
                     Aplicar
                   </button>
                 </div>
-                {cuponMsg && <p className={cn("mt-2 text-xs", cupon ? "text-tostado" : "text-paper/55")}>{cuponMsg}</p>}
+                {cuponMsg && <p className={cn("mt-2 text-xs", cupon ? "text-tostado" : "text-paper/75")}>{cuponMsg}</p>}
               </div>
 
               <div className="space-y-2 border-t border-paper/10 pt-4 font-mono text-xs">
@@ -1097,7 +1097,7 @@ function TusDatos({
                   "Estamos cerrados"
                 )}
               </motion.button>
-              <button type="button" onClick={onVolver} className="mt-3 flex w-full items-center justify-center gap-1 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/45 hover:text-paper">
+              <button type="button" onClick={onVolver} className="mt-3 flex w-full items-center justify-center gap-1 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/65 hover:text-paper">
                 <ArrowLeft className="h-3 w-3" /> Volver a mi pedido
               </button>
             </div>
@@ -1111,7 +1111,7 @@ function TusDatos({
 function Fila({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex justify-between uppercase tracking-[0.08em]">
-      <span className="text-paper/55">{k}</span>
+      <span className="text-paper/75">{k}</span>
       <span className="text-paper">{v}</span>
     </div>
   )
@@ -1177,14 +1177,14 @@ function UbicacionActual({ lat, lng, onUbicacion }: { lat: number | null; lng: n
         </span>
       </motion.button>
       {lista && (
-        <p className="mt-2 flex items-center justify-between gap-2 text-xs text-paper/60">
+        <p className="mt-2 flex items-center justify-between gap-2 text-xs text-paper/80">
           <span>El domiciliario llegará con tu GPS{precision ? ` (±${precision} m)` : ""}.</span>
           <a href={`https://www.google.com/maps?q=${lat},${lng}`} target="_blank" rel="noopener noreferrer" className="shrink-0 text-tostado underline">
             Ver en el mapa
           </a>
         </p>
       )}
-      {mensaje && <p className="mt-2 text-xs text-paper/60">{mensaje}</p>}
+      {mensaje && <p className="mt-2 text-xs text-paper/80">{mensaje}</p>}
     </div>
   )
 }

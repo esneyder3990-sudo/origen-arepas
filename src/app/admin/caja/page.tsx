@@ -79,7 +79,7 @@ export default function CajaPage() {
                 <Tarjeta className="overflow-x-auto">
                   <table className="w-full min-w-[480px] text-sm">
                     <thead>
-                      <tr className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper/45">
+                      <tr className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper/65">
                         {["#", "Tipo", "Pago", "Total", "Estado"].map((h) => (
                           <th key={h} className="px-4 py-2.5 text-left font-normal">{h}</th>
                         ))}
@@ -100,13 +100,13 @@ export default function CajaPage() {
                       ))}
                     </tbody>
                   </table>
-                  {entrantes.length === 0 && <p className="px-4 py-8 text-center text-sm text-paper/45">Sin pedidos pendientes.</p>}
+                  {entrantes.length === 0 && <p className="px-4 py-8 text-center text-sm text-paper/65">Sin pedidos pendientes.</p>}
                 </Tarjeta>
               </section>
             </motion.div>
           ) : (
             <motion.div key="tomar" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ ease: EASE }}>
-              <button type="button" onClick={() => setModo("inicio")} className="mb-4 flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60 hover:text-paper">
+              <button type="button" onClick={() => setModo("inicio")} className="mb-4 flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.15em] text-paper/80 hover:text-paper">
                 <ChevronLeft className="h-4 w-4" /> Volver
               </button>
               {modo === "pasada" && (
@@ -195,12 +195,12 @@ export default function CajaPage() {
                 <span className="text-tostado">{formatCOP(p.domicilio)}</span>
               </li>
             ))}
-            {domiciliosHoy.length === 0 && <li className="py-6 text-center text-paper/45">Sin domicilios hoy.</li>}
+            {domiciliosHoy.length === 0 && <li className="py-6 text-center text-paper/65">Sin domicilios hoy.</li>}
           </ul>
           <div className="space-y-2 border-t border-paper/10 pt-3 text-sm">
-            <p className="flex justify-between"><span className="text-paper/60">Domicilios del día</span><b>{domiciliosHoy.length}</b></p>
-            <p className="flex justify-between"><span className="text-paper/60">Efectivo que trae el domiciliario</span><b>{formatCOP(efectivoDomis)}</b></p>
-            <p className="flex items-baseline justify-between"><span className="text-paper/60">Tarifas a pagarle</span><span className="font-display text-3xl text-achiote">{formatCOP(tarifas)}</span></p>
+            <p className="flex justify-between"><span className="text-paper/80">Domicilios del día</span><b>{domiciliosHoy.length}</b></p>
+            <p className="flex justify-between"><span className="text-paper/80">Efectivo que trae el domiciliario</span><b>{formatCOP(efectivoDomis)}</b></p>
+            <p className="flex items-baseline justify-between"><span className="text-paper/80">Tarifas a pagarle</span><span className="font-display text-3xl text-achiote">{formatCOP(tarifas)}</span></p>
           </div>
         </div>
       </Hoja>

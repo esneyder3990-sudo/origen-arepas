@@ -44,7 +44,7 @@ export default function CocinaPage() {
           type="button"
           onClick={() => setSonido((s) => !s)}
           aria-label={sonido ? "Silenciar alertas" : "Activar alertas"}
-          className={cn("flex h-9 w-9 items-center justify-center border", sonido ? "border-achiote text-tostado" : "border-paper/15 text-paper/50")}
+          className={cn("flex h-9 w-9 items-center justify-center border", sonido ? "border-achiote text-tostado" : "border-paper/15 text-paper/75")}
         >
           {sonido ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
         </button>
@@ -62,7 +62,7 @@ export default function CocinaPage() {
               <section key={col.estado}>
                 <div className="mb-3 flex items-center justify-between">
                   <Etiqueta className={col.estado === "recibido" ? "text-tostado" : ""}>{col.titulo}</Etiqueta>
-                  <span className="font-mono text-xs text-paper/50">{lista.length}</span>
+                  <span className="font-mono text-xs text-paper/75">{lista.length}</span>
                 </div>
                 <div className="space-y-3">
                   <AnimatePresence initial={false}>
@@ -70,7 +70,7 @@ export default function CocinaPage() {
                       <TarjetaCocina key={p.id} p={p} accion={col.accion} onAccion={(e) => actualizar(p.id, { estado: e })} />
                     ))}
                   </AnimatePresence>
-                  {lista.length === 0 && <p className="border border-dashed border-paper/10 py-10 text-center text-sm text-paper/35">Sin pedidos</p>}
+                  {lista.length === 0 && <p className="border border-dashed border-paper/10 py-10 text-center text-sm text-paper/65">Sin pedidos</p>}
                 </div>
               </section>
             )
@@ -107,13 +107,13 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
             {p.tipo === "mesa" ? p.mesa_nombre : p.tipo === "recoger" ? "Para recoger" : `Domicilio · ${p.zona_nombre}`}
           </span>
         </div>
-        <span className={cn("font-mono text-[10px] uppercase tracking-[0.1em]", tarde ? "text-tostado" : "text-paper/50")}>{hace(p.creado)}</span>
+        <span className={cn("font-mono text-[10px] uppercase tracking-[0.1em]", tarde ? "text-tostado" : "text-paper/75")}>{hace(p.creado)}</span>
       </div>
       <ul className="relative space-y-1.5 px-4 py-3 text-sm">
         {p.items.map((it, i) => (
           <li key={i}>
             <b className="text-tostado">{it.cantidad}x</b> {it.nombre}
-            {it.adiciones.length > 0 && <span className="block pl-6 text-xs text-paper/60">+ {textoAdiciones(it.adiciones)}</span>}
+            {it.adiciones.length > 0 && <span className="block pl-6 text-xs text-paper/80">+ {textoAdiciones(it.adiciones)}</span>}
             {it.nota && <span className="block pl-6 text-xs italic text-tostado/90">“{it.nota}”</span>}
           </li>
         ))}
@@ -134,7 +134,7 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
             Entregado
           </button>
         )}
-        {!accion && p.tipo === "domicilio" && <p className="flex-1 py-3 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/50">Esperando domiciliario · {TIPO_LABEL[p.tipo]}</p>}
+        {!accion && p.tipo === "domicilio" && <p className="flex-1 py-3 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/75">Esperando domiciliario · {TIPO_LABEL[p.tipo]}</p>}
         <button type="button" aria-label="Imprimir" onClick={() => imprimirTicket(p)} className="flex w-11 items-center justify-center border border-paper/20 hover:border-achiote">
           <Printer className="h-4 w-4" />
         </button>

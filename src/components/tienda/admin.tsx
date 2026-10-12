@@ -121,7 +121,7 @@ function PantallaPin({ crear, onListo }: { crear: boolean; onListo: (pin: string
         <h1 className="mb-1 flex items-center gap-2 font-display text-3xl">
           <Lock className="h-5 w-5 text-tostado" /> {crear ? "Crea tu PIN" : "Ingresa tu PIN"}
         </h1>
-        <p className="mb-6 text-sm text-paper/60">
+        <p className="mb-6 text-sm text-paper/80">
           {crear ? "Es la primera vez que entras. Elige un PIN de al menos 6 caracteres para proteger el panel." : "Para entrar al panel y a los paneles de cocina, mesero, caja y domicilios."}
         </p>
         <input type="password" className={inputCls} value={pin} onChange={(e) => setPin(e.target.value)} placeholder="PIN" autoFocus autoComplete={crear ? "new-password" : "current-password"} />
@@ -190,15 +190,15 @@ export function PanelBarra({ rol, icono: Icono, children }: { rol: string; icono
             <Icono className="h-5 w-5" strokeWidth={1.75} />
           </span>
           <span className="font-display text-lg font-semibold uppercase tracking-tight">Origen</span>
-          <span className="border-l border-paper/15 pl-3 font-mono text-[10px] uppercase tracking-[0.2em] text-paper/50">{rol}</span>
+          <span className="border-l border-paper/15 pl-3 font-mono text-[10px] uppercase tracking-[0.2em] text-paper/75">{rol}</span>
         </div>
         <div className="flex items-center gap-2">
           <ActivarAvisos rol={(["cocina", "caja", "domicilios", "mesero"] as const).find((r) => r === rol.toLowerCase()) ?? "panel"} />
           {children}
-          <Link href="/admin" className="border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/70 hover:border-achiote">
+          <Link href="/admin" className="border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/85 hover:border-achiote">
             Panel
           </Link>
-          <button type="button" onClick={salir} className="flex items-center gap-1.5 border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/70 hover:border-achiote">
+          <button type="button" onClick={salir} className="flex items-center gap-1.5 border border-paper/15 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.15em] text-paper/85 hover:border-achiote">
             <LogOut className="h-3.5 w-3.5" /> Salir
           </button>
         </div>
@@ -433,7 +433,7 @@ export function ActivarAvisos({ rol }: { rol: "cocina" | "caja" | "domicilios" |
         : estado === "no-soportado"
           ? "Este navegador no admite avisos"
           : null
-  if (texto) return <span className="max-w-[12rem] text-right text-[10px] leading-tight text-paper/50">{texto}</span>
+  if (texto) return <span className="max-w-[12rem] text-right text-[10px] leading-tight text-paper/75">{texto}</span>
   return (
     <motion.button
       type="button"

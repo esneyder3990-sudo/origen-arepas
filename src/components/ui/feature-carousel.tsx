@@ -110,7 +110,7 @@ function Steps({
               "rounded-full border px-4 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors",
               isCurrent
                 ? "border-tostado bg-tostado/15 text-tostado"
-                : "border-paper/15 text-paper/50 hover:text-paper/80"
+                : "border-paper/15 text-paper/75 hover:text-paper/80"
             )}
           >
             {step.title}
@@ -175,7 +175,7 @@ export function FeatureCarousel({
                   <h3 className="font-display text-2xl font-bold text-paper md:text-3xl">
                     {step.title}
                   </h3>
-                  <p className="max-w-sm text-sm leading-relaxed text-paper/70 md:text-base">
+                  <p className="max-w-sm text-sm leading-relaxed text-paper/85 md:text-base">
                     {step.description}
                   </p>
                 </motion.div>

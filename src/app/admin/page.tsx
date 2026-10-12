@@ -89,7 +89,7 @@ export default function AdminPage() {
         <span className="font-display text-lg font-semibold uppercase tracking-tight">Origen</span>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <p className="mb-2 px-3 font-mono text-[9px] uppercase tracking-[0.25em] text-paper/35">General</p>
+        <p className="mb-2 px-3 font-mono text-[9px] uppercase tracking-[0.25em] text-paper/65">General</p>
         {SECCIONES.map((s) => {
           const activa = s.id === seccion
           return (
@@ -97,7 +97,7 @@ export default function AdminPage() {
               key={s.id}
               type="button"
               onClick={() => ir(s.id)}
-              className={cn("relative flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition", activa ? "text-carbon" : "text-paper/70 hover:text-paper")}
+              className={cn("relative flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition", activa ? "text-carbon" : "text-paper/85 hover:text-paper")}
             >
               {activa && (
                 <motion.span
@@ -111,19 +111,19 @@ export default function AdminPage() {
             </button>
           )
         })}
-        <p className="mb-2 mt-6 px-3 font-mono text-[9px] uppercase tracking-[0.25em] text-paper/35">Paneles</p>
+        <p className="mb-2 mt-6 px-3 font-mono text-[9px] uppercase tracking-[0.25em] text-paper/65">Paneles</p>
         {PANELES.map((p) => (
-          <Link key={p.href} href={p.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-paper/70 transition hover:text-tostado">
+          <Link key={p.href} href={p.href} className="flex items-center gap-3 px-3 py-2.5 text-sm text-paper/85 transition hover:text-tostado">
             <p.icono className="h-4 w-4" strokeWidth={1.75} />
             {p.label}
           </Link>
         ))}
-        <Link href="/" target="_blank" className="flex items-center gap-3 px-3 py-2.5 text-sm text-paper/70 transition hover:text-tostado">
+        <Link href="/" target="_blank" className="flex items-center gap-3 px-3 py-2.5 text-sm text-paper/85 transition hover:text-tostado">
           <ExternalLink className="h-4 w-4" strokeWidth={1.75} />
           Ver sitio
         </Link>
       </nav>
-      <button type="button" onClick={salir} className="flex items-center gap-3 border-t border-paper/10 px-8 py-4 text-sm text-paper/60 hover:text-paper">
+      <button type="button" onClick={salir} className="flex items-center gap-3 border-t border-paper/10 px-8 py-4 text-sm text-paper/80 hover:text-paper">
         <LogOut className="h-4 w-4" /> Salir
       </button>
     </div>

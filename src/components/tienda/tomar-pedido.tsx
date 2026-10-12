@@ -116,7 +116,7 @@ export function TomarPedido({
             key={c.id}
             type="button"
             onClick={() => setCat(c.id)}
-            className={cn("relative shrink-0 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.12em]", cat === c.id ? "text-carbon" : "border border-paper/15 text-paper/70")}
+            className={cn("relative shrink-0 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.12em]", cat === c.id ? "text-carbon" : "border border-paper/15 text-paper/85")}
           >
             {cat === c.id && <motion.span layoutId="tomar-cat" className="absolute inset-0 bg-achiote" transition={{ type: "spring", stiffness: 380, damping: 32 }} />}
             <span className="relative">{c.nombre}</span>
@@ -169,12 +169,12 @@ export function TomarPedido({
                   <div className="flex items-center gap-2">
                     <button type="button" onClick={() => setAbierta(abierta === l.key ? null : l.key)} className="min-w-0 flex-1 text-left text-sm">
                       <span className="mr-1.5 font-mono text-[11px] text-tostado">#{idx + 1}</span>{p.nombre}
-                      {l.adiciones.length > 0 && <span className="block text-xs text-paper/55">+ {textoAdiciones(l.adiciones.map((id) => ({ nombre: ad.get(id)?.nombre ?? "" })))}</span>}
+                      {l.adiciones.length > 0 && <span className="block text-xs text-paper/75">+ {textoAdiciones(l.adiciones.map((id) => ({ nombre: ad.get(id)?.nombre ?? "" })))}</span>}
                       {opciones.length > 0 && <span className="block font-mono text-[9px] uppercase tracking-[0.1em] text-tostado/80">{abierta === l.key ? "Cerrar adiciones" : "+ adiciones"}</span>}
                     </button>
                     <Contador compacto valor={l.cantidad} min={1} onCambiar={(v) => setLineas((ls) => ls.map((x) => (x.key === l.key ? { ...x, cantidad: v } : x)))} />
                     <span className="w-20 text-right font-mono text-xs">{formatCOP(totalLinea(l))}</span>
-                    <button type="button" aria-label="Quitar" onClick={() => setLineas((ls) => ls.filter((x) => x.key !== l.key))} className="text-paper/40 hover:text-achiote">
+                    <button type="button" aria-label="Quitar" onClick={() => setLineas((ls) => ls.filter((x) => x.key !== l.key))} className="text-paper/65 hover:text-achiote">
                       <X className="h-4 w-4" />
                     </button>
                   </div>
@@ -194,7 +194,7 @@ export function TomarPedido({
                             className={cn("flex items-center justify-between gap-2 border px-2 py-1.5 transition", n ? "border-achiote bg-achiote/10" : "border-paper/15")}
                           >
                             <button type="button" onClick={() => poner(n + 1)} className="min-w-0 flex-1 text-left font-mono text-[11px]">
-                              <span className={cn("block truncate", n ? "text-paper" : "text-paper/70")}>{a.nombre}</span>
+                              <span className={cn("block truncate", n ? "text-paper" : "text-paper/85")}>{a.nombre}</span>
                               <span className="text-tostado">+{formatCOP(a.precio)}</span>
                             </button>
                             <Contador compacto valor={n} max={50} onCambiar={poner} />
@@ -202,14 +202,14 @@ export function TomarPedido({
                         )
                       })}
                     </div>
-                    <p className="mt-1 text-[10px] text-paper/45">Pon el total de la línea. Ej.: si las {l.cantidad} llevan maduro, marca {l.cantidad} maduros.</p>
+                    <p className="mt-1 text-[10px] text-paper/65">Pon el total de la línea. Ej.: si las {l.cantidad} llevan maduro, marca {l.cantidad} maduros.</p>
                     </>
                   )}
                 </motion.div>
               )
             })}
           </AnimatePresence>
-          {lineas.length === 0 && <p className="px-4 py-6 text-center text-sm text-paper/45">Toca productos para agregarlos.</p>}
+          {lineas.length === 0 && <p className="px-4 py-6 text-center text-sm text-paper/65">Toca productos para agregarlos.</p>}
         </div>
         <div className="space-y-3 border-t border-paper/10 p-4">
           {(ventaPasada || tipoInicial === "recoger") && (
@@ -246,7 +246,7 @@ export function TomarPedido({
                     ))}
                   </div>
                   {zona && (
-                    <label className="flex items-center justify-between gap-3 text-xs text-paper/60">
+                    <label className="flex items-center justify-between gap-3 text-xs text-paper/80">
                       Domicilio cobrado (si fue distinto)
                       <input className={cn(inputCls, "w-32 py-2")} inputMode="numeric" placeholder={String(zona.tarifa)} value={domicilio} onChange={(e) => setDomicilio(e.target.value.replace(/\D/g, ""))} />
                     </label>
@@ -272,7 +272,7 @@ export function TomarPedido({
           </div>
           {error && <p className="text-sm text-red-300">{error}</p>}
           {valorDomicilio > 0 && (
-            <p className="flex justify-between font-mono text-xs text-paper/60">
+            <p className="flex justify-between font-mono text-xs text-paper/80">
               <span>Productos {formatCOP(productos)} + domicilio</span>
               <span>{formatCOP(valorDomicilio)}</span>
             </p>

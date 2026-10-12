@@ -55,7 +55,7 @@ function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Part
               onChange={(e) => setCuentasTxt(e.target.value)}
               placeholder="Nequi, Bre-B, DaviPlata"
             />
-            <span className="mt-1 block text-xs text-paper/45">Aparecen al registrar o confirmar una transferencia, y Finanzas te dice cuánto debe haber en cada una.</span>
+            <span className="mt-1 block text-xs text-paper/65">Aparecen al registrar o confirmar una transferencia, y Finanzas te dice cuánto debe haber en cada una.</span>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label>
@@ -70,7 +70,7 @@ function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Part
           <div className="flex items-center justify-between gap-4 border border-paper/12 px-4 py-3">
             <div>
               <p className="text-sm">Clientes pueden pedir a la mesa</p>
-              <p className="text-xs text-paper/55">Muestra la opción “Mesa” en /pedir.</p>
+              <p className="text-xs text-paper/75">Muestra la opción “Mesa” en /pedir.</p>
             </div>
             <Interruptor label="Pedidos a la mesa" on={!!f.mesas_activas} onClick={() => setF((x) => ({ ...x, mesas_activas: !x.mesas_activas }))} />
           </div>
@@ -93,7 +93,7 @@ function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Part
           <p className="font-display text-xl">Cambiar PIN</p>
           <input type="password" className={inputCls} placeholder="PIN actual" value={pin.actual} onChange={(e) => setPin((p) => ({ ...p, actual: e.target.value }))} autoComplete="current-password" />
           <input type="password" className={inputCls} placeholder="PIN nuevo (mín. 6)" value={pin.nuevo} onChange={(e) => setPin((p) => ({ ...p, nuevo: e.target.value }))} autoComplete="new-password" />
-          {pinMsg && <p className="text-sm text-paper/70">{pinMsg}</p>}
+          {pinMsg && <p className="text-sm text-paper/85">{pinMsg}</p>}
           <Boton
             variante="borde"
             disabled={pin.nuevo.length < 6 || !pin.actual}
@@ -115,7 +115,7 @@ function FormAjustes({ ajustes, guardar }: { ajustes: Ajustes; guardar: (c: Part
 
       <div>
         <p className="mb-1 font-display text-xl">Zonas de domicilio por barrio</p>
-        <p className="mb-4 text-sm text-paper/55">Si la tarifa es 0, el cliente ve “Gratis”.</p>
+        <p className="mb-4 text-sm text-paper/75">Si la tarifa es 0, el cliente ve “Gratis”.</p>
         <ListaEditable<Zona & Record<string, unknown>>
           tabla="zonas"
           nombre="zona"
@@ -148,7 +148,7 @@ function ImportarPanel({ onListo }: { onListo: (t: string) => void }) {
   return (
     <Tarjeta className="space-y-3 p-4">
       <p className="font-display text-xl">Panel de Costos</p>
-      <p className="text-sm text-paper/60">
+      <p className="text-sm text-paper/80">
         Trae las ventas, clientes, compras, insumos y costos que registras en la app de escritorio de Origen. Puedes repetirlo cuando quieras: no se duplica nada.
       </p>
       <Boton
@@ -168,7 +168,7 @@ function ImportarPanel({ onListo }: { onListo: (t: string) => void }) {
         <CloudDownload className="h-4 w-4" /> {cargando ? "Trayendo datos…" : "Traer datos del Panel de Costos"}
       </Boton>
       {res && (
-        <p className="font-mono text-xs text-paper/60">
+        <p className="font-mono text-xs text-paper/80">
           {res.pedidos_nuevos} ventas nuevas · {res.compras_nuevas} compras nuevas · {res.insumos} insumos · {res.clientes} clientes · {res.costos} costos actualizados
         </p>
       )}

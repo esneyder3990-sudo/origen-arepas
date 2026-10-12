@@ -38,10 +38,10 @@ export function SeccionInventario() {
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <p className="text-sm font-medium">{i.nombre}</p>
                 {i.tipo === "empaque" && <Insignia tono="neutro">Empaque</Insignia>}
-                <p className={cn("font-mono text-xs", bajo ? "text-tostado" : "text-paper/60")}>
+                <p className={cn("font-mono text-xs", bajo ? "text-tostado" : "text-paper/80")}>
                   stock {Number(i.stock).toLocaleString("es-CO")}
                 </p>
-                <p className="font-mono text-xs text-paper/45">{formatCOP(Number(i.costo_unidad))} · {i.unidad}</p>
+                <p className="font-mono text-xs text-paper/65">{formatCOP(Number(i.costo_unidad))} · {i.unidad}</p>
                 {bajo && <Insignia>Stock bajo</Insignia>}
               </div>
             )
@@ -58,13 +58,13 @@ function Margenes() {
   if (!filas) return <Cargando />
   return (
     <Tarjeta>
-      <p className="border-b border-paper/10 px-4 py-3 text-sm text-paper/60">
+      <p className="border-b border-paper/10 px-4 py-3 text-sm text-paper/80">
         El costo de cada producto se edita en <b className="text-paper">Menú → Editar</b>. El margen se calcula sobre el precio de venta.
       </p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[520px] text-sm">
           <thead>
-            <tr className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper/45">
+            <tr className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper/65">
               {["Producto", "Precio", "Costo", "Ganancia", "Margen"].map((h) => (
                 <th key={h} className="px-4 py-2.5 text-left font-normal">{h}</th>
               ))}
@@ -78,7 +78,7 @@ function Margenes() {
                 <tr key={p.id} className="border-t border-paper/8">
                   <td className="px-4 py-3">{p.nombre}</td>
                   <td className="px-4 py-3 font-mono">{formatCOP(p.precio)}</td>
-                  <td className="px-4 py-3 font-mono text-paper/60">{costo ? formatCOP(costo) : "—"}</td>
+                  <td className="px-4 py-3 font-mono text-paper/80">{costo ? formatCOP(costo) : "—"}</td>
                   <td className="px-4 py-3 font-mono text-tostado">{costo ? formatCOP(p.precio - costo) : "—"}</td>
                   <td className="px-4 py-3">
                     {costo ? (
@@ -136,7 +136,7 @@ function Compras() {
       </div>
       <div className="flex flex-wrap gap-2">
         {meses.map((m) => (
-          <button key={m} type="button" onClick={() => setMes(m)} className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em]", m === actual ? "border-achiote text-tostado" : "border-paper/15 text-paper/55")}>
+          <button key={m} type="button" onClick={() => setMes(m)} className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em]", m === actual ? "border-achiote text-tostado" : "border-paper/15 text-paper/75")}>
             {nombreMes(m)}
           </button>
         ))}
@@ -148,14 +148,14 @@ function Compras() {
       <Tarjeta className="overflow-x-auto">
         <table className="w-full min-w-[480px] text-sm">
           <thead>
-            <tr className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper/45">
+            <tr className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper/65">
               {["Fecha", "Ítem", "Cantidad", "Precio", ""].map((h, i) => <th key={i} className="px-4 py-2.5 text-left font-normal">{h}</th>)}
             </tr>
           </thead>
           <tbody>
             {delMes.map((c) => (
               <tr key={c.id} className="border-t border-paper/8">
-                <td className="px-4 py-2.5 font-mono text-xs text-paper/60">{c.fecha}</td>
+                <td className="px-4 py-2.5 font-mono text-xs text-paper/80">{c.fecha}</td>
                 <td className="px-4 py-2.5">
                   {c.item}
                   {c.factura && (
@@ -180,7 +180,7 @@ function Compras() {
                       ¿Borrar?
                     </button>
                   ) : (
-                    <button type="button" aria-label="Borrar compra" onClick={() => setBorrando(c.id)} className="p-1 text-paper/35 hover:text-red-300">
+                    <button type="button" aria-label="Borrar compra" onClick={() => setBorrando(c.id)} className="p-1 text-paper/65 hover:text-red-300">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   )}
@@ -189,7 +189,7 @@ function Compras() {
             ))}
           </tbody>
         </table>
-        {delMes.length === 0 && <p className="px-4 py-8 text-center text-sm text-paper/45">Sin compras registradas.</p>}
+        {delMes.length === 0 && <p className="px-4 py-8 text-center text-sm text-paper/65">Sin compras registradas.</p>}
       </Tarjeta>
       <Hoja abierta={nueva} onCerrar={() => setNueva(false)} titulo="Registrar compra">
         <FormCompra

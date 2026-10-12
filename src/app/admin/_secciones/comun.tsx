@@ -259,7 +259,7 @@ export function ListaEditable<T extends Fila>({
             </motion.div>
           ))}
         </AnimatePresence>
-        {lista.length === 0 && <p className="px-4 py-10 text-center text-sm text-paper/50">{vacio ?? "Nada por aquí todavía."}</p>}
+        {lista.length === 0 && <p className="px-4 py-10 text-center text-sm text-paper/75">{vacio ?? "Nada por aquí todavía."}</p>}
       </Tarjeta>
       <Editor<T>
         fila={editando}
@@ -278,7 +278,7 @@ export function Pestanas<T extends string>({ valor, opciones, onCambiar }: { val
   return (
     <div className="mb-5 flex flex-wrap gap-2">
       {opciones.map((o) => (
-        <button key={o.id} type="button" onClick={() => onCambiar(o.id)} className={cn("relative px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em] transition", valor === o.id ? "text-carbon" : "border border-paper/15 text-paper/70 hover:border-paper/40")}>
+        <button key={o.id} type="button" onClick={() => onCambiar(o.id)} className={cn("relative px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em] transition", valor === o.id ? "text-carbon" : "border border-paper/15 text-paper/85 hover:border-paper/40")}>
           {valor === o.id && <motion.span layoutId="pestana" className="absolute inset-0 bg-achiote" transition={{ type: "spring", stiffness: 380, damping: 32 }} />}
           <span className="relative">{o.label}</span>
         </button>
@@ -339,7 +339,7 @@ function SubirFoto({ onSubida }: { onSubida: (url: string) => void }) {
           }}
         />
       </label>
-      <p className="mt-1 text-[11px] text-paper/45">{error ?? "Desde el celular puedes tomarla con la cámara. Recuerda tocar Guardar."}</p>
+      <p className="mt-1 text-[11px] text-paper/65">{error ?? "Desde el celular puedes tomarla con la cámara. Recuerda tocar Guardar."}</p>
     </div>
   )
 }

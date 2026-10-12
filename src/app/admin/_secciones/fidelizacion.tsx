@@ -44,7 +44,7 @@ function Programa({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium">Programa de puntos</p>
-            <p className="text-xs text-paper/55">Cada pedido cuenta, identificado por número de celular.</p>
+            <p className="text-xs text-paper/75">Cada pedido cuenta, identificado por número de celular.</p>
           </div>
           <Interruptor label="Activar fidelización" on={f.activo} onClick={() => setF((x) => ({ ...x, activo: !x.activo }))} />
         </div>
@@ -74,7 +74,7 @@ function Programa({
               <motion.div key={c.clave} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.03, 0.3), ease: EASE }} className="flex flex-wrap items-center gap-3 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{c.nombre || "Sin nombre"}</p>
-                  <p className="font-mono text-xs text-paper/50">{[c.celular || c.direccion, c.pedidos ? formatCOP(c.total) : "sin pedidos aún", c.ultimo ? `último ${new Date(c.ultimo).toLocaleDateString("es-CO")}` : ""].filter(Boolean).join(" · ")}</p>
+                  <p className="font-mono text-xs text-paper/75">{[c.celular || c.direccion, c.pedidos ? formatCOP(c.total) : "sin pedidos aún", c.ultimo ? `último ${new Date(c.ultimo).toLocaleDateString("es-CO")}` : ""].filter(Boolean).join(" · ")}</p>
                 </div>
                 {f.activo && (
                   <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ function Programa({
                         <span key={j} className={cn("h-2.5 w-2.5", j < (premio ? n : progreso) ? "bg-achiote" : "bg-paper/12")} />
                       ))}
                     </div>
-                    <span className="font-mono text-xs text-paper/60">{c.pedidos} pedidos</span>
+                    <span className="font-mono text-xs text-paper/80">{c.pedidos} pedidos</span>
                   </div>
                 )}
                 {premio && c.celular && (
@@ -99,7 +99,7 @@ function Programa({
               </motion.div>
             )
           })}
-          {clientes.length === 0 && <p className="px-4 py-10 text-center text-sm text-paper/50">Aquí aparecerán tus clientes cuando empiecen a pedir.</p>}
+          {clientes.length === 0 && <p className="px-4 py-10 text-center text-sm text-paper/75">Aquí aparecerán tus clientes cuando empiecen a pedir.</p>}
         </div>
       </Tarjeta>
       <Toast texto={texto} />

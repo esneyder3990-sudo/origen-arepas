@@ -22,7 +22,7 @@ export function SeccionCupones() {
         <div className="flex flex-wrap items-center gap-3">
           <p className="font-mono text-sm font-bold tracking-[0.1em]">{c.codigo}</p>
           <p className="font-mono text-xs text-tostado">{c.tipo === "porcentaje" ? `${c.valor}%` : formatCOP(c.valor)}</p>
-          {c.compra_minima > 0 && <p className="font-mono text-xs text-paper/50">mín. {formatCOP(c.compra_minima)}</p>}
+          {c.compra_minima > 0 && <p className="font-mono text-xs text-paper/75">mín. {formatCOP(c.compra_minima)}</p>}
           <Insignia tono={c.activo ? "ok" : "neutro"}>{c.activo ? "Activo" : "Inactivo"}</Insignia>
         </div>
       )}

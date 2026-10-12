@@ -60,8 +60,8 @@ function FormHorario({ ajustes, abierto, guardar }: { ajustes: Ajustes; abierto:
       <Tarjeta className="flex items-center justify-between gap-4 p-4">
         <div>
           <p className="text-sm font-medium">Cerrar la tienda ahora</p>
-          <p className="text-xs text-paper/55">
-            Estado actual: <b className={abierto ? "text-tostado" : "text-paper/70"}>{abierto ? "abierta" : "cerrada"}</b> · úsalo si se acabó el maíz o hay un imprevisto.
+          <p className="text-xs text-paper/75">
+            Estado actual: <b className={abierto ? "text-tostado" : "text-paper/85"}>{abierto ? "abierta" : "cerrada"}</b> · úsalo si se acabó el maíz o hay un imprevisto.
           </p>
         </div>
         <Interruptor
@@ -79,7 +79,7 @@ function FormHorario({ ajustes, abierto, guardar }: { ajustes: Ajustes; abierto:
         {dias.map((d, i) => (
           <div key={i} className="flex flex-wrap items-center gap-3 px-4 py-3">
             <Interruptor label={`Abrir ${DIAS[i]}`} on={d.abierto} onClick={() => setDia(i, { abierto: !d.abierto })} />
-            <p className={cn("w-24 text-sm", !d.abierto && "text-paper/40")}>{DIAS[i]}</p>
+            <p className={cn("w-24 text-sm", !d.abierto && "text-paper/65")}>{DIAS[i]}</p>
             {d.abierto ? (
               <div className="flex items-center gap-2">
                 <input type="time" className={cn(inputCls, "w-32 py-2")} value={d.abre} onChange={(e) => setDia(i, { abre: e.target.value })} />

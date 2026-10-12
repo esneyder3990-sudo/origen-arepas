@@ -7,7 +7,7 @@ import { ListaEditable } from "./comun"
 export function SeccionMesas() {
   return (
     <div className="space-y-5">
-      <Tarjeta className="p-4 text-sm leading-relaxed text-paper/70">
+      <Tarjeta className="p-4 text-sm leading-relaxed text-paper/85">
         Las mesas se usan en los paneles de <b className="text-paper">Mesero</b> y <b className="text-paper">Caja</b>. Para que los clientes también puedan
         elegir “Mesa” al pedir desde /pedir, actívalo en <b className="text-paper">Ajustes</b>.
       </Tarjeta>
