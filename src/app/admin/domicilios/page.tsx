@@ -41,7 +41,7 @@ export default function DomiciliosPage() {
             <section key={g.titulo}>
               <div className="mb-3 flex items-center justify-between">
                 <Etiqueta className={g.titulo === "Listos para salir" ? "text-tostado" : ""}>{g.titulo}</Etiqueta>
-                <span className="font-mono text-xs text-paper/75">{g.lista.length}</span>
+                <span className="font-mono text-xs text-paper">{g.lista.length}</span>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <AnimatePresence initial={false}>
@@ -50,7 +50,7 @@ export default function DomiciliosPage() {
                   ))}
                 </AnimatePresence>
               </div>
-              {g.lista.length === 0 && <p className="border border-dashed border-paper/10 py-8 text-center text-sm text-paper/65">Nada por aquí</p>}
+              {g.lista.length === 0 && <p className="border border-dashed border-paper/10 py-8 text-center text-sm text-paper">Nada por aquí</p>}
             </section>
           ))}
         </div>
@@ -76,25 +76,25 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-sans text-2xl font-bold leading-none">{numeroInterno(p)}</p>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/75">{ESTADO_LABEL[p.estado]} · {hace(p.creado)}</p>
+          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper">{ESTADO_LABEL[p.estado]} · {hace(p.creado)}</p>
         </div>
         <div className="text-right">
           <Etiqueta>{cobrar ? "Cobrar en efectivo" : "Ya pagado"}</Etiqueta>
-          <p className={cn("font-display text-2xl", cobrar ? "text-achiote" : "text-paper/80")}>{cobrar ? formatCOP(cobrar) : "Transferencia"}</p>
+          <p className={cn("font-display text-2xl", cobrar ? "text-achiote" : "text-paper")}>{cobrar ? formatCOP(cobrar) : "Transferencia"}</p>
         </div>
       </div>
       <div className="mt-3 space-y-1 border-t border-paper/10 pt-3 text-sm">
         <p className="font-medium">{p.cliente_nombre}</p>
-        <p className="text-paper/80">{p.direccion} — <span className="text-tostado">{p.zona_nombre}</span></p>
-        <p className={cn("font-mono text-[10px] uppercase tracking-[0.12em]", gps ? "text-tostado" : "text-paper/65")}>
+        <p className="text-paper">{p.direccion} — <span className="text-tostado">{p.zona_nombre}</span></p>
+        <p className={cn("font-mono text-[10px] uppercase tracking-[0.12em]", gps ? "text-tostado" : "text-paper")}>
           {gps ? "📍 Ubicación GPS del cliente" : "Sin GPS — guíate por la dirección"}
         </p>
-        {p.nota_domiciliario && <p className="text-xs italic text-paper/80">“{p.nota_domiciliario}”</p>}
-        <ul className="space-y-0.5 pt-1 text-xs text-paper/85">
+        {p.nota_domiciliario && <p className="text-xs italic text-paper">“{p.nota_domiciliario}”</p>}
+        <ul className="space-y-0.5 pt-1 text-xs text-paper">
           {p.items.map((i, k) => (
             <li key={k}>
               <b className="text-tostado">{i.cantidad}x</b> {i.nombre}
-              {i.adiciones.length > 0 && <span className="block pl-5 text-paper/75">+ {textoAdiciones(i.adiciones)}</span>}
+              {i.adiciones.length > 0 && <span className="block pl-5 text-paper">+ {textoAdiciones(i.adiciones)}</span>}
             </li>
           ))}
         </ul>
@@ -123,7 +123,7 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
           </motion.button>
         )}
         {(p.estado === "recibido" || p.estado === "preparacion") && (
-          <p className="flex items-center justify-center border border-paper/12 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/65">En cocina…</p>
+          <p className="flex items-center justify-center border border-paper/12 font-mono text-[10px] uppercase tracking-[0.12em] text-paper">En cocina…</p>
         )}
       </div>
     </motion.article>
