@@ -62,11 +62,11 @@
      que evoca el maíz peto de la marca (en vez del verde/naranja genéricos
      que usa la competencia de delivery). */
   --background: #0C0907;
-  --foreground: #F2EAD8;
+  --foreground: #FFFFFF;
   --card: #17120E;
-  --card-foreground: #F2EAD8;
+  --card-foreground: #FFFFFF;
   --popover: #17120E;
-  --popover-foreground: #F2EAD8;
+  --popover-foreground: #FFFFFF;
   --primary: #C99A3E;
   --primary-foreground: #0C0907;
   --secondary: #E0C17A;
@@ -74,10 +74,10 @@
   --muted: #221B15;
   --muted-foreground: #B8ACA0;
   --accent: #8A6A2C;
-  --accent-foreground: #F2EAD8;
+  --accent-foreground: #FFFFFF;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: rgba(242, 234, 216, 0.12);
-  --input: rgba(242, 234, 216, 0.12);
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.12);
   --ring: #C99A3E;
   --chart-1: #C99A3E;
   --chart-2: #E0C17A;
@@ -97,7 +97,7 @@
   /* tokens propios de marca, disponibles como utilidades vía @theme */
   --color-carbon: #0C0907;
   --color-masa: #F2E4C8;
-  --color-paper: #F2EAD8;
+  --color-paper: #FFFFFF;
   --color-achiote: #C99A3E;
   --color-achiote-dark: #A67B2E;
   --color-tostado: #E0C17A;
