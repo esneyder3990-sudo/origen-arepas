@@ -234,7 +234,7 @@ export function Toast({ texto }: { texto: string | null }) {
           initial={{ opacity: 0, y: 16, x: "-50%" }}
           animate={{ opacity: 1, y: 0, x: "-50%" }}
           exit={{ opacity: 0, y: 16, x: "-50%" }}
-          className="fixed bottom-6 left-1/2 z-[95] max-w-[90vw] border border-achiote/60 bg-carbon px-5 py-3 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-paper shadow-[0_0_24px_rgba(201,154,62,0.35)]"
+          className="fixed bottom-6 left-1/2 z-[95] max-w-[90vw] border border-achiote/60 bg-carbon px-5 py-3 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-paper shadow-[0_0_24px_rgba(245,196,0,0.35)]"
         >
           {texto}
         </motion.div>
@@ -457,7 +457,7 @@ export function ActivarAvisos({ rol }: { rol: "cocina" | "caja" | "domicilios" |
       type="button"
       onClick={activar}
       disabled={ocupado}
-      animate={{ boxShadow: ["0 0 0 0 rgba(201,154,62,0.6)", "0 0 0 8px rgba(201,154,62,0)"] }}
+      animate={{ boxShadow: ["0 0 0 0 rgba(245,196,0,0.6)", "0 0 0 8px rgba(245,196,0,0)"] }}
       transition={{ duration: 1.6, repeat: Infinity }}
       className="flex h-9 items-center gap-1.5 bg-achiote px-3 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-carbon"
     >

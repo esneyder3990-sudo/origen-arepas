@@ -198,7 +198,7 @@ function PedirContenido() {
                 {activa && (
                   <motion.span
                     layoutId="categoria-activa"
-                    className="absolute inset-y-0 left-0 w-[3px] bg-achiote shadow-[0_0_12px_rgba(201,154,62,0.8)]"
+                    className="absolute inset-y-0 left-0 w-[3px] bg-achiote shadow-[0_0_12px_rgba(245,196,0,0.8)]"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 )}
@@ -262,7 +262,7 @@ function PedirContenido() {
                     <div className="relative aspect-square overflow-hidden">
                       <Image src={p.imagen} alt={p.nombre} fill sizes="(min-width: 1024px) 18rem, 45vw" className="object-cover transition duration-700 group-hover:scale-[1.06]" />
                       <div className="absolute inset-0 bg-gradient-to-t from-carbon/70 via-transparent to-transparent" />
-                      <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_30px_6px_rgba(201,154,62,0.45)] transition duration-500 group-hover:opacity-100" />
+                      <div className="pointer-events-none absolute inset-0 border-2 border-achiote opacity-0 shadow-[0_0_30px_6px_rgba(245,196,0,0.45)] transition duration-500 group-hover:opacity-100" />
                     </div>
                     <div className="flex flex-1 flex-col gap-1 p-3">
                       <p className="line-clamp-2 text-[13px] font-medium leading-snug text-paper">{p.nombre}</p>
@@ -290,7 +290,7 @@ function PedirContenido() {
             <button
               type="button"
               onClick={() => setVista("carrito")}
-              className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 border border-achiote bg-carbon/95 px-4 py-3.5 shadow-[0_0_32px_rgba(201,154,62,0.35)] backdrop-blur-md"
+              className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 border border-achiote bg-carbon/95 px-4 py-3.5 shadow-[0_0_32px_rgba(245,196,0,0.35)] backdrop-blur-md"
             >
               <span className="flex items-center gap-3">
                 <Destino nombre="barra" as="span">
@@ -411,7 +411,7 @@ function Marco({
               initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
               animate={{ rotate: 0, scale: 1, opacity: 1 }}
               transition={{ duration: 0.9, ease: EASE }}
-              className="block rounded-full shadow-[0_0_18px_rgba(201,154,62,0.35)]"
+              className="block rounded-full shadow-[0_0_18px_rgba(245,196,0,0.35)]"
             >
               <Image src="/img/logo-origen-2026.png" alt="Origen" width={72} height={72} priority className="h-[72px] w-[72px] rounded-full object-cover" />
             </motion.span>
@@ -425,7 +425,7 @@ function Marco({
               transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
               className={cn(
                 "relative flex flex-col items-end border px-3 py-1.5 sm:px-4",
-                abierto ? "border-achiote/60 bg-achiote/10 shadow-[0_0_20px_rgba(201,154,62,0.25)]" : "border-paper/15"
+                abierto ? "border-achiote/60 bg-achiote/10 shadow-[0_0_20px_rgba(245,196,0,0.25)]" : "border-paper/15"
               )}
             >
               <span className="flex items-center gap-2">
@@ -638,7 +638,7 @@ function DetalleContenido({
                               data-foto
                               className={cn(
                                 "relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border transition-colors",
-                                on ? "border-achiote shadow-[0_0_14px_rgba(201,154,62,0.5)]" : "border-paper/15"
+                                on ? "border-achiote shadow-[0_0_14px_rgba(245,196,0,0.5)]" : "border-paper/15"
                               )}
                             >
                               {a.imagen ? (

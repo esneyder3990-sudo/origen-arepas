@@ -157,7 +157,7 @@ export function Aviso({ texto }: { texto: string | null }) {
           animate={{ opacity: 1, y: 0, x: "-50%" }}
           exit={{ opacity: 0, y: 16, x: "-50%" }}
           transition={{ duration: 0.3, ease: EASE }}
-          className="fixed bottom-24 left-1/2 z-[90] border border-achiote/60 bg-carbon px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.15em] text-paper shadow-[0_0_24px_rgba(201,154,62,0.35)]"
+          className="fixed bottom-24 left-1/2 z-[90] border border-achiote/60 bg-carbon px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.15em] text-paper shadow-[0_0_24px_rgba(245,196,0,0.35)]"
           role="status"
         >
           {texto}
@@ -172,7 +172,7 @@ export function Etiqueta({ children, className }: { children: React.ReactNode; c
 }
 
 export const inputCls =
-  "w-full border border-paper/15 bg-paper/[0.03] px-3.5 py-3 text-sm text-paper placeholder:text-paper/65 outline-none transition focus:border-achiote focus:shadow-[0_0_0_3px_rgba(201,154,62,0.15)]"
+  "w-full border border-paper/15 bg-paper/[0.03] px-3.5 py-3 text-sm text-paper placeholder:text-paper/65 outline-none transition focus:border-achiote focus:shadow-[0_0_0_3px_rgba(245,196,0,0.15)]"
 
 export function Opcion({
   activa,
@@ -198,7 +198,7 @@ export function Opcion({
       {activa && (
         <motion.span
           layoutId={`opcion-${grupo}`}
-          className="absolute inset-0 border border-achiote bg-achiote/15 shadow-[0_0_16px_rgba(201,154,62,0.3)]"
+          className="absolute inset-0 border border-achiote bg-achiote/15 shadow-[0_0_16px_rgba(245,196,0,0.3)]"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       )}

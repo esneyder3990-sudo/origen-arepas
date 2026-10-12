@@ -67,41 +67,41 @@
   --card-foreground: #FFFFFF;
   --popover: #17120E;
   --popover-foreground: #FFFFFF;
-  --primary: #C99A3E;
+  --primary: #F5C400;
   --primary-foreground: #0C0907;
-  --secondary: #E0C17A;
+  --secondary: #FFE27A;
   --secondary-foreground: #0C0907;
   --muted: #221B15;
   --muted-foreground: #B8ACA0;
-  --accent: #8A6A2C;
+  --accent: #9A7B00;
   --accent-foreground: #FFFFFF;
   --destructive: oklch(0.577 0.245 27.325);
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #C99A3E;
-  --chart-1: #C99A3E;
-  --chart-2: #E0C17A;
-  --chart-3: #8A6A2C;
+  --ring: #F5C400;
+  --chart-1: #F5C400;
+  --chart-2: #FFE27A;
+  --chart-3: #9A7B00;
   --chart-4: #B8ACA0;
   --chart-5: #17120E;
   --radius: 0.4rem;
   --sidebar: #F2EAD8;
   --sidebar-foreground: #0C0907;
-  --sidebar-primary: #C99A3E;
+  --sidebar-primary: #F5C400;
   --sidebar-primary-foreground: #0C0907;
-  --sidebar-accent: #E0C17A;
+  --sidebar-accent: #FFE27A;
   --sidebar-accent-foreground: #0C0907;
   --sidebar-border: rgba(12, 9, 7, 0.14);
-  --sidebar-ring: #C99A3E;
+  --sidebar-ring: #F5C400;
 
   /* tokens propios de marca, disponibles como utilidades vía @theme */
   --color-carbon: #0C0907;
   --color-masa: #F2E4C8;
   --color-paper: #FFFFFF;
-  --color-achiote: #C99A3E;
-  --color-achiote-dark: #A67B2E;
-  --color-tostado: #E0C17A;
-  --color-hoja: #8A6A2C;
+  --color-achiote: #F5C400;
+  --color-achiote-dark: #C99F00;
+  --color-tostado: #FFE27A;
+  --color-hoja: #9A7B00;
   --color-humo: #B8ACA0;
 }
 

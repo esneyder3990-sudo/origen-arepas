@@ -114,7 +114,7 @@ export default function AdminPage() {
               {activa && (
                 <motion.span
                   layoutId="admin-seccion"
-                  className="absolute inset-0 bg-achiote shadow-[0_0_20px_rgba(201,154,62,0.35)]"
+                  className="absolute inset-0 bg-achiote shadow-[0_0_20px_rgba(245,196,0,0.35)]"
                   transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 />
               )}

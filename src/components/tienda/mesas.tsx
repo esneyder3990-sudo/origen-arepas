@@ -34,7 +34,7 @@ export function MesasGrid({ mesas, pedidos, onElegir }: { mesas: Mesa[]; pedidos
             onClick={() => onElegir(m, ocupada)}
             className={cn(
               "flex aspect-[4/3] flex-col items-center justify-center gap-1 border text-center transition",
-              ocupada ? "border-achiote bg-achiote text-carbon shadow-[0_0_20px_rgba(201,154,62,0.35)]" : "border-paper/20 text-paper hover:border-achiote"
+              ocupada ? "border-achiote bg-achiote text-carbon shadow-[0_0_20px_rgba(245,196,0,0.35)]" : "border-paper/20 text-paper hover:border-achiote"
             )}
           >
             <span className="text-sm font-bold">{m.nombre}</span>

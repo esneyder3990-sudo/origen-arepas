@@ -95,7 +95,7 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
     >
       {p.estado === "recibido" && (
         <motion.span
-          className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[inset_0_0_30px_rgba(201,154,62,0.25)]"
+          className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[inset_0_0_30px_rgba(245,196,0,0.25)]"
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
         />

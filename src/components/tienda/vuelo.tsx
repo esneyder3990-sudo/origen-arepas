@@ -114,7 +114,7 @@ function VueloPieza({ v }: { v: Vuelo }) {
       ))}
       {v.img ? (
         <motion.div
-          className="absolute -ml-9 -mt-9 h-[72px] w-[72px] overflow-hidden rounded-full border-2 border-achiote shadow-[0_0_30px_rgba(201,154,62,0.75)]"
+          className="absolute -ml-9 -mt-9 h-[72px] w-[72px] overflow-hidden rounded-full border-2 border-achiote shadow-[0_0_30px_rgba(245,196,0,0.75)]"
           initial={{ x: 0, y: 0, scale: 0.6, rotate: -10, opacity: 0 }}
           animate={{ x, y, scale: [0.6, 1.15, 0.75, 0.3], rotate: [-10, 0, 8, 14], opacity: [0, 1, 1, 0.9] }}
           transition={transicion}
@@ -123,7 +123,7 @@ function VueloPieza({ v }: { v: Vuelo }) {
         </motion.div>
       ) : (
         <motion.span
-          className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border border-achiote bg-carbon px-2.5 py-1 font-mono text-[11px] font-bold text-tostado shadow-[0_0_20px_rgba(201,154,62,0.6)]"
+          className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border border-achiote bg-carbon px-2.5 py-1 font-mono text-[11px] font-bold text-tostado shadow-[0_0_20px_rgba(245,196,0,0.6)]"
           initial={{ x: 0, y: 0, scale: 0.6, opacity: 0 }}
           animate={{ x, y, scale: [0.6, 1.1, 0.9, 0.5], opacity: [0, 1, 1, 0.8] }}
           transition={transicion}

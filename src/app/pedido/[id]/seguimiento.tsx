@@ -65,7 +65,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
             initial={{ scale: 0, rotate: -40 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 16 }}
-            className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-2 border-achiote shadow-[0_0_40px_rgba(201,154,62,0.55)]"
+            className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-2 border-achiote shadow-[0_0_40px_rgba(245,196,0,0.55)]"
           >
             <motion.svg viewBox="0 0 24 24" className="h-10 w-10 text-tostado" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.3, duration: 0.6, ease: EASE }} />
@@ -161,7 +161,7 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
                     className={cn(
                       "relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-mono text-xs transition-colors",
                       hecho && "border-achiote bg-achiote text-carbon",
-                      enCurso && "border-achiote text-tostado shadow-[0_0_18px_rgba(201,154,62,0.6)]",
+                      enCurso && "border-achiote text-tostado shadow-[0_0_18px_rgba(245,196,0,0.6)]",
                       !hecho && !enCurso && "border-paper/20 text-paper/65"
                     )}
                   >

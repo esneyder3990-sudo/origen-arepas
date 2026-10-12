@@ -71,7 +71,7 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, ease: EASE }}
-      className={cn("border p-4", p.estado === "listo" ? "border-achiote shadow-[0_0_24px_rgba(201,154,62,0.2)]" : "border-paper/12")}
+      className={cn("border p-4", p.estado === "listo" ? "border-achiote shadow-[0_0_24px_rgba(245,196,0,0.2)]" : "border-paper/12")}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
