@@ -13,7 +13,8 @@ import { cn } from "@/lib/utils"
 const hoyBogota = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" })
 
 export function SeccionPedidos() {
-  const { pedidos, actualizar, recargar } = usePedidos(6000, 7)
+  const [dias, setDias] = useState(7)
+  const { pedidos, actualizar, recargar } = usePedidos(6000, dias)
   const [sel, setSel] = useState<string | null>(null)
   const { texto, mostrar } = useToast()
 
@@ -33,7 +34,20 @@ export function SeccionPedidos() {
       <Tarjeta>
         <div className="flex items-baseline justify-between gap-3 border-b border-paper/10 px-4 py-3">
           <p className="font-display text-xl">Todos los pedidos</p>
-          <Etiqueta>Últimos 7 días · toca uno para ver el detalle</Etiqueta>
+          <Etiqueta>Toca un pedido para ver el detalle</Etiqueta>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 border-b border-paper/10 px-4 py-3">
+          {([[7, "7 días"], [30, "30 días"], [90, "90 días"], [3650, "Todo"]] as const).map(([d, nombre]) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => setDias(d)}
+              className={cn("border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition", dias === d ? "border-achiote bg-achiote/15 text-paper" : "border-paper/15 text-paper/60 hover:border-paper/40")}
+            >
+              {nombre}
+            </button>
+          ))}
+          <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.12em] text-paper/50">{pedidos.length} pedidos</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
