@@ -171,7 +171,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={volver}
-              className="flex items-center gap-1 border border-paper/20 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/85 transition hover:border-achiote hover:text-tostado"
+              className="flex items-center gap-1 border border-[#FFD24A] bg-[#FFD24A]/10 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[#FFD24A] shadow-[0_0_14px_rgba(255,210,74,0.25)] transition hover:bg-[#FFD24A] hover:text-carbon"
             >
               <ChevronLeft className="h-3.5 w-3.5" /> Volver
             </button>
