@@ -12,6 +12,7 @@ import {
   ChefHat,
   ClipboardList,
   Clock,
+  ChevronLeft,
   ExternalLink,
   Heart,
   LogOut,
@@ -72,8 +73,19 @@ export default function AdminPage() {
     return SECCIONES.some((x) => x.id === s) ? s : "pedidos"
   })
   const [abierto, setAbierto] = useState(false)
+  // Secciones por las que ya pasaste, para poder devolverte con el botón "Volver".
+  const [historial, setHistorial] = useState<SeccionId[]>([])
+
+  const volver = () => {
+    const anterior = historial[historial.length - 1]
+    if (!anterior) return
+    setHistorial((h) => h.slice(0, -1))
+    setSeccion(anterior)
+    guardarLocal(SECCION_KEY, anterior)
+  }
 
   const ir = (id: SeccionId) => {
+    if (id !== seccion) setHistorial((h) => [...h.slice(-19), seccion])
     setSeccion(id)
     guardarLocal(SECCION_KEY, id)
     setAbierto(false)
@@ -155,6 +167,15 @@ export default function AdminPage() {
           <button type="button" onClick={() => setAbierto((v) => !v)} aria-label="Abrir menú" className="lg:hidden">
             {abierto ? <X className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
+          {historial.length > 0 && (
+            <button
+              type="button"
+              onClick={volver}
+              className="flex items-center gap-1 border border-paper/20 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-paper/85 transition hover:border-achiote hover:text-tostado"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" /> Volver
+            </button>
+          )}
           <h1 className="font-display text-2xl font-semibold">{actual.label}</h1>
           <div className="ml-auto"><ActivarAvisos rol="panel" /></div>
         </header>
