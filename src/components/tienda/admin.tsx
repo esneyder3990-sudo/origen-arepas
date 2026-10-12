@@ -315,7 +315,11 @@ export function SelectorCuenta({ valor, onCambio, grupo, titulo = "¿A qué cuen
 // ---------- sonido de Origen + avisos push ----------
 
 /** Campanita de Origen: tres notas que suben (Do–Mi–Sol), tres veces y a buen volumen para oírse en la cocina. */
+let ultimoSonido = 0
 export function sonidoOrigen() {
+  // Si el aviso llega por dos caminos a la vez (push y consulta), que suene una sola vez.
+  if (Date.now() - ultimoSonido < 8000) return
+  ultimoSonido = Date.now()
   try {
     const ctx = new AudioContext()
     void ctx.resume()
