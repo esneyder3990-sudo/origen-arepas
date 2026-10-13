@@ -613,7 +613,7 @@ function DetalleContenido({
 
               {adiciones.length > 0 && (
                 <div>
-                  <Etiqueta className="mb-2 text-tostado">¿Adicionas algo más?</Etiqueta>
+                  <h3 className="mb-3 font-display text-3xl font-semibold leading-tight text-tostado">¿Adicionas algo más?</h3>
                   <div className="divide-y divide-paper/10 border-y border-paper/10">
                     {adiciones.map((a) => {
                       const on = sel.includes(a.id)
@@ -647,8 +647,8 @@ function DetalleContenido({
                                 <span className="font-display text-lg text-tostado">{a.nombre.charAt(0)}</span>
                               )}
                             </span>
-                            <span className="text-sm text-paper/85">
-                              {a.nombre} <span className="font-mono text-xs text-tostado">· {formatCOP(a.precio)}</span>
+                            <span className="text-base text-paper">
+                              {a.nombre} <span className="font-mono text-sm text-tostado">· {formatCOP(a.precio)}</span>
                             </span>
                           </span>
                           <span data-check className={cn("flex h-5 w-5 items-center justify-center border transition", on ? "border-achiote bg-achiote text-carbon" : "border-paper/30")}>
