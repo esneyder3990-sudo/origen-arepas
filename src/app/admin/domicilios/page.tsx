@@ -9,6 +9,14 @@ import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
 import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroInterno, textoAdiciones, visibleEnCocina } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 
+// Verde = listo para salir, azul = en camino, amarillo = todavía en cocina.
+const COLOR_GRUPO: Record<string, { texto: string; punto: string; borde: string; barra: string }> = {
+  "Listos para salir": { texto: "text-emerald-300", punto: "bg-emerald-400", borde: "border-emerald-400/70", barra: "bg-emerald-400" },
+  "En camino": { texto: "text-sky-300", punto: "bg-sky-400", borde: "border-sky-400/70", barra: "bg-sky-400" },
+  "En cocina": { texto: "text-yellow-200", punto: "bg-yellow-300", borde: "border-yellow-300/60", barra: "bg-yellow-300" },
+}
+const grupoDe = (e: Pedido["estado"]) => (e === "listo" ? "Listos para salir" : e === "en_camino" ? "En camino" : "En cocina")
+
 export default function DomiciliosPage() {
   const { pedidos, actualizar } = usePedidos(6000, 1)
 
@@ -40,8 +48,11 @@ export default function DomiciliosPage() {
           {grupos.map((g) => (
             <section key={g.titulo}>
               <div className="mb-3 flex items-center justify-between">
-                <Etiqueta className={g.titulo === "Listos para salir" ? "text-tostado" : ""}>{g.titulo}</Etiqueta>
-                <span className="font-mono text-xs text-paper">{g.lista.length}</span>
+                <span className={cn("flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]", COLOR_GRUPO[g.titulo].texto)}>
+                  <i className={cn("h-2.5 w-2.5 rounded-full", COLOR_GRUPO[g.titulo].punto)} />
+                  {g.titulo}
+                </span>
+                <span className={cn("flex h-6 min-w-6 items-center justify-center px-1.5 font-mono text-xs font-bold text-carbon", COLOR_GRUPO[g.titulo].barra)}>{g.lista.length}</span>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <AnimatePresence initial={false}>
@@ -71,12 +82,14 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, ease: EASE }}
-      className={cn("border p-4", p.estado === "listo" ? "border-achiote shadow-[0_0_24px_rgba(245,196,0,0.2)]" : "border-paper/12")}
+      className={cn("border", COLOR_GRUPO[grupoDe(p.estado)].borde, p.estado === "listo" && "shadow-[0_0_24px_rgba(52,211,153,0.2)]")}
     >
+      <div className={cn("h-1.5", COLOR_GRUPO[grupoDe(p.estado)].barra)} />
+      <div className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-sans text-2xl font-bold leading-none">{numeroInterno(p)}</p>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper">{ESTADO_LABEL[p.estado]} · {hace(p.creado)}</p>
+          <p className={cn("mt-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em]", COLOR_GRUPO[grupoDe(p.estado)].texto)}>{ESTADO_LABEL[p.estado]} · {hace(p.creado)}</p>
         </div>
         <div className="text-right">
           <Etiqueta>{cobrar ? "Cobrar en efectivo" : "Ya pagado"}</Etiqueta>
@@ -123,8 +136,9 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
           </motion.button>
         )}
         {(p.estado === "recibido" || p.estado === "preparacion") && (
-          <p className="flex items-center justify-center border border-paper/12 font-mono text-[10px] uppercase tracking-[0.12em] text-paper">En cocina…</p>
+          <p className="flex items-center justify-center border border-yellow-300/50 bg-yellow-300/10 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-yellow-200">En cocina…</p>
         )}
+      </div>
       </div>
     </motion.article>
   )

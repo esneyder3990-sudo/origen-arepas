@@ -34,11 +34,14 @@ export function MesasGrid({ mesas, pedidos, onElegir }: { mesas: Mesa[]; pedidos
             onClick={() => onElegir(m, ocupada)}
             className={cn(
               "flex aspect-[4/3] flex-col items-center justify-center gap-1 border text-center transition",
-              ocupada ? "border-achiote bg-achiote text-carbon shadow-[0_0_20px_rgba(245,196,0,0.35)]" : "border-paper/20 text-paper hover:border-achiote"
+              ocupada
+                ? "border-rose-400 bg-rose-500/25 text-paper shadow-[0_0_20px_rgba(244,63,94,0.3)]"
+                : "border-emerald-400/60 bg-emerald-400/10 text-paper hover:bg-emerald-400/20"
             )}
           >
             <span className="text-sm font-bold">{m.nombre}</span>
-            <span className={cn("font-mono text-[9px] uppercase tracking-[0.15em]", ocupada ? "text-carbon/75" : "text-paper/75")}>
+            <span className={cn("flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em]", ocupada ? "text-rose-200" : "text-emerald-300")}>
+              <i className={cn("h-2 w-2 rounded-full", ocupada ? "bg-rose-400" : "bg-emerald-400")} />
               {ocupada ? `Ocupada · ${formatCOP(total)}` : "Libre"}
             </span>
           </motion.button>

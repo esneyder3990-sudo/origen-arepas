@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { Bell, BellOff, ChefHat, Printer } from "lucide-react"
 
 import { PanelBarra, sonidoOrigen, usePedidos } from "@/components/tienda/admin"
-import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
+import { Cargando, EASE } from "@/components/tienda/ui"
 import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroInterno, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
 import { cn } from "@/lib/utils"
@@ -15,6 +15,19 @@ const COLUMNAS: { estado: EstadoPedido; titulo: string; accion?: { label: string
   { estado: "preparacion", titulo: "En preparación", accion: { label: "Listo", siguiente: "listo" } },
   { estado: "listo", titulo: "Listos para entregar" },
 ]
+
+// Un color por etapa: amarillo = nuevo, naranja = cocinando, verde = listo.
+const COLOR_ETAPA: Partial<Record<EstadoPedido, { barra: string; texto: string; borde: string; punto: string }>> = {
+  recibido: { barra: "bg-yellow-300", texto: "text-yellow-200", borde: "border-yellow-300/70", punto: "bg-yellow-300" },
+  preparacion: { barra: "bg-orange-400", texto: "text-orange-300", borde: "border-orange-400/70", punto: "bg-orange-400" },
+  listo: { barra: "bg-emerald-400", texto: "text-emerald-300", borde: "border-emerald-400/70", punto: "bg-emerald-400" },
+}
+// Un color por tipo de pedido.
+const COLOR_TIPO: Record<string, string> = {
+  mesa: "border-sky-400/60 bg-sky-400/15 text-sky-200",
+  recoger: "border-violet-400/60 bg-violet-400/15 text-violet-200",
+  domicilio: "border-orange-400/60 bg-orange-400/15 text-orange-200",
+}
 
 export default function CocinaPage() {
   const { pedidos, actualizar } = usePedidos(5000, 1)
@@ -61,8 +74,11 @@ export default function CocinaPage() {
             return (
               <section key={col.estado}>
                 <div className="mb-3 flex items-center justify-between">
-                  <Etiqueta className={col.estado === "recibido" ? "text-tostado" : ""}>{col.titulo}</Etiqueta>
-                  <span className="font-mono text-xs text-paper">{lista.length}</span>
+                  <span className={cn("flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]", COLOR_ETAPA[col.estado]?.texto)}>
+                    <i className={cn("h-2.5 w-2.5 rounded-full", COLOR_ETAPA[col.estado]?.punto)} />
+                    {col.titulo}
+                  </span>
+                  <span className={cn("flex h-6 min-w-6 items-center justify-center px-1.5 font-mono text-xs font-bold text-carbon", COLOR_ETAPA[col.estado]?.barra)}>{lista.length}</span>
                 </div>
                 <div className="space-y-3">
                   <AnimatePresence initial={false}>
@@ -91,8 +107,9 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.94 }}
       transition={{ duration: 0.4, ease: EASE }}
-      className={cn("relative border bg-paper/[0.02]", p.estado === "recibido" ? "border-achiote/70" : "border-paper/12")}
+      className={cn("relative border bg-paper/[0.02]", COLOR_ETAPA[p.estado]?.borde ?? "border-paper/12")}
     >
+      <div className={cn("h-1.5", COLOR_ETAPA[p.estado]?.barra ?? "bg-paper/20")} />
       {p.estado === "recibido" && (
         <motion.span
           className="pointer-events-none absolute inset-0 border-2 border-achiote shadow-[inset_0_0_30px_rgba(245,196,0,0.25)]"
@@ -103,11 +120,11 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
       <div className="relative flex items-start justify-between gap-2 border-b border-paper/10 px-4 py-3">
         <div>
           <p className="font-sans text-3xl font-bold leading-none">{numeroInterno(p)}</p>
-          <span className="mt-2 inline-block border border-achiote/50 bg-achiote/10 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-tostado">
+          <span className={cn("mt-2 inline-block border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em]", COLOR_TIPO[p.tipo] ?? "border-paper/30 text-paper")}>
             {p.tipo === "mesa" ? p.mesa_nombre : p.tipo === "recoger" ? "Para recoger" : `Domicilio · ${p.zona_nombre}`}
           </span>
         </div>
-        <span className={cn("font-mono text-[10px] uppercase tracking-[0.1em]", tarde ? "text-tostado" : "text-paper")}>{hace(p.creado)}</span>
+        <span className={cn("font-mono text-[11px] uppercase tracking-[0.1em]", tarde ? "animate-pulse font-bold text-rose-400" : "text-paper")}>{hace(p.creado)}</span>
       </div>
       <ul className="relative space-y-1.5 px-4 py-3 text-sm">
         {p.items.map((it, i) => (
