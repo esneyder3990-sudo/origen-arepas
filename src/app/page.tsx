@@ -266,7 +266,7 @@ function PedirContenido() {
                     </div>
                     <div className="flex flex-1 flex-col gap-1 p-3">
                       <p className="line-clamp-2 text-[13px] font-medium leading-snug text-paper">{p.nombre}</p>
-                      <p className="mt-auto font-mono text-sm text-tostado">{formatCOP(p.precio)}</p>
+                      <p className="mt-auto font-mono text-base bg-gradient-to-r from-[#FFD24A] via-[#F5C400] to-[#7CE05A] bg-clip-text font-bold text-transparent">{formatCOP(p.precio)}</p>
                     </div>
                   </motion.button>
                 ))}
@@ -608,7 +608,7 @@ function DetalleContenido({
               <div>
                 <h2 className="font-display text-3xl font-semibold leading-tight">{producto.nombre}</h2>
                 {producto.descripcion && <p className="mt-2 text-sm leading-relaxed text-paper/85">{producto.descripcion}</p>}
-                <p className="mt-3 font-display text-3xl text-achiote">{formatCOP(producto.precio)}</p>
+                <p className="mt-3 font-display text-4xl bg-gradient-to-r from-[#FFD24A] via-[#F5C400] to-[#7CE05A] bg-clip-text font-bold text-transparent">{formatCOP(producto.precio)}</p>
               </div>
 
               {adiciones.length > 0 && (
@@ -648,7 +648,7 @@ function DetalleContenido({
                               )}
                             </span>
                             <span className="text-base text-paper">
-                              {a.nombre} <span className="font-mono text-sm text-tostado">· {formatCOP(a.precio)}</span>
+                              {a.nombre} <span className="font-mono text-sm bg-gradient-to-r from-[#FFD24A] via-[#F5C400] to-[#7CE05A] bg-clip-text font-bold text-transparent">· {formatCOP(a.precio)}</span>
                             </span>
                           </span>
                           <span data-check className={cn("flex h-5 w-5 items-center justify-center border transition", on ? "border-achiote bg-achiote text-carbon" : "border-paper/30")}>
