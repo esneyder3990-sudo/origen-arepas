@@ -850,6 +850,28 @@ function TusDatos({
     setCuponAplicado({ codigo: ok ? r.codigo! : "", descuento: ok ? r.descuento! : 0, subtotal, msg: r.mensaje })
   }
 
+  // Si este celular ya pidió antes (en cualquier dispositivo), se rellenan nombre y dirección.
+  const celularDigitos = d.celular.replace(/D/g, "").slice(-10)
+  useEffect(() => {
+    if (celularDigitos.length < 10) return
+    let vivo = true
+    rpc<{ nombre: string; direccion: string; zona_id: number | null; nota_domiciliario: string } | null>("tienda_cliente_buscar", { p_celular: celularDigitos })
+      .then((c) => {
+        if (!vivo || !c) return
+        setD((x) => ({
+          ...x,
+          nombre: x.nombre.trim() ? x.nombre : c.nombre,
+          direccion: x.direccion.trim() ? x.direccion : c.direccion,
+          zona_id: x.zona_id ?? c.zona_id,
+          nota_domiciliario: x.nota_domiciliario.trim() ? x.nota_domiciliario : c.nota_domiciliario,
+        }))
+      })
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+  }, [celularDigitos])
+
   const confirmar = async () => {
     setError(null)
     setEnviando(true)
