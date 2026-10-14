@@ -200,8 +200,21 @@ export function usePedidos(intervaloMs = 6000, dias = 2) {
 /** Barra superior oscura de los paneles operativos (cocina, mesero, caja, domicilios). */
 export function PanelBarra({ rol, icono: Icono, children }: { rol: string; icono: React.ElementType; children?: React.ReactNode }) {
   const { salir } = useAdmin()
+  const sonidoOk = useSonidoDesbloqueado()
   return (
     <header className="sticky top-0 z-40 border-b border-paper/10 bg-[#080605]/95 backdrop-blur-md">
+      {!sonidoOk && (
+        <button
+          type="button"
+          onClick={() => {
+            desbloquearSonido()
+            sonidoOrigen()
+          }}
+          className="flex w-full items-center justify-center gap-2 bg-[#FFD24A] px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.12em] text-carbon"
+        >
+          Sonido apagado: toca aquí para activar la alarma de pedidos
+        </button>
+      )}
       <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center bg-achiote text-carbon">
@@ -334,12 +347,49 @@ export function SelectorCuenta({ valor, onCambio, grupo, titulo = "¿A qué cuen
 
 /** Campanita de Origen: tres notas que suben (Do–Mi–Sol), tres veces y a buen volumen para oírse en la cocina. */
 let ultimoSonido = 0
+let audioCtx: AudioContext | null = null
+/** Los navegadores bloquean el sonido hasta que la persona toca la pantalla: se desbloquea en el primer toque. */
+const obtenerAudio = () => {
+  if (typeof window === "undefined") return null
+  audioCtx ??= new AudioContext()
+  return audioCtx
+}
+export function desbloquearSonido() {
+  try {
+    const c = obtenerAudio()
+    if (c && c.state !== "running") void c.resume()
+  } catch {}
+}
+export function useSonidoDesbloqueado() {
+  const [ok, setOk] = useState(true)
+  useEffect(() => {
+    const revisar = () => {
+      try {
+        setOk(obtenerAudio()?.state === "running")
+      } catch {}
+    }
+    const alToque = () => {
+      desbloquearSonido()
+      window.setTimeout(revisar, 150)
+    }
+    window.addEventListener("pointerdown", alToque)
+    window.addEventListener("keydown", alToque)
+    const t = window.setInterval(revisar, 2000)
+    revisar()
+    return () => {
+      window.removeEventListener("pointerdown", alToque)
+      window.removeEventListener("keydown", alToque)
+      window.clearInterval(t)
+    }
+  }, [])
+  return ok
+}
 export function sonidoOrigen() {
   // Si el aviso llega por dos caminos a la vez (push y consulta), que suene una sola vez.
   if (Date.now() - ultimoSonido < 8000) return
   ultimoSonido = Date.now()
   try {
-    const ctx = new AudioContext()
+    const ctx = obtenerAudio()!
     void ctx.resume()
     // El compresor sube el volumen percibido sin que el sonido se corte ni distorsione.
     const comp = ctx.createDynamicsCompressor()

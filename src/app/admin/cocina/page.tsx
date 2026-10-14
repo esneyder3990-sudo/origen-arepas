@@ -45,8 +45,7 @@ export default function CocinaPage() {
   useEffect(() => {
     if (!pedidos) return
     const ids = new Set(cola.filter((p) => p.estado === "recibido").map((p) => p.id))
-    const pushActivo = typeof Notification !== "undefined" && Notification.permission === "granted"
-    if (vistos.current && sonido && !pushActivo && [...ids].some((id) => !vistos.current!.has(id))) sonidoOrigen()
+    if (vistos.current && sonido && [...ids].some((id) => !vistos.current!.has(id))) sonidoOrigen()
     vistos.current = new Set([...(vistos.current ?? []), ...ids])
   }, [pedidos, cola, sonido])
 
