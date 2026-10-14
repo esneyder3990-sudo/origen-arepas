@@ -211,6 +211,8 @@ export default function CajaPage() {
         onActualizar={async (c, msg) => {
           await actualizar(sel!, c)
           mostrar(msg)
+          // Al entregar o cancelar, la ventana del pedido se cierra sola.
+          if (c.estado === "entregado" || c.estado === "cancelado") setSel(null)
         }}
       />
       <Toast texto={texto} />

@@ -165,6 +165,8 @@ export function SeccionPedidos() {
         onActualizar={async (cambios, msg) => {
           await actualizar(pedido!.id, cambios)
           mostrar(msg)
+          // Al entregar o cancelar, la ventana del pedido se cierra sola.
+          if (cambios.estado === "entregado" || cambios.estado === "cancelado") setSel(null)
         }}
         onBorrado={() => {
           setSel(null)
