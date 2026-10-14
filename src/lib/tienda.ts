@@ -11,6 +11,9 @@ export async function rpc<T>(fn: string, args: Record<string, unknown> = {}): Pr
     headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
     body: JSON.stringify(args),
     cache: "no-store",
+    signal: AbortSignal.timeout(20000),
+  }).catch(() => {
+    throw new Error("No se pudo conectar. Revisa tu internet e intenta de nuevo.")
   })
   const data = await res.json().catch(() => null)
   if (!res.ok) throw new Error(data?.message ?? "No se pudo conectar. Intenta de nuevo.")

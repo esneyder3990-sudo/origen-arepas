@@ -179,9 +179,22 @@ export function usePedidos(intervaloMs = 6000, dias = 2) {
   useEffect(() => {
     const t = window.setInterval(recargar, intervaloMs)
     const primero = window.setTimeout(recargar, 0)
+    // El celular congela los temporizadores con la pantalla apagada o en segundo plano:
+    // al volver a la app (o recuperar internet) se consulta de inmediato.
+    const alVolver = () => {
+      if (document.visibilityState === "visible") void recargar()
+    }
+    document.addEventListener("visibilitychange", alVolver)
+    window.addEventListener("focus", alVolver)
+    window.addEventListener("online", alVolver)
+    window.addEventListener("pageshow", alVolver)
     return () => {
       window.clearInterval(t)
       window.clearTimeout(primero)
+      document.removeEventListener("visibilitychange", alVolver)
+      window.removeEventListener("focus", alVolver)
+      window.removeEventListener("online", alVolver)
+      window.removeEventListener("pageshow", alVolver)
     }
   }, [recargar, intervaloMs])
 
@@ -201,6 +214,7 @@ export function usePedidos(intervaloMs = 6000, dias = 2) {
 export function PanelBarra({ rol, icono: Icono, children }: { rol: string; icono: React.ElementType; children?: React.ReactNode }) {
   const { salir } = useAdmin()
   const sonidoOk = useSonidoDesbloqueado()
+  useMantenerPantalla()
   return (
     <header className="sticky top-0 z-40 border-b border-paper/10 bg-[#080605]/95 backdrop-blur-md">
       {!sonidoOk && (
@@ -384,6 +398,26 @@ export function useSonidoDesbloqueado() {
   }, [])
   return ok
 }
+/** Evita que la pantalla se apague mientras el panel está abierto (cocina, domicilios...). */
+export function useMantenerPantalla() {
+  useEffect(() => {
+    let lock: { release: () => Promise<void> } | null = null
+    const pedir = async () => {
+      try {
+        if (document.visibilityState === "visible" && "wakeLock" in navigator) {
+          lock = await (navigator as unknown as { wakeLock: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> } }).wakeLock.request("screen")
+        }
+      } catch {}
+    }
+    void pedir()
+    document.addEventListener("visibilitychange", pedir)
+    return () => {
+      document.removeEventListener("visibilitychange", pedir)
+      void lock?.release().catch(() => {})
+    }
+  }, [])
+}
+
 /** Repite la campanita cada 10 s mientras haya pedidos sin aceptar. */
 export function useAlarmaPendientes(pendientes: number, activa = true) {
   useEffect(() => {
