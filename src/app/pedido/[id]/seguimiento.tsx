@@ -37,6 +37,25 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
     }
   }, [id, token])
 
+  // Cuando el domicilio va en camino se pide el tiempo aproximado de llegada (Google Maps).
+  const [minutos, setMinutos] = useState<number | null>(null)
+  const enCamino = pedido?.estado === "en_camino"
+  useEffect(() => {
+    if (!enCamino) return
+    let vivo = true
+    const cargar = () =>
+      fetch(`/api/eta?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d: { minutos: number | null }) => vivo && setMinutos(d.minutos))
+        .catch(() => {})
+    cargar()
+    const t = window.setInterval(cargar, 60000)
+    return () => {
+      vivo = false
+      window.clearInterval(t)
+    }
+  }, [enCamino, id, token])
+
   // Al pasar a "entregado" se avisa al cliente: vibra y el título de la pestaña cambia.
   const entregado = pedido?.estado === "entregado"
   useEffect(() => {
@@ -118,6 +137,14 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
             </span>
           </motion.div>
         </div>
+
+        {enCamino && minutos !== null && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }} className="mt-8 border border-achiote/60 bg-achiote/10 p-5 text-center">
+            <Etiqueta className="mb-1">Tu pedido va en camino</Etiqueta>
+            <p className="font-display text-4xl font-semibold text-tostado">Llega en aprox. {minutos} min</p>
+            <p className="mt-1 text-xs text-paper/80">Estimado con el tráfico actual. Se actualiza solo.</p>
+          </motion.div>
+        )}
 
         {/* ---- enviar el pedido a Origen por WhatsApp ---- */}
         {pedido.estado !== "cancelado" && pedido.origen === "cliente" && pedido.whatsapp && (
