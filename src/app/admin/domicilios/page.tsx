@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useRef } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { Bike, MapPin, Phone } from "lucide-react"
 
-import { PanelBarra, sonidoOrigen, usePedidos } from "@/components/tienda/admin"
+import { PanelBarra, useAlarmaPendientes, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
 import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroInterno, textoAdiciones, visibleEnCocina } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
@@ -20,14 +19,9 @@ const grupoDe = (e: Pedido["estado"]) => (e === "listo" ? "Listos para salir" : 
 export default function DomiciliosPage() {
   const { pedidos, actualizar } = usePedidos(6000, 1)
 
-  // Campanita cuando entra un domicilio nuevo (no suena con los que ya estaban al abrir la pantalla).
-  const vistos = useRef<Set<string> | null>(null)
-  useEffect(() => {
-    if (!pedidos) return
-    const nuevos = pedidos.filter((p) => p.tipo === "domicilio" && p.estado === "recibido" && visibleEnCocina(p)).map((p) => p.id)
-    if (vistos.current && nuevos.some((id) => !vistos.current!.has(id))) sonidoOrigen()
-    vistos.current = new Set([...(vistos.current ?? []), ...nuevos])
-  }, [pedidos])
+  // Campanita repetida mientras haya domicilios nuevos sin aceptar.
+  const sinAceptar = (pedidos ?? []).filter((p) => p.tipo === "domicilio" && p.estado === "recibido" && visibleEnCocina(p)).length
+  useAlarmaPendientes(sinAceptar)
 
   const activos = (pedidos ?? [])
     .filter((p) => p.tipo === "domicilio" && visibleEnCocina(p) && p.estado !== "entregado")

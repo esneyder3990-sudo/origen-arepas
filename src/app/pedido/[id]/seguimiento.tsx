@@ -37,6 +37,20 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
     }
   }, [id, token])
 
+  // Al pasar a "entregado" se avisa al cliente: vibra y el título de la pestaña cambia.
+  const entregado = pedido?.estado === "entregado"
+  useEffect(() => {
+    if (!entregado) return
+    try {
+      navigator.vibrate?.([200, 100, 200])
+    } catch {}
+    const antes = document.title
+    document.title = "Pedido entregado · Origen"
+    return () => {
+      document.title = antes
+    }
+  }, [entregado])
+
   if (pedido === undefined) return <Fondo><Cargando texto="Buscando tu pedido" /></Fondo>
   if (pedido === null)
     return (
@@ -58,6 +72,30 @@ export function Seguimiento({ id, token }: { id: string; token: string }) {
 
   return (
     <Fondo>
+      {entregado && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-carbon px-6 text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 240, damping: 14, delay: 0.15 }}
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-achiote text-carbon shadow-[0_0_50px_rgba(245,196,0,0.6)]"
+          >
+            <Check className="h-12 w-12" strokeWidth={3} />
+          </motion.div>
+          <p className="font-display text-5xl font-semibold text-tostado">¡Pedido entregado!</p>
+          <p className="max-w-xs text-base text-paper">
+            Tu pedido {numeroPedido(pedido.numero)} ya fue entregado. Gracias por elegir Origen, ¡buen provecho!
+          </p>
+          <Link href="/" className="mt-2 bg-achiote px-8 py-4 font-mono text-xs font-bold uppercase tracking-[0.15em] text-carbon hover:bg-tostado">
+            Hacer otro pedido
+          </Link>
+        </motion.div>
+      )}
       <div className="mx-auto w-full max-w-lg px-4 pb-16 pt-10">
         {/* ---- confirmación ---- */}
         <div className="text-center">

@@ -384,6 +384,15 @@ export function useSonidoDesbloqueado() {
   }, [])
   return ok
 }
+/** Repite la campanita cada 10 s mientras haya pedidos sin aceptar. */
+export function useAlarmaPendientes(pendientes: number, activa = true) {
+  useEffect(() => {
+    if (!activa || pendientes < 1) return
+    sonidoOrigen()
+    const t = window.setInterval(sonidoOrigen, 10000)
+    return () => window.clearInterval(t)
+  }, [pendientes > 0, activa])
+}
 export function sonidoOrigen() {
   // Si el aviso llega por dos caminos a la vez (push y consulta), que suene una sola vez.
   if (Date.now() - ultimoSonido < 8000) return

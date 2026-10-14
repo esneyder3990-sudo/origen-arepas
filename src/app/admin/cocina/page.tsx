@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { Bell, BellOff, ChefHat, Printer } from "lucide-react"
 
-import { PanelBarra, sonidoOrigen, usePedidos } from "@/components/tienda/admin"
+import { PanelBarra, useAlarmaPendientes, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE } from "@/components/tienda/ui"
 import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroInterno, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
@@ -32,7 +32,6 @@ const COLOR_TIPO: Record<string, string> = {
 export default function CocinaPage() {
   const { pedidos, actualizar } = usePedidos(5000, 1)
   const [sonido, setSonido] = useState(true)
-  const vistos = useRef<Set<string> | null>(null)
   const [, tic] = useState(0)
 
   useEffect(() => {
@@ -42,12 +41,8 @@ export default function CocinaPage() {
 
   const cola = useMemo(() => (pedidos ?? []).filter(visibleEnCocina), [pedidos])
 
-  useEffect(() => {
-    if (!pedidos) return
-    const ids = new Set(cola.filter((p) => p.estado === "recibido").map((p) => p.id))
-    if (vistos.current && sonido && [...ids].some((id) => !vistos.current!.has(id))) sonidoOrigen()
-    vistos.current = new Set([...(vistos.current ?? []), ...ids])
-  }, [pedidos, cola, sonido])
+  // Campanita repetida mientras haya pedidos nuevos sin empezar.
+  useAlarmaPendientes(cola.filter((p) => p.estado === "recibido").length, sonido)
 
   return (
     <div className="min-h-svh bg-carbon font-sans text-paper">
