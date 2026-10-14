@@ -6,7 +6,7 @@ import { Bell, BellOff, ChefHat, Printer } from "lucide-react"
 
 import { PanelBarra, useAlarmaPendientes, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE } from "@/components/tienda/ui"
-import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroInterno, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
+import { type EstadoPedido, type Pedido, TIPO_LABEL, hace, minutosDesde, numeroInterno, pagoPendiente, visibleEnCocina, textoAdiciones } from "@/lib/tienda"
 import { imprimirTicket } from "@/lib/ticket"
 import { cn } from "@/lib/utils"
 
@@ -117,6 +117,7 @@ function TarjetaCocina({ p, accion, onAccion }: { p: Pedido; accion?: { label: s
           <span className={cn("mt-2 inline-block border px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em]", COLOR_TIPO[p.tipo] ?? "border-paper/30 text-paper")}>
             {p.tipo === "mesa" ? p.mesa_nombre : p.tipo === "recoger" ? "Para recoger" : `Domicilio · ${p.zona_nombre}`}
           </span>
+          {pagoPendiente(p) && <span className="mt-2 ml-2 inline-block border border-rose-400/70 bg-rose-500/20 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-rose-300">Pago pendiente</span>}
         </div>
         <span className={cn("font-mono text-[11px] uppercase tracking-[0.1em]", tarde ? "animate-pulse font-bold text-rose-400" : "text-paper")}>{hace(p.creado)}</span>
       </div>

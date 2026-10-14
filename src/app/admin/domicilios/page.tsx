@@ -5,7 +5,7 @@ import { Bike, MapPin, Phone } from "lucide-react"
 
 import { PanelBarra, useAlarmaPendientes, usePedidos } from "@/components/tienda/admin"
 import { Cargando, EASE, Etiqueta } from "@/components/tienda/ui"
-import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroInterno, textoAdiciones, visibleEnCocina } from "@/lib/tienda"
+import { type Pedido, ESTADO_LABEL, formatCOP, hace, mapaPedido, numeroInterno, pagoPendiente, textoAdiciones, visibleEnCocina } from "@/lib/tienda"
 import { cn } from "@/lib/utils"
 
 // Verde = listo para salir, azul = en camino, amarillo = todavía en cocina.
@@ -86,8 +86,8 @@ function TarjetaDomicilio({ p, onEstado }: { p: Pedido; onEstado: (e: Pedido["es
           <p className={cn("mt-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em]", COLOR_GRUPO[grupoDe(p.estado)].texto)}>{ESTADO_LABEL[p.estado]} · {hace(p.creado)}</p>
         </div>
         <div className="text-right">
-          <Etiqueta>{cobrar ? "Cobrar en efectivo" : "Ya pagado"}</Etiqueta>
-          <p className={cn("font-display text-2xl", cobrar ? "text-achiote" : "text-paper")}>{cobrar ? formatCOP(cobrar) : "Transferencia"}</p>
+          <Etiqueta>{cobrar ? "Cobrar en efectivo" : pagoPendiente(p) ? "Transferencia" : "Ya pagado"}</Etiqueta>
+          <p className={cn("font-display text-2xl", cobrar ? "text-achiote" : pagoPendiente(p) ? "text-rose-400" : "text-paper")}>{cobrar ? formatCOP(cobrar) : pagoPendiente(p) ? "PAGO PENDIENTE" : "Transferencia"}</p>
         </div>
       </div>
       <div className="mt-3 space-y-1 border-t border-paper/10 pt-3 text-sm">

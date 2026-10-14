@@ -88,10 +88,10 @@ export const ESTADO_LABEL: Record<EstadoPedido, string> = {
   cancelado: "Cancelado",
 }
 
-// El pedido sale a cocina solo cuando ya se sabe que está pago (o es efectivo
-// / lo tomó el personal): así no se cocina algo de una transferencia que nunca llegó.
-export const visibleEnCocina = (p: Pedido) =>
-  p.estado !== "cancelado" && (p.origen === "personal" || p.metodo_pago !== "transferencia" || p.pago_confirmado)
+// Todo pedido no cancelado sale a cocina de una vez: hay clientes que pagan después
+// (en el transcurso o al recibir). La transferencia sin confirmar queda marcada como "pago pendiente".
+export const visibleEnCocina = (p: Pedido) => p.estado !== "cancelado"
+export const pagoPendiente = (p: Pedido) => p.metodo_pago === "transferencia" && !p.pago_confirmado && p.estado !== "cancelado"
 
 export const mesaOcupada = (pedidos: Pedido[], mesaId: number) =>
   pedidos.filter((p) => p.tipo === "mesa" && p.mesa_id === mesaId && !p.cerrado && p.estado !== "cancelado")
