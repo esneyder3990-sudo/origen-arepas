@@ -27,9 +27,9 @@ export default function DomiciliosPage() {
     .filter((p) => p.tipo === "domicilio" && visibleEnCocina(p) && p.estado !== "entregado")
     .sort((a, b) => +new Date(a.creado) - +new Date(b.creado))
   const grupos = [
+    { titulo: "En cocina", lista: activos.filter((p) => p.estado === "recibido" || p.estado === "preparacion") },
     { titulo: "Listos para salir", lista: activos.filter((p) => p.estado === "listo") },
     { titulo: "En camino", lista: activos.filter((p) => p.estado === "en_camino") },
-    { titulo: "En cocina", lista: activos.filter((p) => p.estado === "recibido" || p.estado === "preparacion") },
   ]
 
   return (
