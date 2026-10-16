@@ -22,7 +22,8 @@ export function SeccionMenu() {
     { k: "nombre", label: "Nombre", tipo: "texto" },
     { k: "descripcion", label: "Descripción", tipo: "area" },
     { k: "precio", label: "Precio (COP)", tipo: "numero" },
-    { k: "costo", label: "Costo de producción (para márgenes)", tipo: "numero" },
+    { k: "receta", label: "Receta y costo", tipo: "receta" },
+    { k: "costo", label: "Costo de producción (se llena solo con la receta)", tipo: "numero" },
     { k: "categoria_id", label: "Categoría", tipo: "select", opciones: (categorias ?? []).map((c) => ({ valor: c.id, label: c.nombre })) },
     { k: "aplica_adiciones", label: "Adiciones que se ofrecen", tipo: "select", opciones: APLICA },
     { k: "imagen", label: "Foto", tipo: "imagen" },
@@ -71,6 +72,11 @@ export function SeccionMenu() {
                   <p className="truncate text-sm font-medium">{p.nombre}</p>
                   <p className="font-mono text-xs text-tostado">
                     {formatCOP(p.precio)}
+                    {!!p.costo && (
+                      <span className="ml-2 text-paper/80">
+                        · costo {formatCOP(p.costo)} · gana {formatCOP(p.precio - p.costo)} ({Math.round(((p.precio - p.costo) / Math.max(p.precio, 1)) * 100)}%)
+                      </span>
+                    )}
                     {!p.activo && <span className="ml-2 text-paper/75">· agotado</span>}
                   </p>
                 </div>

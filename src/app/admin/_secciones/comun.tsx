@@ -8,6 +8,7 @@ import { Camera, Check, Pencil, Plus, Trash2 } from "lucide-react"
 import { Boton, Tarjeta, Toast, useAdmin, useToast } from "@/components/tienda/admin"
 import { BotonCerrar, Cargando, EASE, Etiqueta, Hoja, inputCls } from "@/components/tienda/ui"
 import { cn } from "@/lib/utils"
+import { CalculadoraReceta } from "./receta"
 
 export type Tabla = "categorias" | "productos" | "adiciones" | "zonas" | "cupones" | "mesas" | "insumos" | "clientes" | "compras" | "gastos"
 type Fila = { id?: number } & Record<string, unknown>
@@ -35,6 +36,7 @@ export type Campo =
   | { k: string; label: string; tipo: "select"; opciones: { valor: string | number; label: string }[] }
   | { k: string; label: string; tipo: "bool" }
   | { k: string; label: string; tipo: "imagen" }
+  | { k: string; label: string; tipo: "receta" }
 
 export const IMAGENES = [
   "/img/Carne.png",
@@ -143,6 +145,16 @@ function Formulario<T extends Fila>({
                   <motion.span layout className={cn("absolute top-1 h-4 w-4 rounded-full bg-paper", v ? "right-1" : "left-1")} transition={{ type: "spring", stiffness: 500, damping: 32 }} />
                 </span>
               </button>
+            )
+          if (c.tipo === "receta")
+            return (
+              <CalculadoraReceta
+                key={c.k}
+                receta={v}
+                precio={Number(f["precio" as keyof T] ?? 0)}
+                onReceta={(receta, costo) => setF((x) => ({ ...x, [c.k]: receta, costo }))}
+                onPrecio={(p) => set("precio", p)}
+              />
             )
           if (c.tipo === "imagen")
             return (
