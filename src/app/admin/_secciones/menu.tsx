@@ -115,6 +115,7 @@ export function SeccionMenu() {
           campos={[
             { k: "nombre", label: "Nombre", tipo: "texto" },
             { k: "precio", label: "Precio (COP)", tipo: "numero" },
+            { k: "receta", label: "Receta y costo", tipo: "receta" },
             { k: "imagen", label: "Foto", tipo: "imagen" },
             { k: "aplica", label: "Aplica a", tipo: "select", opciones: [{ valor: "todos", label: "Arepas y patacones" }, { valor: "arepa", label: "Solo arepas" }, { valor: "patacon", label: "Solo patacones" }] },
             { k: "orden", label: "Orden", tipo: "numero" },
@@ -128,6 +129,11 @@ export function SeccionMenu() {
               </div>
               <p className="text-sm">
                 {a.nombre} <span className="font-mono text-xs text-tostado">+ {formatCOP(a.precio)}</span>
+                {!!a.costo && (
+                  <span className="ml-2 font-mono text-xs text-paper/80">
+                    · costo {formatCOP(a.costo)} · gana {formatCOP(a.precio - a.costo)} ({Math.round(((a.precio - a.costo) / Math.max(a.precio, 1)) * 100)}%)
+                  </span>
+                )}
               </p>
             </div>
           )}

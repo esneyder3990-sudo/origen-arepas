@@ -25,7 +25,7 @@ export interface Producto {
   id: number; categoria_id: number; nombre: string; descripcion: string; precio: number; costo?: number
   imagen: string; aplica_adiciones: "arepa" | "patacon" | "ninguna"; sugerido: boolean; orden: number; activo: boolean
 }
-export interface Adicion { id: number; nombre: string; precio: number; imagen: string; aplica: "arepa" | "patacon" | "todos"; orden: number; activo: boolean }
+export interface Adicion { id: number; nombre: string; precio: number; costo?: number | null; imagen: string; aplica: "arepa" | "patacon" | "todos"; orden: number; activo: boolean }
 export interface Zona { id: number; nombre: string; tarifa: number; orden: number; activo: boolean }
 export interface Mesa { id: number; nombre: string; orden: number; activo: boolean }
 export interface Cupon { id: number; codigo: string; tipo: "porcentaje" | "valor"; valor: number; compra_minima: number; activo: boolean }
