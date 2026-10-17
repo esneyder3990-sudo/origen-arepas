@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     images: [
       {
-        url: "/img/og-image-2026.jpg",
+        url: "/img/og-image-nuevo.jpg",
         width: 1200,
         height: 630,
         alt: "Origen — Pide en línea arepas y patacones. Domicilio a Chía, Cajicá y Cota",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    images: ["/img/og-image-2026.jpg"],
+    images: ["/img/og-image-nuevo.jpg"],
   },
 };
 

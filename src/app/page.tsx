@@ -413,7 +413,7 @@ function Marco({
               transition={{ duration: 0.9, ease: EASE }}
               className="block rounded-full shadow-[0_0_18px_rgba(245,196,0,0.35)]"
             >
-              <Image src="/img/logo-origen-2026.png" alt="Origen" width={72} height={72} priority className="h-[72px] w-[72px] rounded-full object-cover" />
+              <Image src="/img/logo-origen-sabores.png" alt="Origen" width={72} height={72} priority className="h-[72px] w-[72px] rounded-full object-cover" />
             </motion.span>
             <span className="hidden font-display text-2xl font-semibold uppercase tracking-tight sm:inline">Origen</span>
           </Link>
@@ -491,7 +491,7 @@ function InfoOrigen({ abierta, onCerrar, ajustes, zonas }: { abierta: boolean; o
     <Hoja abierta={abierta} onCerrar={onCerrar} titulo="Sobre Origen">
       <div className="flex items-center justify-between px-5 pb-2 pt-4">
         <div className="flex items-center gap-3">
-          <Image src="/img/logo-origen-2026.png" alt="" width={44} height={44} className="h-11 w-11 rounded-full" />
+          <Image src="/img/logo-origen-sabores.png" alt="" width={44} height={44} className="h-11 w-11 rounded-full" />
           <div>
             <h2 className="font-display text-2xl font-semibold leading-none">Origen</h2>
             <Etiqueta className="mt-1">Arepas y patacones artesanales</Etiqueta>

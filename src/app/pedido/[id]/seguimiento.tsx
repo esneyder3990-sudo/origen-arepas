@@ -304,7 +304,7 @@ function Fondo({ children }: { children: React.ReactNode }) {
       <header className="border-b border-paper/10">
         <div className="mx-auto flex h-16 max-w-lg items-center px-4">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/img/logo-origen-2026.png" alt="Origen" width={36} height={36} className="h-9 w-9 rounded-full object-cover" />
+            <Image src="/img/logo-origen-sabores.png" alt="Origen" width={36} height={36} className="h-9 w-9 rounded-full object-cover" />
             <span className="font-display text-lg font-semibold uppercase tracking-tight">Origen</span>
           </Link>
         </div>

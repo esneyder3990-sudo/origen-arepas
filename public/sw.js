@@ -15,8 +15,8 @@ self.addEventListener("push", (event) => {
     Promise.all([
       self.registration.showNotification(titulo, {
         body: d.body || "Entró un pedido nuevo",
-        icon: "/img/logo-origen-2026.png",
-        badge: "/img/logo-origen-2026.png",
+        icon: "/img/logo-origen-sabores.png",
+        badge: "/img/logo-origen-sabores.png",
         tag: d.tag || "pedido",
         renotify: true,
         requireInteraction: true,

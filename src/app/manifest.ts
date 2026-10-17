@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#0C0907",
     theme_color: "#0C0907",
     icons: [
-      { src: "/img/logo-origen-2026.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/img/logo-origen-sabores.png", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
   }
