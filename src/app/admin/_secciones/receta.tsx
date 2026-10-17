@@ -61,6 +61,11 @@ export function CalculadoraReceta({
   const gananciaActual = precio - costo
   const margenActual = precio > 0 ? Math.round((gananciaActual / precio) * 100) : 0
 
+  const detalle = [...r.ingredientes, ...r.empaques]
+    .map((l) => ({ nombre: l.insumo_id ? (porId.get(l.insumo_id)?.nombre ?? "") : "", valor: Math.round(costoLinea(l)) }))
+    .filter((d) => d.nombre)
+    .sort((a, b) => b.valor - a.valor)
+
   const cambiar = (parcial: Partial<Receta>) => {
     const n = { ...r, ...parcial }
     onReceta(n, total(n))
@@ -105,6 +110,11 @@ export function CalculadoraReceta({
                 </label>
                 <p className="pb-2.5 font-mono text-sm text-tostado">{formatCOP(Math.round(costoLinea(l)))}</p>
               </div>
+              {l.insumo_id && porId.get(l.insumo_id) && (
+                <p className="mt-2 text-[11px] text-paper/75">
+                  Paquete {formatCOP(Number(porId.get(l.insumo_id)!.costo_unidad))} ÷ {l.rinde || 1} = {formatCOP(Math.round(Number(porId.get(l.insumo_id)!.costo_unidad) / Math.max(l.rinde || 1, 0.0001)))} por porción
+                </p>
+              )}
             </div>
           )
         })}
@@ -168,6 +178,19 @@ export function CalculadoraReceta({
       </label>
 
       <div className="space-y-1.5 border border-paper/12 bg-carbon/60 p-4 font-mono text-sm">
+        {detalle.length > 0 && (
+          <div className="mb-2 space-y-1 border-b border-paper/10 pb-3">
+            <p className="mb-1 text-[11px] uppercase tracking-[0.1em] text-paper/75">Detalle por ingrediente y empaque</p>
+            {detalle.map((d, i) => (
+              <div key={i} className="flex justify-between gap-3 text-xs">
+                <span className="min-w-0 truncate">{d.nombre}</span>
+                <span className="shrink-0 text-tostado">
+                  {formatCOP(d.valor)} <span className="text-paper/70">· {costo > 0 ? Math.round((d.valor / costo) * 100) : 0}%</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
         <Fila k="Subtotal ingredientes" v={formatCOP(Math.round(subIng))} />
         <Fila k="Subtotal empaques" v={formatCOP(Math.round(subEmp))} />
         <Fila k="Domicilio que tú asumes" v={formatCOP(domicilio)} />
