@@ -195,11 +195,11 @@ function Compras() {
         <FormCompra
           insumos={insumos ?? []}
           onCerrar={() => setNueva(false)}
-          onGuardada={async (fecha, sumoStock) => {
+          onGuardada={async (fecha, sumoStock, costoActualizado) => {
             await Promise.all([recargar(), recargarInsumos()])
             setMes(fecha.slice(0, 7))
             setNueva(false)
-            mostrar(sumoStock ? "Compra registrada y sumada al stock" : "Compra registrada")
+            mostrar(costoActualizado ? "Compra registrada, stock y costos de productos actualizados" : sumoStock ? "Compra registrada y sumada al stock" : "Compra registrada")
           }}
         />
       </Hoja>
@@ -216,7 +216,7 @@ function FormCompra({
 }: {
   insumos: Insumo[]
   onCerrar: () => void
-  onGuardada: (fecha: string, sumoStock: boolean) => Promise<void>
+  onGuardada: (fecha: string, sumoStock: boolean, costoActualizado?: boolean) => Promise<void>
 }) {
   const { llamar } = useAdmin()
   const [f, setF] = useState(() => ({
@@ -302,10 +302,10 @@ function FormCompra({
             setGuardando(true)
             setError(null)
             try {
-              await llamar("tienda_admin_registrar_compra", {
+              const r = await llamar<{ costo_actualizado?: boolean }>("tienda_admin_registrar_compra", {
                 p_compra: { fecha: f.fecha, item: f.item, cantidad: Number(f.cantidad || 0), unidad: f.unidad, precio: Number(f.precio), insumo_id: f.insumo_id, metodo: f.metodo, cuenta: f.metodo === "transferencia" ? f.cuenta : "" },
               })
-              await onGuardada(f.fecha, !!f.insumo_id && Number(f.cantidad) > 0)
+              await onGuardada(f.fecha, !!f.insumo_id && Number(f.cantidad) > 0, !!r?.costo_actualizado)
             } catch (e) {
               setError((e as Error).message)
               setGuardando(false)
